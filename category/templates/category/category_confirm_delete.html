@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+    <div class="card bg-dark text-light border-gold">
+        <div class="card-body">
+            <h5 class="card-title text-gold mb-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Delete Category
+            </h5>
+            <div class="alert alert-warning bg-dark border-warning text-light mb-4" style="border: 1px solid #D4AF37; border-left: 4px solid #D4AF37;">
+                <p class="mb-0">
+                    <i class="fas fa-exclamation-circle me-2 text-gold"></i>
+                    Are you sure you want to delete the category <strong class="text-gold">"{{ category.name }}"</strong>? 
+                    This will also delete all associated price types and cannot be undone.
+                </p>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex gap-3">
+                    <a href="{% url 'category:category_dashboard' %}" class="btn btn-gold flex-fill">
+                        <i class="fas fa-times me-2"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-danger-gold flex-fill">
+                        <i class="fas fa-trash me-2"></i>
+                        Delete Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

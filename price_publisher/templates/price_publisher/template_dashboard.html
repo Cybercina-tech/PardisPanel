@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Template Dashboard{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="text-gold fw-bold mb-2">
+                <i class="fas fa-images me-2"></i>
+                Template Dashboard
+            </h1>
+            <p class="text-white-50 mb-0">Manage the visual templates used for Telegram price posts.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'price_publisher:template_editor_index' %}" class="btn btn-outline-gold">
+                <i class="fas fa-pen-ruler me-2"></i>Open Template Editor
+            </a>
+            <a href="{% url 'price_publisher:template_create' %}" class="btn btn-gold">
+                <i class="fas fa-plus me-2"></i>New Template
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <div class="card theme-card-bg border-0 rounded-4 shadow-lg">
+                <div class="card-header theme-header-bg border-0 rounded-top-4 py-4 d-flex justify-content-between align-items-center">
+                    <h3 class="text-gold fw-bold mb-0">
+                        <i class="fas fa-layer-group me-2"></i>
+                        Existing Templates
+                    </h3>
+                </div>
+                <div class="card-body p-0">
+                    {% if templates %}
+                        <div class="table-responsive">
+                            <table class="table table-dark-custom table-hover align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Scope</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for template in templates %}
+                                    <tr>
+                                        <td class="text-white">
+                                            <div class="fw-semibold">{{ template.name }}</div>
+                                            {% if template.notes %}
+                                                <small class="text-white-50">{{ template.notes|truncatechars:80 }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-white-50">
+                                            {% if template.template_type == 'default' %}
+                                                <span class="badge badge-active">Default</span>
+                                            {% elif template.template_type == 'category' %}
+                                                Category: {{ template.category.name }}
+                                            {% else %}
+                                                Special Price: {{ template.special_price_type.name }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if template.is_active %}
+                                                <span class="badge badge-active">Active</span>
+                                            {% else %}
+                                                <span class="badge badge-inactive">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="d-flex justify-content-end flex-wrap gap-2">
+                                                <a href="{% url 'price_publisher:template_update' template.pk %}" class="btn btn-sm btn-outline-gold">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'price_publisher:template_editor' template.pk %}" class="btn btn-sm btn-outline-gold">
+                                                    <i class="fas fa-pen"></i>
+                                                </a>
+                                                <a href="{% url 'price_publisher:template_delete' template.pk %}" class="btn btn-sm btn-danger-outline">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="p-4">
+                            <p class="text-white-50 mb-0">No templates configured yet. Start by creating one.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="card theme-card-bg border-0 rounded-4 shadow-lg mb-4">
+                <div class="card-header theme-header-bg border-0 rounded-top-4 py-4">
+                    <h3 class="text-gold fw-bold mb-0">
+                        <i class="fas fa-bookmark me-2"></i>
+                        Categories without templates
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if categories_without_template %}
+                        <ul class="list-unstyled mb-0 text-white-50">
+                            {% for category in categories_without_template %}
+                                <li class="mb-2"><i class="fas fa-circle fa-2xs text-gold me-2"></i>{{ category.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-white-50 mb-0">Every category has a template assigned.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card theme-card-bg border-0 rounded-4 shadow-lg">
+                <div class="card-header theme-header-bg border-0 rounded-top-4 py-4">
+                    <h3 class="text-gold fw-bold mb-0">
+                        <i class="fas fa-star me-2"></i>
+                        Special prices without templates
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if special_without_template %}
+                        <ul class="list-unstyled mb-0 text-white-50">
+                            {% for special in special_without_template %}
+                                <li class="mb-2"><i class="fas fa-circle fa-2xs text-gold me-2"></i>{{ special.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-white-50 mb-0">Every special price type has a template assigned.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if asset_catalog.price_theme or asset_catalog.offer or asset_catalog.news or asset_catalog.general or asset_catalog.fonts %}
+            <div class="card theme-card-bg border-0 rounded-4 shadow-lg">
+                <div class="card-header theme-header-bg border-0 rounded-top-4 py-4">
+                    <h3 class="text-gold fw-bold mb-0">
+                        <i class="fas fa-photo-video me-2"></i>
+                        Asset Library
+                    </h3>
+                    <small class="text-white-50 d-block mt-2">Pre-built backgrounds and fonts available inside the visual editor.</small>
+                </div>
+                <div class="card-body">
+                    {% if asset_catalog.price_theme %}
+                    <h6 class="text-gold text-uppercase small fw-bold mb-2">Price Themes</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% for asset in asset_catalog.price_theme %}
+                        <div class="border border-light rounded-3 overflow-hidden" style="width: 70px; height: 70px;">
+                            <img src="{% static asset %}" alt="Price Theme {{ forloop.counter }}" class="img-fluid w-100 h-100 object-fit-cover">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if asset_catalog.offer %}
+                    <h6 class="text-gold text-uppercase small fw-bold mb-2">Offers</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% for asset in asset_catalog.offer %}
+                        <div class="border border-light rounded-3 overflow-hidden" style="width: 70px; height: 70px;">
+                            <img src="{% static asset %}" alt="Offer {{ forloop.counter }}" class="img-fluid w-100 h-100 object-fit-cover">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if asset_catalog.news %}
+                    <h6 class="text-gold text-uppercase small fw-bold mb-2">News Cards</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% for asset in asset_catalog.news %}
+                        <div class="border border-light rounded-3 overflow-hidden" style="width: 70px; height: 70px;">
+                            <img src="{% static asset %}" alt="News {{ forloop.counter }}" class="img-fluid w-100 h-100 object-fit-cover">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if asset_catalog.general %}
+                    <h6 class="text-gold text-uppercase small fw-bold mb-2">General Assets</h6>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        {% for asset in asset_catalog.general %}
+                        <div class="border border-light rounded-3 overflow-hidden" style="width: 70px; height: 70px;">
+                            <img src="{% static asset %}" alt="Asset {{ forloop.counter }}" class="img-fluid w-100 h-100 object-fit-cover">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    {% if asset_catalog.fonts %}
+                    <h6 class="text-gold text-uppercase small fw-bold mb-2">Fonts</h6>
+                    <ul class="list-unstyled text-white-50 small mb-0">
+                        {% for font in asset_catalog.fonts %}
+                        <li class="mb-1">
+                            <i class="fas fa-font me-2 text-gold"></i>{{ font|cut:"fonts/" }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

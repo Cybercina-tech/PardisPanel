@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load change_price_tags %}
+{% load special_price_tags %}
+
+{% block title %}Finalize Prices{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0 text-gold">
+                <i class="fas fa-check-circle me-2"></i>Finalize Prices
+            </h1>
+            <p class="text-white-50 mt-2">Review and publish updated prices to Telegram channels</p>
+            <hr class="border-gold">
+        </div>
+    </div>
+
+    <!-- Pending Prices Section -->
+    {% if has_pending %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark border-gold">
+                <div class="card-header bg-black-secondary border-bottom-gold">
+                    <h5 class="card-title mb-0 text-gold">
+                        <i class="fas fa-clock me-2"></i>Pending Finalization
+                    </h5>
+                    <small class="text-white-50">Prices that have been updated but not yet finalized</small>
+                </div>
+                <div class="card-body">
+                    {% for category, pending_list in pending_by_category.items %}
+                    <div class="mb-4 {% if not forloop.last %}border-bottom border-secondary pb-4{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-gold mb-0">
+                                <i class="fas fa-folder me-2"></i>{{ category.name }}
+                            </h6>
+                            <a href="{% url 'finalize:finalize_category' category.id %}" 
+                               class="btn btn-sm btn-gold">
+                                <i class="fas fa-check me-1"></i>Finalize Category
+                            </a>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-dark table-sm">
+                                <thead>
+                                    <tr>
+                                        <th class="text-gold-light">Price Type</th>
+                                        <th class="text-gold-light">Currency Pair</th>
+                                        <th class="text-gold-light">Trade Type</th>
+                                        <th class="text-gold-light">Price</th>
+                                        <th class="text-gold-light">Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in pending_list %}
+                                    <tr>
+                                        <td>{{ item.price_type.name }}</td>
+                                        <td class="text-white-50">
+                                            {{ item.price_type.source_currency.code }}/{{ item.price_type.target_currency.code }}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                {{ item.price_type.get_trade_type_display }}
+                                            </span>
+                                        </td>
+                                        <td class="text-gold fw-bold">{{ item.price_history.price|floatformat:2 }}</td>
+                                        <td class="text-white-50 small">
+                                            <div class="dual-date">
+                                                <span>{{ item.price_history.updated_at|date:"M d, Y H:i" }}</span>
+                                                {% if item.price_history.updated_at|to_jalali:"short" %}
+                                                    <span class="ms-2">/ {{ item.price_history.updated_at|to_jalali:"short" }}</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    {% if not has_pending_special %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No pending prices to finalize. All prices are up to date!
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Pending Special Prices Section -->
+    {% if has_pending_special %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark border-gold">
+                <div class="card-header bg-black-secondary border-bottom-gold">
+                    <h5 class="card-title mb-0 text-gold">
+                        <i class="fas fa-star me-2"></i>Pending Special Prices Finalization
+                    </h5>
+                    <small class="text-white-50">Special prices that have been updated but not yet finalized</small>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-sm">
+                            <thead>
+                                <tr>
+                                    <th class="text-gold-light">Special Price Type</th>
+                                    <th class="text-gold-light">Currency Pair</th>
+                                    <th class="text-gold-light">Trade Type</th>
+                                    <th class="text-gold-light">Price</th>
+                                    <th class="text-gold-light">Updated</th>
+                                    <th class="text-gold-light">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in pending_special_prices %}
+                                <tr>
+                                    <td>{{ item.special_price_type.name }}</td>
+                                    <td class="text-white-50">
+                                        {{ item.special_price_type.source_currency.code }}/{{ item.special_price_type.target_currency.code }}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            {{ item.special_price_type.get_trade_type_display }}
+                                        </span>
+                                    </td>
+                                    <td class="text-gold fw-bold">{{ item.special_price_history.price|floatformat:2 }}</td>
+                                    <td class="text-white-50 small">
+                                        <div class="dual-date">
+                                            <span>{{ item.special_price_history.updated_at|date:"M d, Y H:i" }}</span>
+                                            {% if item.special_price_history.updated_at|to_jalali:"short" %}
+                                                <span class="ms-2">/ {{ item.special_price_history.updated_at|to_jalali:"short" }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'finalize:finalize_special_price' item.special_price_history.id %}" 
+                                           class="btn btn-sm btn-gold">
+                                            <i class="fas fa-check me-1"></i>Finalize
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- All Categories Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-dark border-gold">
+                <div class="card-header bg-black-secondary border-bottom-gold">
+                    <h5 class="card-title mb-0 text-gold">
+                        <i class="fas fa-list me-2"></i>All Categories
+                    </h5>
+                    <small class="text-white-50">Quick access to update prices for each category</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for category in categories %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card bg-black-secondary border-light-gold h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-gold mb-2">
+                                        <i class="fas fa-folder me-2"></i>{{ category.name }}
+                                    </h6>
+                                    <p class="card-text text-white-50 small mb-3">
+                                        {{ category.price_types.count }} price type{{ category.price_types.count|pluralize }}
+                                    </p>
+                                    <div class="btn-group w-100" role="group">
+                                        <a href="{% url 'change_price:update_category_prices' category.id %}" 
+                                           class="btn btn-sm btn-outline-gold">
+                                            <i class="fas fa-edit me-1"></i>Update Prices
+                                        </a>
+                                        {% if category in pending_by_category %}
+                                        <a href="{% url 'finalize:finalize_category' category.id %}" 
+                                           class="btn btn-sm btn-gold">
+                                            <i class="fas fa-check me-1"></i>Finalize
+                                        </a>
+                                        {% else %}
+                                        <span class="btn btn-sm btn-outline-secondary disabled">
+                                            <i class="fas fa-check me-1"></i>Up to Date
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <p class="text-white-50 text-center">No categories found.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-gold {
+        border-color: var(--gold-primary) !important;
+    }
+    
+    .border-light-gold {
+        border-color: rgba(212, 175, 55, 0.2) !important;
+    }
+    
+    .bg-black-secondary {
+        background-color: var(--black-secondary) !important;
+    }
+    
+    .btn-gold {
+        background-color: var(--gold-primary);
+        border-color: var(--gold-primary);
+        color: var(--black-primary);
+        font-weight: 600;
+    }
+    
+    .btn-gold:hover {
+        background-color: var(--gold-dark);
+        border-color: var(--gold-dark);
+        color: var(--black-primary);
+    }
+    
+    .btn-outline-gold {
+        background-color: transparent;
+        border-color: var(--gold-primary);
+        color: var(--gold-primary);
+        font-weight: 600;
+    }
+    
+    .btn-outline-gold:hover {
+        background-color: var(--gold-primary);
+        border-color: var(--gold-primary);
+        color: var(--black-primary);
+    }
+    
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    .card {
+        border: 1px solid var(--black-light);
+    }
+    
+    .card-header {
+        border-bottom: 1px solid var(--black-light);
+    }
+    
+    .table-dark {
+        background-color: var(--black-secondary);
+    }
+    
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(212, 175, 55, 0.05);
+    }
+    
+    .dual-date {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .dual-date span {
+        white-space: nowrap;
+    }
+    
+    .border-bottom-gold {
+        border-bottom-color: var(--gold-primary) !important;
+    }
+</style>
+{% endblock %}

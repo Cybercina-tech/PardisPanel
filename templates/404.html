@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}404 - Page Not Found | Sarafi Pardis Panel{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-60">
+        <div class="col-md-8 col-lg-6 text-center">
+            <!-- 404 Error Icon/Animation -->
+            <div class="mb-4">
+                <i class="fas fa-exclamation-triangle text-gold icon-pulse fa-6x opacity-75"></i>
+            </div>
+            
+            <!-- Error Code -->
+            <h1 class="display-super fw-bold text-gold glow-title mb-3">404</h1>
+            
+            <!-- Error Message -->
+            <h2 class="h3 mb-4">
+                <i class="fas fa-search me-2"></i>
+                Page Not Found
+            </h2>
+            
+            <!-- Description -->
+            <p class="lead mb-4 text-white-50 mx-auto max-w-500">
+                The page you're looking for doesn't exist or has been moved. 
+                Please check the URL or navigate back to the dashboard.
+            </p>
+            
+            <!-- Action Buttons -->
+            <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center align-items-center mt-5">
+                <a href="{% url 'dashboard:home' %}" class="btn btn-gold btn-lg">
+                    <i class="fas fa-home me-2"></i>
+                    Go to Dashboard
+                </a>
+                <button onclick="history.back()" class="btn btn-outline-gold btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    Go Back
+                </button>
+            </div>
+            
+            <!-- Additional Help -->
+            <div class="mt-5 pt-4 border-top border-light-gold">
+                <p class="text-white-50 mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Need help? Try these:
+                </p>
+                <div class="row g-3 justify-content-center">
+                    <div class="col-auto">
+                        <a href="{% url 'category:category_dashboard' %}" class="btn btn-sm btn-outline-gold">
+                            <i class="fas fa-tags me-1"></i>
+                            Categories
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{% url 'change_price:dashboard' %}" class="btn btn-sm btn-outline-gold">
+                            <i class="fas fa-dollar-sign me-1"></i>
+                            Update Prices
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{% url 'setting:settings' %}" class="btn btn-sm btn-outline-gold">
+                            <i class="fas fa-cog me-1"></i>
+                            Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

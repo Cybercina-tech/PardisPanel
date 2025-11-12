@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card bg-dark border-gold">
+        <div class="card-header bg-dark border-bottom-gold">
+            <h5 class="mb-0 text-gold">{{ title }}</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-gold">{{ form.name.label }}</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="text-danger small mt-1">{{ form.name.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-gold">{{ form.source_currency.label }}</label>
+                        {{ form.source_currency }}
+                        {% if form.source_currency.errors %}<div class="text-danger small mt-1">{{ form.source_currency.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-gold">{{ form.target_currency.label }}</label>
+                        {{ form.target_currency }}
+                        {% if form.target_currency.errors %}<div class="text-danger small mt-1">{{ form.target_currency.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-gold">{{ form.trade_type.label }}</label>
+                        {{ form.trade_type }}
+                        {% if form.trade_type.errors %}<div class="text-danger small mt-1">{{ form.trade_type.errors }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-gold">{{ form.description.label }}</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between gap-3 mt-4">
+                    <a href="{% url 'category:category_dashboard' %}" class="btn btn-secondary-gold flex-fill">Cancel</a>
+                    <button type="submit" class="btn btn-gold flex-fill">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

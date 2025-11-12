@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="card bg-dark border-gold shadow-lg" style="max-width: 750px; margin: 0 auto;">
+        <div class="card-header bg-dark border-bottom-gold text-center">
+            <h4 class="mb-0 text-gold fw-bold letter-spacing-1">{{ title }}</h4>
+        </div>
+        <div class="card-body p-4">
+            <form method="post" autocomplete="off" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-4 rounded-3 px-4 py-3">
+                    <i class="fas fa-exclamation-circle me-2"></i>{{ form.non_field_errors }}
+                </div>
+                {% endif %}
+                <div class="row g-4 align-items-center">
+                    <div class="col-lg-6">
+                        <div class="mb-3">
+                            <label class="form-label text-gold fw-semibold">{{ form.name.label }}</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <span class="d-block text-danger small mt-1 ms-1">{{ form.name.errors }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="mb-3">
+                            <label class="form-label text-gold fw-semibold">{{ form.source_currency.label }}</label>
+                            {{ form.source_currency }}
+                            {% if form.source_currency.errors %}
+                            <span class="d-block text-danger small mt-1 ms-1">{{ form.source_currency.errors }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-lg-3">
+                        <div class="mb-3">
+                            <label class="form-label text-gold fw-semibold">{{ form.target_currency.label }}</label>
+                            {{ form.target_currency }}
+                            {% if form.target_currency.errors %}
+                            <span class="d-block text-danger small mt-1 ms-1">{{ form.target_currency.errors }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="mb-3">
+                            <label class="form-label text-gold fw-semibold">{{ form.trade_type.label }}</label>
+                            {{ form.trade_type }}
+                            {% if form.trade_type.errors %}
+                            <span class="d-block text-danger small mt-1 ms-1">{{ form.trade_type.errors }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-lg-8">
+                        <div class="mb-3">
+                            <label class="form-label text-gold fw-semibold">{{ form.description.label }}</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <span class="d-block text-danger small mt-1 ms-1">{{ form.description.errors }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-column flex-md-row justify-content-end align-items-center mt-4 gap-3">
+                    <a href="{% url 'special_price:dashboard' %}" class="btn btn-secondary-gold flex-fill flex-md-grow-0 px-4 py-2">
+                        <i class="fas fa-arrow-left me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-gold flex-fill flex-md-grow-0 px-4 py-2 shadow-sm">
+                        <i class="fas fa-save me-2"></i>Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* --- Gold & Black Theme & Card Improvements --- */
+.bg-dark {
+    background-color: var(--card-bg, #111418) !important;
+}
+
+.text-gold {
+    color: var(--theme-primary, #D4AF37) !important;
+    letter-spacing: 0.03em;
+}
+
+.border-gold {
+    border: 1.5px solid var(--border-color, rgba(212, 175, 55, 0.30)) !important;
+    border-radius: 18px !important;
+}
+
+.border-bottom-gold {
+    border-bottom: 1.5px solid var(--border-color, rgba(212, 175, 55, 0.3)) !important;
+}
+
+/* ---- Form Field and Label Alignment and Effects ---- */
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--theme-primary, #D4AF37);
+    text-shadow: 0 1px 4px rgba(212, 175, 55, 0.06);
+}
+.form-control, .form-select {
+    padding: 0.625rem 1rem;
+    background-color: var(--input-bg, #191b1f) !important;
+    border: 1.2px solid var(--input-border, rgba(212,175,55,0.18)) !important;
+    border-radius: 8px;
+    color: var(--text-primary, #E6E8EA) !important;
+    font-size: 1.04rem;
+    min-height: 47px;
+    transition: all 0.2s cubic-bezier(.68,-0.55,.27,1.55);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--input-bg, #1e2025) !important;
+    border-color: var(--theme-primary, #D4AF37) !important;
+    box-shadow: 0 0 0 0.17rem color-mix(in srgb, var(--theme-primary) 22%, transparent);
+    color: var(--text-primary, #f7f8f8) !important;
+}
+
+/* make selects consistent in height with inputs */
+.form-select {
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+}
+
+input, select, textarea {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+@media (min-width: 992px) {
+    .form-label { font-size: 1.03rem; }
+}
+
+/* --- Button Styles --- */
+.btn-gold {
+    background: linear-gradient(100deg, var(--theme-primary, #D4AF37) 0%, var(--theme-dark, #B8860B) 100%) !important;
+    border: 1.7px solid var(--theme-primary, #D4AF37) !important;
+    color: var(--btn-text-color, #1a1712) !important;
+    font-weight: 700;
+    font-size: 1.07rem;
+    border-radius: 8px;
+    transition: all 0.18s cubic-bezier(.65, .08, .27, 1.08);
+    letter-spacing: 0.03em;
+    box-shadow: 0 2px 10px rgba(212, 175, 55, 0.09);
+}
+[data-theme="light"] .btn-gold { --btn-text-color: #fff; }
+.btn-gold:hover {
+    background: linear-gradient(110deg, var(--theme-light, #FFD700) 0%, var(--theme-primary, #D4AF37) 100%) !important;
+    border-color: var(--theme-light, #FFD700) !important;
+    color: var(--btn-text-color, #000) !important;
+    box-shadow: 0 7px 18px 0 color-mix(in srgb, var(--theme-primary) 15%, transparent);
+    transform: translateY(-2px) scale(1.04);
+}
+
+.btn-secondary-gold {
+    background: transparent !important;
+    border: 1.5px solid var(--border-color, rgba(212, 175, 55, 0.25)) !important;
+    color: var(--text-primary, #F3CE75) !important;
+    font-weight: 600;
+    font-size: 1.07rem;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+    transition: all 0.20s cubic-bezier(.74,.03,.35,1.08);
+}
+.btn-secondary-gold:hover {
+    background: color-mix(in srgb, var(--theme-primary) 13%, transparent) !important;
+    border-color: var(--theme-primary, #D4AF37) !important;
+    color: var(--theme-primary, #EAB94D) !important;
+    box-shadow: 0 0px 12px color-mix(in srgb, var(--theme-primary) 14%, transparent);
+    transform: translateY(-2px) scale(1.025);
+}
+
+/* --- Card and Shadow Refinement --- */
+.card {
+    box-shadow: 0 6px 28px 0 rgba(0, 0, 0, 0.23), 0 1.5px 6px rgba(212, 175, 55, 0.09);
+}
+
+/* --- Text and Error Styles --- */
+.text-danger {
+    color: #ff6161 !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 3px rgba(220, 53, 69, 0.085);
+}
+
+.alert-danger {
+    background-color: var(--card-bg, #18191c) !important;
+    border-color: #ff6161 !important;
+    color: #ff6161 !important;
+    font-size: 1.05rem;
+    background-color: var(--card-bg, #121212) !important;
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+
+/* Form spacing */
+.mt-1 {
+    margin-top: 0.25rem !important;
+}
+
+.mt-4 {
+    margin-top: 1.5rem !important;
+}
+</style>
+{% endblock %}
+

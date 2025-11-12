@@ -1,0 +1,275 @@
+
+
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block extra_head %}
+<style>
+    .login-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 6rem);
+    }
+
+    .login-card {
+        background: rgba(26, 26, 26, 0.95);
+        border-radius: 16px;
+        box-shadow:
+            0 10px 30px rgba(0, 0, 0, 0.3),
+            0 0 0 1px rgba(212, 175, 55, 0.12);
+        border: 1px solid rgba(212, 175, 55, 0.18);
+        overflow: hidden;
+        max-width: 420px;
+        width: 100%;
+    }
+
+    .login-card .card-header {
+        background: linear-gradient(135deg, var(--gold-dark), var(--gold-primary));
+        color: var(--black-primary);
+        text-align: center;
+        padding: 2.5rem 2rem;
+        border-bottom: none;
+    }
+
+    .login-card .card-header .brand-logo {
+        font-size: 2.25rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--black-primary);
+    }
+
+    .login-card .card-header .brand-subtitle {
+        font-weight: 400;
+        font-size: 1rem;
+        opacity: 0.85;
+        color: var(--black-primary);
+    }
+
+    .login-card .card-body {
+        padding: 2.5rem;
+        background: rgba(15, 15, 15, 0.92);
+    }
+
+    .login-card .form-label {
+        font-weight: 600;
+        color: var(--gold-light);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.95rem;
+    }
+
+    .login-card .form-control {
+        border: 1px solid rgba(212, 175, 55, 0.35);
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: rgba(45, 45, 45, 0.85);
+        color: var(--text-primary);
+    }
+
+    .login-card .form-control:focus {
+        border-color: var(--gold-primary);
+        box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+        background: rgba(45, 45, 45, 0.95);
+        outline: none;
+    }
+
+    .login-card .input-container {
+        position: relative;
+    }
+
+    .login-card .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #adb5bd;
+        cursor: pointer;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+    }
+
+    .login-card .password-toggle:hover {
+        color: var(--gold-primary);
+    }
+
+    .login-card .btn-login {
+        background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
+        border: none;
+        border-radius: 8px;
+        padding: 14px 24px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--black-primary);
+        width: 100%;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-top: 1rem;
+    }
+
+    .login-card .btn-login:hover {
+        background: linear-gradient(135deg, var(--gold-light), var(--gold-primary));
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(212, 175, 55, 0.25);
+    }
+
+    .login-card .form-check-input {
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        border: 2px solid rgba(212, 175, 55, 0.45);
+        margin-right: 10px;
+        cursor: pointer;
+        background: rgba(45, 45, 45, 0.85);
+    }
+
+    .login-card .form-check-input:checked {
+        background-color: var(--gold-primary);
+        border-color: var(--gold-primary);
+    }
+
+    .login-card .form-check-label {
+        color: var(--gold-light);
+        font-weight: 500;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .login-card .alert {
+        border-radius: 8px;
+        border: none;
+        padding: 1rem 1.25rem;
+        margin-bottom: 1.5rem;
+        background: rgba(239, 68, 68, 0.12);
+        color: #f8a5a5;
+        border-left: 4px solid #e74c3c;
+    }
+
+    .login-card .forgot-password {
+        color: var(--gold-light);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-block;
+        font-size: 0.9rem;
+    }
+
+    .login-card .forgot-password:hover {
+        color: var(--gold-primary);
+        text-decoration: underline;
+    }
+
+    @media (max-width: 576px) {
+        .login-page {
+            min-height: calc(100vh - 4rem);
+            padding: 1.5rem 1rem;
+        }
+
+        .login-card .card-body {
+            padding: 2rem 1.5rem;
+        }
+
+        .login-card .card-header {
+            padding: 2rem 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-page">
+    <div class="login-card">
+        <div class="card-header">
+            <div class="brand-logo">Pardis Finance</div>
+            <div class="brand-subtitle">Secure Financial Platform</div>
+        </div>
+
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if form.errors %}
+                <div class="alert" role="alert">
+                    <strong>Login failed:</strong> Please check your username and password.
+                </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'accounts:login' %}">
+                {% csrf_token %}
+                <div class="form-group mb-4">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text"
+                           name="username"
+                           id="username"
+                           class="form-control"
+                           placeholder="Enter your username"
+                           required
+                           autofocus>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-container">
+                        <input type="password"
+                               name="password"
+                               id="password"
+                               class="form-control"
+                               placeholder="Enter your password"
+                               required>
+                        <button type="button" class="password-toggle" id="passwordToggle" aria-label="Toggle password visibility">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="remember_me"
+                           id="remember_me">
+                    <label class="form-check-label" for="remember_me">
+                        Remember me
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-login" id="loginButton">Sign In</button>
+
+                <div class="text-center mt-3">
+                    <a href="#" class="forgot-password">Forgot your password? Ask for support!</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordToggle = document.getElementById('passwordToggle');
+        const passwordInput = document.getElementById('password');
+
+        if (passwordToggle && passwordInput) {
+            passwordToggle.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+
+                passwordToggle.innerHTML = type === 'text'
+                    ? '<i class="fas fa-eye-slash"></i>'
+                    : '<i class="fas fa-eye"></i>';
+            });
+        }
+    });
+</script>
+{% endblock %}

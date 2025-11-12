@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container py-4">
+    <h2>Dashboard</h2>
+    <p>Welcome, {{ request.user.get_full_name }} ({{ request.user.role|capfirst }})</p>
+    <p>This is a protected page — only authenticated users can see it.</p>
+</div>
+{% endblock %}

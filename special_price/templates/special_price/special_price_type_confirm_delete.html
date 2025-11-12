@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card bg-dark border-gold">
+        <div class="card-header bg-dark border-bottom-gold">
+            <h5 class="mb-0 text-gold">Confirm Delete</h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-warning border-gold mb-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Warning:</strong> Are you sure you want to delete this special price type?
+            </div>
+            
+            <div class="mb-4">
+                <h6 class="text-gold mb-3">Special Price Type Details:</h6>
+                <div class="bg-black-secondary p-3 rounded">
+                    <p class="mb-2"><strong class="text-gold">Name:</strong> <span class="text-white">{{ special_price_type.name }}</span></p>
+                    <p class="mb-2"><strong class="text-gold">Currency Pair:</strong> <span class="text-white">{{ special_price_type.source_currency.code }} / {{ special_price_type.target_currency.code }}</span></p>
+                    <p class="mb-2"><strong class="text-gold">Trade Type:</strong> <span class="text-white">{{ special_price_type.get_trade_type_display }}</span></p>
+                    {% if special_price_type.description %}
+                    <p class="mb-0"><strong class="text-gold">Description:</strong> <span class="text-white">{{ special_price_type.description }}</span></p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="alert alert-danger border-danger mb-4">
+                <i class="fas fa-trash me-2"></i>
+                <strong>This action cannot be undone!</strong> All price history for this special price type will also be deleted.
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between gap-3">
+                    <a href="{% url 'special_price:dashboard' %}" class="btn btn-secondary-gold flex-fill">
+                        <i class="fas fa-arrow-left me-1"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-danger flex-fill">
+                        <i class="fas fa-trash me-1"></i>Delete Special Price Type
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-dark {
+    background-color: var(--card-bg, #121212) !important;
+}
+
+.text-gold {
+    color: var(--theme-primary, #D4AF37) !important;
+}
+
+.border-gold {
+    border: 1px solid var(--border-color, rgba(212, 175, 55, 0.3)) !important;
+}
+
+.border-danger {
+    border: 1px solid rgba(220, 53, 69, 0.5) !important;
+}
+
+.bg-black-secondary {
+    background-color: var(--bg-light, #1a1a1a) !important;
+}
+
+.alert-warning {
+    background-color: var(--card-bg, #121212) !important;
+    border-color: var(--theme-primary, #D4AF37) !important;
+    color: var(--theme-primary, #D4AF37) !important;
+}
+
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    border-color: rgba(220, 53, 69, 0.5) !important;
+    color: #dc3545 !important;
+}
+
+.btn-danger {
+    background-color: rgba(220, 53, 69, 0.2) !important;
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+    font-weight: 600;
+}
+
+.btn-danger:hover {
+    background-color: rgba(220, 53, 69, 0.3) !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+.btn-secondary-gold {
+    background: transparent !important;
+    border: 1px solid var(--border-color, rgba(212, 175, 55, 0.3)) !important;
+    color: var(--text-primary, #e9ecef) !important;
+    font-weight: 600;
+}
+
+.btn-secondary-gold:hover {
+    background: color-mix(in srgb, var(--theme-primary) 15%, transparent) !important;
+    border-color: var(--theme-primary, #D4AF37) !important;
+    color: var(--theme-primary, #D4AF37) !important;
+}
+</style>
+{% endblock %}
+

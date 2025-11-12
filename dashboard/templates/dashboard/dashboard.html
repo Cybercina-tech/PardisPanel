@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load change_price_tags %}
+
+{% block title %}Paradis Exchange dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">Paradis Exchange dashboard</h1>
+                <div class="text-gold-light time-display">
+                    <div class="time-english" id="current-time"></div>
+                    <div class="time-jalali" id="current-time-jalali"></div>
+                </div>
+            </div>
+            <hr>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4 g-3">
+        <!-- Highest Posted Price -->
+        <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-3 d-flex">
+            <div class="card bg-dark text-gold metric-card flex-fill">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h4 class="card-title mb-1">
+                                {% if highest_price %}
+                                    {{ highest_price|floatformat:2 }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </h4>
+                            <p class="card-text mb-0">Highest Posted Price</p>
+                            {% if highest_price_label %}
+                                <small class="text-white-50">{{ highest_price_label }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="align-self-center ms-3">
+                            <i class="fas fa-arrow-up fa-2x text-gold"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 24h Price Change -->
+        <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-3 d-flex">
+            <div class="card bg-dark text-gold metric-card flex-fill">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h4 class="card-title mb-1">
+                                {% if avg_24h_change != 0 %}
+                                    <span class="{% if avg_24h_change > 0 %}text-success{% elif avg_24h_change < 0 %}text-danger{% endif %}">
+                                        {{ avg_24h_change|floatformat:2 }}%
+                                    </span>
+                                {% else %}
+                                    <span class="text-white-50">0.00%</span>
+                                {% endif %}
+                            </h4>
+                            <p class="card-text mb-0">Avg 24h Price Change</p>
+                            {% if biggest_change %}
+                                <small class="text-white-50">Biggest: {{ biggest_change.name }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="align-self-center ms-3">
+                            <i class="fas fa-chart-line fa-2x text-gold"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Bots -->
+        <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-3 d-flex">
+            <div class="card bg-dark text-gold metric-card flex-fill">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h4 class="card-title mb-1">{{ total_bots }}</h4>
+                            <p class="card-text mb-0">Total Bots</p>
+                            <small class="text-white-50">{{ active_bots }} active</small>
+                        </div>
+                        <div class="align-self-center ms-3">
+                            <i class="fas fa-robot fa-2x text-gold"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Channels -->
+        <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-3 d-flex">
+            <div class="card bg-dark text-gold metric-card flex-fill">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h4 class="card-title mb-1">{{ total_channels }}</h4>
+                            <p class="card-text mb-0">Total Channels</p>
+                            <small class="text-white-50">{{ active_channels }} active</small>
+                        </div>
+                        <div class="align-self-center ms-3">
+                            <i class="fas fa-broadcast-tower fa-2x text-gold"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Metrics Row -->
+    <div class="row mb-4 g-3">
+        <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-3 d-flex">
+            <div class="card bg-dark text-gold metric-card flex-fill">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h4 class="card-title mb-1">{{ total_price_types }}</h4>
+                            <p class="card-text mb-0">Price Types</p>
+                            <small class="text-white-50">Configured pairs</small>
+                        </div>
+                        <div class="align-self-center ms-3">
+                            <i class="fas fa-tags fa-2x text-gold"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-3 d-flex">
+            <div class="card bg-dark text-gold metric-card flex-fill">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h4 class="card-title mb-1">{{ recent_updates }}</h4>
+                            <p class="card-text mb-0">Updates (24h)</p>
+                            <small class="text-white-50">Recent price changes</small>
+                        </div>
+                        <div class="align-self-center ms-3">
+                            <i class="fas fa-sync-alt fa-2x text-gold"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-3 d-flex">
+            <div class="card bg-dark text-gold metric-card flex-fill">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h4 class="card-title mb-1">{{ total_price_updates }}</h4>
+                            <p class="card-text mb-0">Total Updates</p>
+                            <small class="text-white-50">All-time history</small>
+                        </div>
+                        <div class="align-self-center ms-3">
+                            <i class="fas fa-history fa-2x text-gold"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 col-sm-6 col-md-6 col-lg-3 mb-3 d-flex">
+            <div class="card bg-dark text-gold metric-card flex-fill">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h4 class="card-title mb-1" style="font-size: 1rem;">
+                                {% if latest_update_time %}
+                                    {{ latest_update_time|date:"H:i" }}
+                                    {% if latest_update_time|to_jalali:"time_only" %}
+                                        <span class="text-white-50" style="font-size: 0.85rem;">({{ latest_update_time|to_jalali:"time_only" }})</span>
+                                    {% endif %}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </h4>
+                            <p class="card-text mb-0">Last Update</p>
+                            <small class="text-white-50">
+                                {% if latest_update_time %}
+                                    <span>{{ latest_update_time|date:"M d, Y" }}</span>
+                                    {% if latest_update_time|to_jalali:"date_only" %}
+                                        <span class="ms-2">/ {{ latest_update_time|to_jalali:"date_only" }}</span>
+                                    {% endif %}
+                                {% else %}
+                                    No updates yet
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="align-self-center ms-3">
+                            <i class="fas fa-clock fa-2x text-gold"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Data Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            {% for category in categories %}
+            <div class="card bg-dark mb-4">
+                <div class="card-header bg-black-secondary">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-gold">{{ category.name }} - Market Prices</h5>
+                        <a href="{% url 'change_price:update_category_prices' category.id %}" 
+                           class="btn btn-sm btn-gold">
+                            <i class="fas fa-edit me-1"></i>Update All Prices
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="text-gold-light">Pair</th>
+                                    <th class="text-gold-light">Price</th>
+                                    <th class="text-gold-light">Last Update</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for price_type in category.price_types.all %}
+                                <tr>
+                                    <td>{{ price_type.name }}</td>
+                                    {% with latest_price=price_type.price_histories.first %}
+                                    <td class="text-gold">{% if latest_price %}{{ latest_price.price }}{% else %}N/A{% endif %}</td>
+                                    <td class="text-gold">
+                                        {% if latest_price %}
+                                            <div class="dual-date">
+                                                <span>{{ latest_price.updated_at|date:"F d, Y H:i" }}</span>
+                                                {% if latest_price.updated_at|to_jalali:"short" %}
+                                                    <span class="ms-2 text-white-50">/ {{ latest_price.updated_at|to_jalali:"short" }}</span>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            Never
+                                        {% endif %}
+                                    </td>
+                                    {% endwith %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://unpkg.com/jalaali-js@1.1.0/jalaali.js"></script>
+<script>
+    // Jalali date conversion function (inline fallback)
+    function gregorianToJalali(gy, gm, gd) {
+        var g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        var jy = (gy <= 1600) ? 0 : 979;
+        gy -= (gy <= 1600) ? 621 : 1600;
+        var gy2 = (gm > 2) ? (gy + 1) : gy;
+        var days = (365 * gy) + (parseInt((gy2 + 3) / 4)) - (parseInt((gy2 + 99) / 100)) + 
+                   (parseInt((gy2 + 399) / 400)) - 80 + gd + g_d_m[gm - 1];
+        jy += 33 * (parseInt(days / 12053));
+        days %= 12053;
+        jy += 4 * (parseInt(days / 1461));
+        days %= 1461;
+        if (days > 365) {
+            jy += parseInt((days - 1) / 365);
+            days = (days - 1) % 365;
+        }
+        var jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
+        var jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+        return {jy: jy, jm: jm, jd: jd};
+    }
+    
+    // Update current time
+    function updateTime() {
+        try {
+            const now = new Date();
+            
+            // English date/time
+            const timeString = now.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const englishElement = document.getElementById('current-time');
+            if (englishElement) {
+                englishElement.textContent = timeString;
+            }
+            
+            // Convert to Tehran timezone (UTC+3:30)
+            const tehranOffset = 3.5 * 60 * 60 * 1000; // Tehran is UTC+3:30
+            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+            const tehranTime = new Date(utcTime + tehranOffset);
+            
+            // Persian (Jalali) date using Tehran time
+            const year = tehranTime.getFullYear();
+            const month = tehranTime.getMonth() + 1;
+            const day = tehranTime.getDate();
+            
+            // Use library if available, otherwise use inline function
+            let jalali;
+            if (typeof jalaali !== 'undefined' && jalaali.toJalaali) {
+                jalali = jalaali.toJalaali(year, month, day);
+            } else {
+                jalali = gregorianToJalali(year, month, day);
+            }
+            
+            // Persian month names
+            const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            const monthName = persianMonths[jalali.jm - 1];
+            
+            // Format: 15 فروردین 1403، 14:30:45
+            const hours = String(tehranTime.getHours()).padStart(2, '0');
+            const minutes = String(tehranTime.getMinutes()).padStart(2, '0');
+            const seconds = String(tehranTime.getSeconds()).padStart(2, '0');
+            const jalaliTime = `${jalali.jd} ${monthName} ${jalali.jy}، ${hours}:${minutes}:${seconds}`;
+            
+            const jalaliElement = document.getElementById('current-time-jalali');
+            if (jalaliElement) {
+                jalaliElement.textContent = jalaliTime;
+            }
+        } catch (error) {
+            console.error('Error updating time:', error);
+        }
+    }
+    
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+    } else {
+        updateTime();
+        setInterval(updateTime, 1000);
+    }
+</script>
+{% endblock %}

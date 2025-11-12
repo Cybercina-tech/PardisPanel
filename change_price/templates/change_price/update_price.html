@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load change_price_tags %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card bg-dark border-gold">
+        <div class="card-header bg-dark border-bottom-gold">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-gold">Update Price - {{ price_type.name }}</h5>
+                <a href="{% url 'change_price:price_history' price_type.id %}" 
+                   class="btn btn-sm btn-outline-gold">
+                    <i class="fas fa-history me-1"></i>View History
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if latest_price %}
+            <div class="alert bg-dark border-info text-light mb-4">
+                <h6 class="text-info mb-2">Current Price:</h6>
+                <div class="row">
+                    <div class="col-12">
+                        <small>Price: <span class="text-gold">{{ latest_price.price }}</span></small>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <small class="text-muted">
+                        Last updated: 
+                        <span>{{ latest_price.updated_at|date:"F d, Y H:i" }}</span>
+                        {% if latest_price.updated_at|to_jalali:"short" %}
+                            <span class="ms-2">/ {{ latest_price.updated_at|to_jalali:"short" }}</span>
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label text-gold">Price</label>
+                        {{ form.price }}
+                        {% if form.price.errors %}
+                        <div class="text-danger small mt-1">{{ form.price.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-gold">Notes</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                        <div class="text-danger small mt-1">{{ form.notes.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between gap-3 mt-4">
+                    <a href="{% url 'dashboard:home' %}" class="btn btn-secondary-gold flex-grow-1">
+                        <i class="fas fa-arrow-left me-1"></i>Back
+                    </a>
+                    <button type="submit" class="btn btn-gold flex-grow-1">
+                        <i class="fas fa-save me-1"></i>Update Price
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load special_price_tags %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card bg-dark border-gold">
+        <div class="card-header bg-dark border-bottom-gold">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-gold">Special Price History - {{ special_price_type.name }}</h5>
+                <a href="{% url 'special_price:update_price' special_price_type.id %}" 
+                   class="btn btn-sm btn-outline-gold">
+                    <i class="fas fa-edit me-1"></i>Update Special Price
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if histories %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Price</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for history in histories %}
+                        <tr>
+                            <td>
+                                <div class="dual-date">
+                                    <span>{{ history.created_at|date:"F d, Y H:i" }}</span>
+                                    {% if history.created_at|to_jalali:"short" %}
+                                        <span class="ms-2 text-white-50">/ {{ history.created_at|to_jalali:"short" }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="text-gold">{{ history.price }}</td>
+                            <td>
+                                {% if history.notes %}
+                                <small>{{ history.notes }}</small>
+                                {% else %}
+                                <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-history fa-3x text-gold mb-3"></i>
+                <p class="text-gold">No special price history available</p>
+            </div>
+            {% endif %}
+
+            <div class="mt-4">
+                <a href="{% url 'special_price:dashboard' %}" class="btn btn-secondary-gold">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

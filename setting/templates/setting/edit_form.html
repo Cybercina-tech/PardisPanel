@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}{% if form_type == 'bot' %}Edit Bot{% else %}Edit Channel{% endif %} - Settings{% endblock %}
+
+{% block content %}
+<style>
+    .text-gold {
+        color: var(--gold-primary) !important;
+    }
+    
+    .theme-card-bg {
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+        border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    }
+    
+    .theme-header-bg {
+        background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%) !important;
+        border-bottom: 1px solid rgba(212, 175, 55, 0.3) !important;
+    }
+    
+    .theme-input {
+        background-color: #1a1a1a !important;
+        border: 1px solid rgba(212, 175, 55, 0.3) !important;
+        color: #e9ecef !important;
+    }
+    
+    .theme-input:focus {
+        background-color: #1a1a1a !important;
+        border-color: #D4AF37 !important;
+        box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25) !important;
+        color: #e9ecef !important;
+    }
+    
+    .btn-gold {
+        background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%) !important;
+        border: 1px solid #D4AF37 !important;
+        color: #000 !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-gold:hover {
+        background: linear-gradient(135deg, #FFD700 0%, #D4AF37 100%) !important;
+        border-color: #FFD700 !important;
+        box-shadow: 0 6px 12px rgba(212, 175, 55, 0.3);
+        transform: translateY(-2px);
+        color: #000 !important;
+    }
+    
+    .btn-outline-gold {
+        border: 1px solid #D4AF37 !important;
+        color: #D4AF37 !important;
+        background: transparent !important;
+    }
+    
+    .btn-outline-gold:hover {
+        background: #D4AF37 !important;
+        color: #000 !important;
+    }
+    
+    .form-check-input:checked {
+        background-color: #D4AF37;
+        border-color: #D4AF37;
+    }
+</style>
+
+<div class="py-4">
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h1 class="text-gold fw-bold mb-2">
+            <i class="fas fa-edit me-2"></i>
+            {% if form_type == 'bot' %}
+                Edit Bot: {{ bot.name }}
+            {% else %}
+                Edit Channel: {{ channel.name }}
+            {% endif %}
+        </h1>
+        <p class="text-white-50 mb-0">
+            <a href="{% url 'setting:settings' %}" class="text-gold text-decoration-none">
+                <i class="fas fa-arrow-left me-1"></i>Back to Settings
+            </a>
+        </p>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="card shadow-lg border-0 rounded-4 theme-card-bg">
+        <div class="card-header py-4 theme-header-bg border-0 rounded-top-4">
+            <h3 class="mb-0 text-gold fw-bold">
+                <i class="fas fa-{% if form_type == 'bot' %}robot{% else %}broadcast-tower{% endif %} me-2"></i>
+                {% if form_type == 'bot' %}Bot Details{% else %}Channel Details{% endif %}
+            </h3>
+        </div>
+        <div class="card-body p-4">
+            <form method="POST" novalidate>
+                {% csrf_token %}
+                
+                {% if form_type == 'bot' %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold text-gold">
+                                {{ form.name.label }}
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block text-danger">
+                                    {{ form.name.errors|striptags }}
+                                </div>
+                            {% endif %}
+                            {% if form.name.help_text %}
+                                <small class="form-text text-white-50">{{ form.name.help_text }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.token.id_for_label }}" class="form-label fw-semibold text-gold">
+                                {{ form.token.label }}
+                            </label>
+                            {{ form.token }}
+                            {% if form.token.errors %}
+                                <div class="invalid-feedback d-block text-danger">
+                                    {{ form.token.errors|striptags }}
+                                </div>
+                            {% endif %}
+                            {% if form.token.help_text %}
+                                <small class="form-text text-white-50">{{ form.token.help_text }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            {{ form.is_active }}
+                            <label class="form-check-label text-gold fw-semibold ms-2" for="{{ form.is_active.id_for_label }}">
+                                {{ form.is_active.label }}
+                            </label>
+                        </div>
+                        {% if form.is_active.errors %}
+                            <div class="invalid-feedback d-block text-danger">
+                                {{ form.is_active.errors|striptags }}
+                            </div>
+                        {% endif %}
+                        {% if form.is_active.help_text %}
+                            <small class="form-text text-white-50 d-block">{{ form.is_active.help_text }}</small>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.bot.id_for_label }}" class="form-label fw-semibold text-gold">
+                                {{ form.bot.label }}
+                            </label>
+                            {{ form.bot }}
+                            {% if form.bot.errors %}
+                                <div class="invalid-feedback d-block text-danger">
+                                    {{ form.bot.errors|striptags }}
+                                </div>
+                            {% endif %}
+                            {% if form.bot.help_text %}
+                                <small class="form-text text-white-50">{{ form.bot.help_text }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label fw-semibold text-gold">
+                                {{ form.name.label }}
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block text-danger">
+                                    {{ form.name.errors|striptags }}
+                                </div>
+                            {% endif %}
+                            {% if form.name.help_text %}
+                                <small class="form-text text-white-50">{{ form.name.help_text }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="{{ form.chat_id.id_for_label }}" class="form-label fw-semibold text-gold">
+                                {{ form.chat_id.label }}
+                            </label>
+                            {{ form.chat_id }}
+                            {% if form.chat_id.errors %}
+                                <div class="invalid-feedback d-block text-danger">
+                                    {{ form.chat_id.errors|striptags }}
+                                </div>
+                            {% endif %}
+                            {% if form.chat_id.help_text %}
+                                <small class="form-text text-white-50">{{ form.chat_id.help_text }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label fw-semibold text-gold d-block">
+                                {{ form.is_active.label }}
+                            </label>
+                            <div class="form-check form-switch">
+                                {{ form.is_active }}
+                                <label class="form-check-label text-white-50 ms-2" for="{{ form.is_active.id_for_label }}">
+                                    Active
+                                </label>
+                            </div>
+                            {% if form.is_active.errors %}
+                                <div class="invalid-feedback d-block text-danger">
+                                    {{ form.is_active.errors|striptags }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+                
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-gold">
+                        <i class="fas fa-save me-2"></i>Save Changes
+                    </button>
+                    <a href="{% url 'setting:settings' %}" class="btn btn-outline-gold">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load special_price_tags %}
+
+{% block title %}Finalize Special Price: {{ special_price_type.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-0 text-gold">
+                        <i class="fas fa-star me-2"></i>Finalize: {{ special_price_type.name }}
+                    </h1>
+                    <p class="text-white-50 mt-2">Review and publish special price to Telegram channel</p>
+                </div>
+                <a href="{% url 'finalize:dashboard' %}" class="btn btn-outline-gold">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+            <hr class="border-gold">
+        </div>
+    </div>
+
+    <!-- Special Price Preview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark border-gold">
+                <div class="card-header bg-black-secondary border-bottom-gold">
+                    <h5 class="card-title mb-0 text-gold">
+                        <i class="fas fa-info-circle me-2"></i>Special Price Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="text-gold-light small">Special Price Type</label>
+                                <p class="text-white mb-0">{{ special_price_type.name }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-gold-light small">Currency Pair</label>
+                                <p class="text-white mb-0">
+                                    {{ special_price_type.source_currency.code }} / {{ special_price_type.target_currency.code }}
+                                </p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-gold-light small">Trade Type</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-secondary">{{ special_price_type.get_trade_type_display }}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="text-gold-light small">Price</label>
+                                <p class="text-gold fw-bold fs-4 mb-0">{{ special_price_history.price|floatformat:2 }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-gold-light small">Last Updated</label>
+                                <p class="text-white-50 small mb-0">
+                                    <div class="dual-date">
+                                        <span>{{ special_price_history.updated_at|date:"M d, Y H:i" }}</span>
+                                        {% if special_price_history.updated_at|to_jalali:"short" %}
+                                            <span class="ms-2">/ {{ special_price_history.updated_at|to_jalali:"short" }}</span>
+                                        {% endif %}
+                                    </div>
+                                </p>
+                            </div>
+                            {% if special_price_history.notes %}
+                            <div class="mb-3">
+                                <label class="text-gold-light small">Notes</label>
+                                <p class="text-white-50 mb-0">{{ special_price_history.notes }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if is_already_finalized %}
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Note:</strong> This special price has already been finalized on 
+                        {{ existing_finalization.finalized_at|date:"M d, Y H:i" }}.
+                        You can still finalize it again to publish an updated version.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Finalization Form -->
+    <div class="row">
+        <div class="col-12 col-md-8 mx-auto">
+            <div class="card bg-dark border-gold">
+                <div class="card-header bg-black-secondary border-bottom-gold">
+                    <h5 class="card-title mb-0 text-gold">
+                        <i class="fas fa-paper-plane me-2"></i>Publish to Telegram
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'finalize:finalize_special_price' special_price_history.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="channel_id" class="form-label text-gold">
+                                <i class="fas fa-broadcast-tower me-2"></i>Telegram Channel
+                            </label>
+                            <select name="channel_id" id="channel_id" class="form-select theme-input" required>
+                                <option value="">-- Select a channel --</option>
+                                {% for channel in channels %}
+                                <option value="{{ channel.id }}">
+                                    {{ channel.name }} ({{ channel.chat_id }}) - Bot: {{ channel.bot.name }}
+                                </option>
+                                {% empty %}
+                                <option value="" disabled>No active channels available</option>
+                                {% endfor %}
+                            </select>
+                            {% if not channels %}
+                            <div class="form-text text-warning">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                No active Telegram channels found. Please configure channels in Settings.
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label text-gold">
+                                <i class="fas fa-sticky-note me-2"></i>Notes (Optional)
+                            </label>
+                            <textarea name="notes" id="notes" class="form-control theme-input" rows="3" 
+                                      placeholder="Add any notes about this finalization..."></textarea>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Note:</strong> This special price will be published individually to the selected Telegram channel. 
+                            Special prices are posted one at a time, not in bulk.
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'finalize:dashboard' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-gold" {% if not channels %}disabled{% endif %}>
+                                <i class="fas fa-check-circle me-1"></i>Finalize & Publish
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Publication Info -->
+    <div class="row mt-4">
+        <div class="col-12 col-md-8 mx-auto">
+            <div class="card bg-dark border-gold">
+                <div class="card-header bg-black-secondary border-bottom-gold">
+                    <h5 class="card-title mb-0 text-gold">
+                        <i class="fas fa-image me-2"></i>Image Publication
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="bg-black-secondary p-3 rounded border border-light-gold text-white-50 small">
+                        <p class="mb-3">
+                            A dedicated special-price card will be rendered and sent as an image. Captions and buttons
+                            come from the Telegram defaults configured for the bot.
+                        </p>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><i class="fas fa-check text-gold me-2"></i>Price, pair, and trade type are baked into the visual layout.</li>
+                            <li class="mb-2"><i class="fas fa-check text-gold me-2"></i>Notes appear inside the image when provided.</li>
+                            <li class="mb-0"><i class="fas fa-check text-gold me-2"></i>Adjust branding anytime via the <strong>Template Editor</strong>.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-gold {
+        border-color: var(--gold-primary) !important;
+    }
+    
+    .border-light-gold {
+        border-color: rgba(212, 175, 55, 0.2) !important;
+    }
+    
+    .bg-black-secondary {
+        background-color: var(--black-secondary) !important;
+    }
+    
+    .btn-gold {
+        background-color: var(--gold-primary);
+        border-color: var(--gold-primary);
+        color: var(--black-primary);
+        font-weight: 600;
+    }
+    
+    .btn-gold:hover {
+        background-color: var(--gold-dark);
+        border-color: var(--gold-dark);
+        color: var(--black-primary);
+    }
+    
+    .btn-outline-gold {
+        background-color: transparent;
+        border-color: var(--gold-primary);
+        color: var(--gold-primary);
+        font-weight: 600;
+    }
+    
+    .btn-outline-gold:hover {
+        background-color: var(--gold-primary);
+        border-color: var(--gold-primary);
+        color: var(--black-primary);
+    }
+    
+    .theme-input {
+        background-color: var(--black-secondary);
+        border-color: var(--black-light);
+        color: #e0e0e0;
+    }
+    
+    .theme-input:focus {
+        background-color: var(--black-secondary);
+        border-color: var(--gold-primary);
+        color: #e0e0e0;
+        box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+    }
+    
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.5) !important;
+    }
+    
+    .text-gold-light {
+        color: rgba(212, 175, 55, 0.7) !important;
+    }
+    
+    .card {
+        border: 1px solid var(--black-light);
+    }
+    
+    .card-header {
+        border-bottom: 1px solid var(--black-light);
+    }
+    
+    .dual-date {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .dual-date span {
+        white-space: nowrap;
+    }
+    
+    .border-bottom-gold {
+        border-bottom-color: var(--gold-primary) !important;
+    }
+    
+    .alert-warning {
+        background-color: rgba(212, 175, 55, 0.1) !important;
+        border-color: var(--gold-primary) !important;
+        color: var(--gold-primary) !important;
+    }
+    
+    .alert-info {
+        background-color: rgba(33, 150, 243, 0.1) !important;
+        border-color: rgba(33, 150, 243, 0.3) !important;
+        color: rgba(33, 150, 243, 0.9) !important;
+    }
+</style>
+{% endblock %}
+
