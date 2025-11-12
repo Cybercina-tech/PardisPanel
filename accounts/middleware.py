@@ -15,12 +15,6 @@ class LoginRequiredMiddleware:
     def __call__(self, request):
         path = request.path_info
         if not request.user.is_authenticated:
-            if not (
-                path.startswith(self.login_url)
-                or path.startswith('/admin/')
-                or path.startswith('/static/')
-                or path.startswith('/media/')
-                or path == '/deploy.php'
-            ):
+            if not (path.startswith(self.login_url) or path.startswith('/admin/') or path.startswith('/static/') or path.startswith('/media/')):
                 return redirect(self.login_url)
         return self.get_response(request)
