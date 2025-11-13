@@ -118,8 +118,9 @@ FARSI_WEEKDAYS = {
 FARSI_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
 EN_DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
 
-ASSETS_ROOT = Path(settings.BASE_DIR) / "assets"
-FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", ASSETS_ROOT / "fonts"))
+STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
+IMAGE_ROOT = STATIC_ROOT_DIR / "img"
+FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", STATIC_ROOT_DIR / "fonts"))
 LEGACY_BACKGROUNDS = getattr(settings, "LEGACY_CATEGORY_BACKGROUNDS", {})
 
 
@@ -198,7 +199,7 @@ def _resolve_background_for_category(category) -> Path:
     )
 
     if background_rel:
-        path = ASSETS_ROOT / background_rel
+        path = IMAGE_ROOT / background_rel
         if path.exists():
             return path
 
@@ -207,12 +208,12 @@ def _resolve_background_for_category(category) -> Path:
         return rotating
 
     raise FileNotFoundError(
-        "No legacy price theme background found in assets/price_theme."
+        "No legacy price theme background found in static/img/price_theme."
     )
 
 
 def _get_rotating_background():
-    price_theme_dir = ASSETS_ROOT / "price_theme"
+    price_theme_dir = IMAGE_ROOT / "price_theme"
     files = sorted(
         price_theme_dir.glob("*.png"),
         key=lambda path: path.stem.zfill(4),

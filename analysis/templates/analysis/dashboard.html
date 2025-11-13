@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Hub{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-0pCuwcZFgPDFoGCGuAycbzh144uvEca/0Vrz1IFXpgwY/ptvO52zJQA2Me5Bjq4U" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.min.js" integrity="sha384-2nMaasa7xwa3bPTsp9SWZuvLaYGu9o3z7C9Z1ONTpMtJJTnKCiw0j5djPwO1smim" crossorigin="anonymous"></script>
+<style>
+    .insight-card {
+        border: none;
+        border-radius: 16px;
+        background: linear-gradient(145deg, rgba(37, 99, 235, 0.08), rgba(99, 102, 241, 0.12));
+        color: var(--bs-body-color);
+    }
+
+    .insight-card .badge {
+        font-size: 0.75rem;
+        letter-spacing: 0.02em;
+    }
+
+    .price-card {
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 14px;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        background-color: var(--bs-body-bg);
+    }
+
+    .price-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px -24px rgba(15, 23, 42, 0.45);
+    }
+
+    .price-metric {
+        font-size: clamp(1.4rem, 2vw, 1.75rem);
+        font-weight: 700;
+    }
+
+    .chart-card {
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background-color: var(--bs-body-bg);
+    }
+
+    .trend-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.25rem 0.65rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .trend-chip.up {
+        background: rgba(34, 197, 94, 0.12);
+        color: #16a34a;
+    }
+
+    .trend-chip.down {
+        background: rgba(239, 68, 68, 0.12);
+        color: #dc2626;
+    }
+
+    .trend-chip.flat {
+        background: rgba(148, 163, 184, 0.12);
+        color: #475569;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="mb-4">
+    <div class="row g-4 align-items-end">
+        <div class="col-lg-8">
+            <div class="insight-card p-4 h-100">
+                <div class="d-flex justify-content-between flex-wrap gap-3">
+                    <div>
+                        <span class="badge bg-primary-subtle text-primary fw-semibold text-uppercase">Live Market Intelligence</span>
+                        <h1 class="mt-3 mb-2 display-6 fw-semibold">Analysis Hub</h1>
+                        <p class="mb-0 fs-6 text-secondary">
+                            Track market momentum, spot anomalies, and uncover trends across every price stream in real time.
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">Snapshot updated</small>
+                        <div class="fs-5 fw-semibold">{{ generated_at|date:"M j, Y H:i" }}</div>
+                        <small class="text-muted">{{ generated_at|timesince }} ago</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="chart-card p-4 h-100">
+                <h5 class="fw-semibold mb-3">Top Movers</h5>
+                {% if top_movers %}
+                    <ul class="list-unstyled mb-0">
+                        {% for mover in top_movers %}
+                            <li class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <div class="fw-semibold">{{ mover.pair }} • {{ mover.trade }}</div>
+                                    <small class="text-muted">{{ mover.category }}</small>
+                                </div>
+                                <span class="trend-chip {% if mover.change_percent > 0 %}up{% elif mover.change_percent < 0 %}down{% else %}flat{% endif %}">
+                                    <i class="fas {% if mover.change_percent > 0 %}fa-arrow-trend-up{% elif mover.change_percent < 0 %}fa-arrow-trend-down{% else %}fa-minus{% endif %}"></i>
+                                    {% if mover.change_percent is not None %}
+                                        {{ mover.change_percent|floatformat:2 }}%
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted mb-0">We will highlight momentum once enough price history is recorded.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-5">
+    <div class="row g-4">
+        {% for card in latest_cards %}
+            <div class="col-xl-3 col-lg-4 col-md-6">
+                <article class="price-card p-4 h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="fw-semibold">{{ card.pair }}</div>
+                            <small class="text-muted">{{ card.category }} • {{ card.trade }}</small>
+                        </div>
+                        <span class="trend-chip {% if card.change_percent > 0 %}up{% elif card.change_percent < 0 %}down{% else %}flat{% endif %}">
+                            <i class="fas {% if card.change_percent > 0 %}fa-arrow-up-right{% elif card.change_percent < 0 %}fa-arrow-down-right{% else %}fa-minus{% endif %}"></i>
+                            {% if card.change_percent is not None %}
+                                {{ card.change_percent|floatformat:2 }}%
+                            {% else %}
+                                —
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="price-metric">{{ card.latest_price|floatformat:2 }}</div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <small class="text-muted">Last update</small>
+                        <small class="text-muted">{{ card.timestamp|timesince }} ago</small>
+                    </div>
+                </article>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info mb-0">
+                    No price history is available yet. As soon as data streams in, we will render rich insights here.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="mb-5">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="chart-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-semibold mb-1">Price Trajectories</h5>
+                        <small class="text-muted">30-day movement per instrument</small>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge bg-secondary-subtle text-secondary">Zoom & drag</span>
+                    </div>
+                </div>
+                <canvas id="priceTimelineChart" height="280"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="chart-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="fw-semibold mb-1">Category Pulse</h5>
+                        <small class="text-muted">Average price by category</small>
+                    </div>
+                </div>
+                <canvas id="categorySummaryChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+{{ timeline_data_json|json_script:"analysis-timeline-data" }}
+{{ category_summary_json|json_script:"analysis-category-data" }}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const timelineData = JSON.parse(document.getElementById("analysis-timeline-data").textContent || "[]");
+        const categoryData = JSON.parse(document.getElementById("analysis-category-data").textContent || "[]");
+
+        const timelineCtx = document.getElementById("priceTimelineChart");
+        if (timelineCtx && timelineData.length) {
+            new Chart(timelineCtx, {
+                type: "line",
+                data: {
+                    datasets: timelineData.map(dataset => ({
+                        ...dataset,
+                        parsing: false,
+                        pointRadius: 0,
+                        pointHitRadius: 8,
+                        segment: {
+                            borderDash: ctx => ctx.p1DataIndex % 2 === 0 ? [] : [6, 6],
+                        },
+                    })),
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: "nearest",
+                    },
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                usePointStyle: true,
+                            },
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: context => {
+                                    const value = context.parsed.y ?? 0;
+                                    return `${context.dataset.label}: ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                                },
+                            },
+                        },
+                    },
+                    scales: {
+                        x: {
+                            type: "time",
+                            time: {
+                                unit: "day",
+                                tooltipFormat: "MMM d, HH:mm",
+                            },
+                            grid: { display: false },
+                        },
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: value => value.toLocaleString(),
+                            },
+                        },
+                    },
+                },
+            });
+        } else if (timelineCtx) {
+            timelineCtx.closest(".chart-card").innerHTML = '<div class="text-muted">Not enough price history to display trajectories yet.</div>';
+        }
+
+        const categoryCtx = document.getElementById("categorySummaryChart");
+        if (categoryCtx && categoryData.length) {
+            const labels = categoryData.map(item => item.category);
+            const averages = categoryData.map(item => item.average_price ?? 0);
+
+            new Chart(categoryCtx, {
+                type: "bar",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: "Average price",
+                            data: averages,
+                            backgroundColor: "rgba(56, 189, 248, 0.35)",
+                            borderColor: "rgba(14, 165, 233, 0.85)",
+                            borderRadius: 12,
+                            borderWidth: 1.2,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: context => {
+                                    const value = context.parsed.y ?? 0;
+                                    return `Average: ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                                },
+                            },
+                        },
+                    },
+                    scales: {
+                        x: {
+                            ticks: { maxRotation: 0, minRotation: 0 },
+                            grid: { display: false },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: value => value.toLocaleString(),
+                            },
+                        },
+                    },
+                },
+            });
+        } else if (categoryCtx) {
+            categoryCtx.closest(".chart-card").innerHTML = '<div class="text-muted">No categorical insights yet. Make sure prices are recorded for each category.</div>';
+        }
+    });
+</script>
+{% endblock %}
+

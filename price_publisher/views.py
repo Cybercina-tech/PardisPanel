@@ -32,10 +32,12 @@ def template_dashboard(request):
         .filter(price_template__isnull=True)
     )
 
-    asset_root = Path(settings.BASE_DIR) / "assets"
+    static_root = Path(settings.BASE_DIR) / "static"
+    image_root = static_root / "img"
+    font_root = static_root / "fonts"
 
     def _collect_assets(subdir: str, patterns: tuple[str, ...] = ("*.png", "*.jpg", "*.jpeg", "*.webp")):
-        folder = asset_root / subdir
+        folder = image_root / subdir
         if not folder.exists():
             return []
         files: list[str] = []
@@ -46,10 +48,10 @@ def template_dashboard(request):
 
     def _collect_root(patterns: tuple[str, ...] = ("*.png", "*.jpg", "*.jpeg", "*.webp")):
         files: list[str] = []
-        if not asset_root.exists():
+        if not image_root.exists():
             return files
         for pattern in patterns:
-            for file in sorted(asset_root.glob(pattern)):
+            for file in sorted(image_root.glob(pattern)):
                 files.append(file.name)
         return files
 
@@ -60,10 +62,10 @@ def template_dashboard(request):
         "general": _collect_root(),
         "fonts": sorted(
             (Path("fonts") / font.name).as_posix()
-            for font in (asset_root / "fonts").glob("*")
+            for font in font_root.glob("*")
             if font.is_file()
         )
-        if (asset_root / "fonts").exists()
+        if font_root.exists()
         else [],
     }
 

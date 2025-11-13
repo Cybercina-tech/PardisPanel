@@ -12,8 +12,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 from price_publisher.services.image_renderer import RenderedPriceImage
 
-ASSETS_ROOT = Path(settings.BASE_DIR) / "assets"
-FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", ASSETS_ROOT / "fonts"))
+STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
+IMAGE_ROOT = STATIC_ROOT_DIR / "img"
+FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", STATIC_ROOT_DIR / "fonts"))
 
 BACKGROUND_RELATIVE_PATH = Path("offer") / "tether_buy_sell.png"
 
@@ -128,10 +129,10 @@ def render_tether_board(
     price_items: Iterable[Tuple],
     timestamp,
 ) -> RenderedPriceImage:
-    background_path = ASSETS_ROOT / BACKGROUND_RELATIVE_PATH
+    background_path = IMAGE_ROOT / BACKGROUND_RELATIVE_PATH
     if not background_path.exists():
         raise FileNotFoundError(
-            "Tether offer background missing at assets/offer/tether_buy_sell.png."
+            "Tether offer background missing at static/img/offer/tether_buy_sell.png."
         )
 
     image = Image.open(background_path).convert("RGBA")

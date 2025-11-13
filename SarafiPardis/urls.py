@@ -38,6 +38,7 @@ urlpatterns = [
     path("price-publisher/", include("price_publisher.urls", namespace="price_publisher")),
     path("template-editor/", include("template_editor.frontend_urls", namespace="template_editor_frontend")),
     path("api/", include("template_editor.urls", namespace="template_editor")),
+    path("analysis/", include("analysis.urls", namespace="analysis")),
 ]
 
 if settings.DEBUG:

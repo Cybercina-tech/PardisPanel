@@ -20,65 +20,66 @@
     </div>
 
     <!-- Categories Grid -->
-    <div class="row">
+    <div class="row g-4 price-dashboard-grid">
         {% for category in categories %}
-        <div class="col-md-6 mb-4">
-            <div class="card bg-dark border-gold h-100">
+        <div class="col-md-6">
+            <div class="card bg-dark border-gold h-100 price-dashboard-card">
                 <div class="card-header bg-black-secondary border-bottom-gold">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0 text-gold">{{ category.name }}</h5>
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <h5 class="card-title mb-0 text-gold" dir="auto">{{ category.name }}</h5>
                         <div>
                             <a href="{% url 'change_price:update_category_prices' category.id %}" 
-                               class="btn btn-sm btn-outline-light border-gold text-gold">
-                                <i class="fas fa-edit me-1"></i>Update All Prices
+                               class="btn btn-outline-light border-gold text-gold price-action-btn">
+                                <i class="fas fa-edit me-1"></i>
+                                <span class="text-nowrap">Update All Prices</span>
                             </a>
                         </div>
                     </div>
                 </div>
                 <div class="card-body p-0">
-                    <!-- Price Types List -->
-                    <div class="list-group list-group-flush">
+                    <div class="price-list">
                         {% for price_type in category.price_types.all %}
-                        <div class="list-group-item bg-dark border-light-gold">
-                            <div class="row align-items-center">
-                                <div class="col">
+                        <div class="price-list-item border-light-gold">
+                            <div class="price-item">
+                                <div class="price-info" dir="auto">
                                     <h6 class="mb-1 text-gold">{{ price_type.name }}</h6>
-                                    <div class="small">
-                                        <span class="text-gold-light me-3">{{ price_type.source_currency.code }} / {{ price_type.target_currency.code }}</span>
+                                    <div class="small d-flex flex-wrap align-items-center gap-2 text-wrap">
+                                        <span class="text-gold-light">{{ price_type.source_currency.code }} / {{ price_type.target_currency.code }}</span>
                                         <span class="badge bg-light-gold text-dark">{{ price_type.get_trade_type_display }}</span>
                                     </div>
                                 </div>
-                                <div class="col-auto">
+                                <div class="price-meta">
                                     {% with latest_price=price_type.price_histories.first %}
                                     {% if latest_price %}
-                                    <div class="text-end small">
-                                        <div class="text-gold mb-1">Price: {{ latest_price.price }}</div>
-                                        <div class="text-gold small">
-                                            Last update: 
+                                    <div class="price-meta-inner">
+                                        <div class="text-gold fw-semibold mb-1 text-nowrap">
+                                            <span>{{ latest_price.price }}</span>
+                                        </div>
+                                        <div class="text-gold small meta-time">
                                             <span>{{ latest_price.updated_at|date:"F d, Y H:i" }}</span>
                                             {% if latest_price.updated_at|to_jalali:"short" %}
-                                                <span class="ms-1 text-white-50">/ {{ latest_price.updated_at|to_jalali:"short" }}</span>
+                                                <span class="text-white-50 ms-1">/ {{ latest_price.updated_at|to_jalali:"short" }}</span>
                                             {% endif %}
                                         </div>
                                     </div>
                                     {% else %}
-                                    <div class="text-gold">No prices set</div>
+                                    <div class="text-gold small text-nowrap">No prices set</div>
                                     {% endif %}
                                     {% endwith %}
                                 </div>
-                                <div class="col-auto">
-                                    <div class="btn-group">
-                                        <a href="{% url 'change_price:update_price' price_type.id %}" 
-                                           class="btn btn-sm btn-outline-light border-gold text-gold" 
-                                           title="Update Price">
-                                            <i class="fas fa-edit fa-xs"></i>
-                                        </a>
-                                        <a href="{% url 'change_price:price_history' price_type.id %}" 
-                                           class="btn btn-sm btn-outline-light border-gold text-gold" 
-                                           title="View History">
-                                            <i class="fas fa-history fa-xs"></i>
-                                        </a>
-                                    </div>
+                                <div class="price-actions">
+                                    <a href="{% url 'change_price:update_price' price_type.id %}" 
+                                       class="btn btn-outline-light border-gold text-gold price-action-btn" 
+                                       title="Update Price">
+                                        <i class="fas fa-edit me-1"></i>
+                                        <span class="text-nowrap">Update</span>
+                                    </a>
+                                    <a href="{% url 'change_price:price_history' price_type.id %}" 
+                                       class="btn btn-outline-light border-gold text-gold price-action-btn" 
+                                       title="View History">
+                                        <i class="fas fa-history me-1"></i>
+                                        <span class="text-nowrap">History</span>
+                                    </a>
                                 </div>
                             </div>
                         </div>

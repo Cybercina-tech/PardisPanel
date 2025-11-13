@@ -27,12 +27,14 @@ INSTALLED_APPS = [
     'finalize',
     'price_publisher',
     'template_editor',
+    'analysis',
     # third-party apps
     'rest_framework',
 
 ]
 
 MIDDLEWARE = [
+    'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -44,6 +46,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Custom 404 middleware to show custom 404 page even when DEBUG=True
     'SarafiPardis.middleware.Custom404Middleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'SarafiPardis.urls'
@@ -76,6 +79,22 @@ DATABASES = {
     }
 }
 
+# Caching
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / 'cache',
+        'TIMEOUT': 300,
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        },
+    }
+}
+
+CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_SECONDS = 300
+CACHE_MIDDLEWARE_KEY_PREFIX = 'pardispanel'
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -98,7 +117,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',  # Location of static files in development
-    BASE_DIR / 'assets',  # Shared template assets (backgrounds, fonts, presets)
 ]
 STATIC_ROOT = BASE_DIR / 'public' / 'staticfiles'  # Collection location for files in production
 
@@ -109,8 +127,8 @@ MEDIA_ROOT = BASE_DIR / 'public' / 'media'
 # -----------------------------
 # Template & Rendering extras
 # -----------------------------
-TEMPLATE_EDITOR_DEFAULT_FONT = str(BASE_DIR / 'assets' / 'fonts' / 'YekanBakh.ttf')
-PRICE_RENDERER_FONT_ROOT = BASE_DIR / 'assets' / 'fonts'
+TEMPLATE_EDITOR_DEFAULT_FONT = str(BASE_DIR / 'static' / 'fonts' / 'YekanBakh.ttf')
+PRICE_RENDERER_FONT_ROOT = BASE_DIR / 'static' / 'fonts'
 LEGACY_CATEGORY_BACKGROUNDS = {
     "pound": "price_theme/1.png",
     "gbp": "price_theme/1.png",

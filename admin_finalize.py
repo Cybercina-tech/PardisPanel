@@ -81,7 +81,7 @@ FINAL_CONFIRM_ACTIONS = [
 
 # تعریف مسیر و نام فایل عکس
 IMAGE_FILENAME = "prices.png"
-IMAGE_PATH = Path(getcwd()) / "assets" / IMAGE_FILENAME
+IMAGE_PATH = Path(getcwd()) / "static" / "img" / IMAGE_FILENAME
 
 def get_inline_keyboard(buttons, callback_prefix=""):
     """
