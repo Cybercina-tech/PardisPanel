@@ -11,12 +11,12 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h1 class="h3 mb-0 text-gold">
-                        <i class="fas fa-check-circle me-2"></i>Finalize: {{ category.name }}
+                        <i class="bi bi-check-circle me-2"></i>Finalize: {{ category.name }}
                     </h1>
                     <p class="text-white-50 mt-2">Review and publish prices to Telegram channel</p>
                 </div>
                 <a href="{% url 'finalize:dashboard' %}" class="btn btn-outline-gold">
-                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                    <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
                 </a>
             </div>
             <hr class="border-gold">
@@ -29,7 +29,7 @@
             <div class="card bg-dark border-gold">
                 <div class="card-header bg-black-secondary border-bottom-gold">
                     <h5 class="card-title mb-0 text-gold">
-                        <i class="fas fa-list me-2"></i>Prices to Finalize
+                        <i class="bi bi-list-ul me-2"></i>Prices to Finalize
                     </h5>
                     <small class="text-white-50">{{ pending_prices|length }} price{{ pending_prices|length|pluralize }} will be published</small>
                 </div>
@@ -82,7 +82,7 @@
             <div class="card bg-dark border-gold">
                 <div class="card-header bg-black-secondary border-bottom-gold">
                     <h5 class="card-title mb-0 text-gold">
-                        <i class="fas fa-paper-plane me-2"></i>Publish to Telegram
+                        <i class="bi bi-send me-2"></i>Publish to Telegram
                     </h5>
                 </div>
                 <div class="card-body">
@@ -91,7 +91,7 @@
                         
                         <div class="mb-3">
                             <label for="channel_id" class="form-label text-gold">
-                                <i class="fas fa-broadcast-tower me-2"></i>Telegram Channel
+                                <i class="bi bi-broadcast me-2"></i>Telegram Channel
                             </label>
                             <select name="channel_id" id="channel_id" class="form-select theme-input" required>
                                 <option value="">-- Select a channel --</option>
@@ -105,7 +105,7 @@
                             </select>
                             {% if not channels %}
                             <div class="form-text text-warning">
-                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
                                 No active Telegram channels found. Please configure channels in Settings.
                             </div>
                             {% endif %}
@@ -113,24 +113,24 @@
                         
                         <div class="mb-3">
                             <label for="notes" class="form-label text-gold">
-                                <i class="fas fa-sticky-note me-2"></i>Notes (Optional)
+                                <i class="bi bi-sticky me-2"></i>Notes (Optional)
                             </label>
                             <textarea name="notes" id="notes" class="form-control theme-input" rows="3" 
                                       placeholder="Add any notes about this finalization..."></textarea>
                         </div>
                         
                         <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
+                            <i class="bi bi-info-circle me-2"></i>
                             <strong>Note:</strong> All {{ pending_prices|length }} price{{ pending_prices|length|pluralize }} in this category will be finalized and published together. 
                             Once finalized, they will not appear as pending until new prices are updated.
                         </div>
                         
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="{% url 'finalize:dashboard' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-1"></i>Cancel
+                                <i class="bi bi-x me-1"></i>Cancel
                             </a>
                             <button type="submit" class="btn btn-gold" {% if not channels %}disabled{% endif %}>
-                                <i class="fas fa-check-circle me-1"></i>Finalize & Publish
+                                <i class="bi bi-check-circle me-1"></i>Finalize & Publish
                             </button>
                         </div>
                     </form>
@@ -145,7 +145,7 @@
             <div class="card bg-dark border-gold">
                 <div class="card-header bg-black-secondary border-bottom-gold">
                     <h5 class="card-title mb-0 text-gold">
-                        <i class="fas fa-image me-2"></i>Image Publication
+                        <i class="bi bi-image me-2"></i>Image Publication
                     </h5>
                 </div>
                 <div class="card-body">
@@ -155,9 +155,9 @@
                             Captions and inline buttons are applied automatically from the default Telegram settings.
                         </p>
                         <ul class="list-unstyled mb-0">
-                            <li class="mb-2"><i class="fas fa-check text-gold me-2"></i>Numbers, currency pairs, and trade types are embedded directly in the artwork.</li>
-                            <li class="mb-2"><i class="fas fa-check text-gold me-2"></i>Images respect your brand background, logo, and watermark settings.</li>
-                            <li class="mb-0"><i class="fas fa-check text-gold me-2"></i>Need a different layout? Update the template in <strong>Template Editor</strong> and re-finalize.</li>
+                            <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Numbers, currency pairs, and trade types are embedded directly in the artwork.</li>
+                            <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Images respect your brand background, logo, and watermark settings.</li>
+                            <li class="mb-0"><i class="bi bi-check text-gold me-2"></i>Need a different layout? Update the template in <strong>Template Editor</strong> and re-finalize.</li>
                         </ul>
                     </div>
                 </div>

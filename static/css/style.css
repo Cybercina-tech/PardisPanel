@@ -27,6 +27,9 @@
     --color-surface: #FFFFFF;
     --color-surface-alt: #F0F0F0;
     --color-surface-muted: #F5F5F5;
+    --color-bg-section: #F7F7F7;         /* soft gray background for sections */
+    --color-bg-warm: #FFF8F1;            /* warm beige background */
+    --color-bg-warm-alt: #FAF5EE;        /* alternate warm beige */
     --color-navbar-bg: rgba(255, 255, 255, 0.88);
     --color-footer-bg: #F4F4F4;
     --color-heading: #333333;
@@ -36,25 +39,46 @@
     --color-border: rgba(51, 51, 51, 0.12);
     --color-border-strong: rgba(51, 51, 51, 0.18);
     --color-border-soft: rgba(51, 51, 51, 0.06);
-    --color-border-accent: rgba(90, 155, 213, 0.32);
-    --color-accent: #5A9BD5;
-    --color-accent-muted: rgba(90, 155, 213, 0.78);
-    --color-accent-soft: rgba(90, 155, 213, 0.18);
-    --color-accent-soft-strong: rgba(90, 155, 213, 0.24);
-    --color-accent-hover: #4E8CC5;
-    --color-accent-strong: #417FB6;
-    --color-accent-overlay: rgba(90, 155, 213, 0.28);
-    --color-accent-glow: rgba(90, 155, 213, 0.24);
-    --color-success: #73C2A3;
-    --color-warning: #FFB86C;
+    --color-border-accent: rgba(90, 111, 174, 0.32);
+    --color-accent: #5A6FAE;             /* muted slate blue accent */
+    --color-accent-muted: rgba(90, 111, 174, 0.78);
+    --color-accent-soft: rgba(90, 111, 174, 0.18);
+    --color-accent-soft-strong: rgba(90, 111, 174, 0.24);
+    --color-accent-hover: #6C7ECF;       /* slightly richer on hover */
+    --color-accent-strong: #4B5D96;      /* deeper for emphasis */
+    --color-accent-overlay: rgba(90, 111, 174, 0.28);
+    --color-accent-glow: rgba(90, 111, 174, 0.24);
+    --color-success: #2BA97A;            /* richer green for actions */
+    --color-success-soft: #A8D8B9;       /* soft green for backgrounds */
+    --color-warning: #F5B88A;            /* soft orange/coral */
+    --color-warning-soft: #F2A07D;       /* alternative warm orange */
+    --color-info: #79B7E7;               /* calm blue for info */
+    --color-info-strong: #5A9BD5;        /* stronger blue for buttons/links */
+    /* Additional vibrant accents for light theme */
+    --color-blue: #3A7CEB;
+    --color-blue-strong: #1F64E0;
+    --color-green: #3BBF99;
+    --color-green-strong: #2EA37F;
+    --color-coral: #F28C6B;
+    --color-coral-strong: #EA7A55;
+    /* Guideline vibrant accents */
+    --blue-primary: #007BFF;
+    --blue-primary-strong: #0056b3;     /* headers/titles */
+    --cyan-primary: #17A2B8;
+    --green-primary: #28A745;
+    --orange-primary: #FF7F50;
+    --pink-primary: #E83E8C;
+    --header-purple: #6f42c1;
+    --card-border-blue: #D0E7FF;
+    --text-strong: #212529;
     --color-danger: #D76F7A;
     --color-info: #79B7E7;
     --btn-text-on-accent: #FFFFFF;
     --btn-text-contrast: #24313D;
-    --color-secondary-btn-bg: rgba(90, 155, 213, 0.12);
-    --color-secondary-btn-border: rgba(90, 155, 213, 0.24);
-    --color-secondary-btn-hover-bg: rgba(90, 155, 213, 0.18);
-    --color-secondary-btn-hover-border: rgba(90, 155, 213, 0.32);
+    --color-secondary-btn-bg: rgba(90, 111, 174, 0.12);
+    --color-secondary-btn-border: rgba(90, 111, 174, 0.24);
+    --color-secondary-btn-hover-bg: rgba(90, 111, 174, 0.18);
+    --color-secondary-btn-hover-border: rgba(90, 111, 174, 0.32);
     --color-secondary-btn-text: #394E63;
     --color-table-row-odd: #FFFFFF;
     --color-table-row-even: #F4F4F4;
@@ -156,6 +180,21 @@ html[data-theme="light"] body {
     font-family: var(--font-family-en);
 }
 
+.text-white-50 {
+    color: var(--color-text-muted) !important;
+}
+
+/* Force readable text colors in light theme */
+html[data-theme="light"] .text-white,
+html[data-theme="light"] .text-light {
+    color: var(--color-text) !important;
+}
+
+html[data-theme="light"] .text-white-50,
+html[data-theme="light"] .text-light-50 {
+    color: var(--color-text-muted) !important;
+}
+
 .rtl {
     direction: rtl !important;
     text-align: right !important;
@@ -164,18 +203,18 @@ html[data-theme="light"] body {
 }
 
 a {
-    color: var(--color-accent);
+    color: var(--blue-primary);
     text-decoration: none;
 }
 
 a:hover,
 a:focus-visible {
-    color: var(--color-accent-hover);
+    color: var(--blue-primary-strong);
     text-decoration: underline;
     text-decoration-thickness: 2px;
     text-underline-offset: 4px;
     outline: none;
-    box-shadow: 0 2px 0 var(--color-accent);
+    box-shadow: 0 2px 0 var(--blue-primary);
 }
 
 /* Navbar */
@@ -273,6 +312,38 @@ html[data-theme="light"] main {
     padding: clamp(0.55rem, 1.8vw, 0.82rem) clamp(1.35rem, 3vw, 1.9rem);
     transition: background-color var(--transition-base), color var(--transition-base), border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
 }
+
+.btn-primary {
+    background-color: var(--blue-primary) !important;
+    border-color: var(--blue-primary) !important;
+    color: #fff !important;
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--blue-primary) 22%, transparent);
+}
+.btn-primary:hover { background-color: var(--blue-primary-strong) !important; border-color: var(--blue-primary-strong) !important; }
+
+.btn-info {
+    background-color: var(--cyan-primary) !important;
+    border-color: var(--cyan-primary) !important;
+    color: #fff !important;
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--cyan-primary) 22%, transparent);
+}
+.btn-info:hover { background-color: color-mix(in srgb, var(--cyan-primary) 85%, black) !important; }
+
+.btn-success {
+    background-color: var(--green-primary) !important;
+    border-color: var(--green-primary) !important;
+    color: #fff !important;
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--green-primary) 22%, transparent);
+}
+.btn-success:hover { background-color: color-mix(in srgb, var(--green-primary) 85%, black) !important; }
+
+.btn-orange, .btn-warning {
+    background-color: var(--orange-primary) !important;
+    border-color: var(--orange-primary) !important;
+    color: #6b3a1f !important;
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--orange-primary) 22%, transparent);
+}
+.btn-orange:hover, .btn-warning:hover { background-color: color-mix(in srgb, var(--orange-primary) 85%, black) !important; }
 
 .btn i,
 .btn svg {
@@ -573,6 +644,8 @@ html[data-theme="dark"] .navbar.scrolled {
 
 html[data-theme="light"] .card {
     background-image: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 250, 0.96) 60%, rgba(245, 245, 245, 0.98) 100%);
+    border-color: var(--card-border-blue);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--blue-primary) 10%, transparent);
 }
 
 .card:hover {
@@ -661,7 +734,7 @@ html[data-theme="light"] .card {
 }
 
 .table thead th {
-    background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 28%, transparent) 0%, transparent 100%);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 22%, transparent) 0%, transparent 100%);
     border-bottom: 1px solid var(--color-border);
     color: var(--color-heading);
     font-weight: 650;
@@ -684,7 +757,7 @@ html[data-theme="light"] .card {
 
 .table tbody tr:hover {
     background-color: var(--color-table-row-hover);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 24%, transparent);
 }
 
 .table td,
@@ -1139,17 +1212,205 @@ html[data-theme="light"] .price-list-item {
     align-items: flex-end;
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.08) 0%, rgba(0, 123, 255, 0.04) 100%);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(0, 123, 255, 0.15);
+    min-width: fit-content;
+    transition: all var(--transition-base);
+}
+
+.time-display:hover {
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.12) 0%, rgba(0, 123, 255, 0.06) 100%);
+    border-color: rgba(0, 123, 255, 0.25);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.1);
 }
 
 .time-english {
-    color: var(--color-heading);
-    font-weight: 600;
+    color: var(--blue-primary);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
 }
 
 .time-jalali {
     color: var(--color-text-muted);
-    font-size: 0.9rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+/* Mobile optimizations for time display */
+@media (max-width: 768px) {
+    .time-display {
+        padding: 0.6rem 0.85rem;
+        gap: 0.2rem;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 0.75rem;
+        align-items: flex-start;
+    }
+    
+    .time-english {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--blue-primary);
+    }
+    
+    .time-jalali {
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    /* Stack time display below title on mobile */
+    .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .time-display {
+        padding: 0.5rem 0.75rem;
+        gap: 0.15rem;
+        font-size: 0.9rem;
+    }
+    
+    .time-english {
+        font-size: 0.9rem;
+    }
+    
+    .time-jalali {
+        font-size: 0.75rem;
+    }
+}
+
+/* Dark theme styles for time display */
+html[data-theme="dark"] .time-display {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12) 0%, rgba(255, 215, 0, 0.06) 100%);
+    border-color: rgba(255, 215, 0, 0.25);
+}
+
+html[data-theme="dark"] .time-display:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.18) 0%, rgba(255, 215, 0, 0.1) 100%);
+    border-color: rgba(255, 215, 0, 0.35);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.15);
+}
+
+html[data-theme="dark"] .time-english {
+    color: var(--gold-primary);
+}
+
+html[data-theme="dark"] .time-jalali {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Light-theme section backgrounds and warm accents */
+html[data-theme="light"] .bg-section { background-color: var(--color-bg-section) !important; }
+html[data-theme="light"] .bg-section-alt { background-color: var(--color-surface-muted) !important; }
+html[data-theme="light"] .bg-warm { background-color: var(--color-bg-warm) !important; }
+html[data-theme="light"] .bg-warm-alt { background-color: var(--color-bg-warm-alt) !important; }
+
+/* Warm header option for cards in light mode */
+html[data-theme="light"] .card-header.header-warm {
+    background-color: var(--color-bg-warm);
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* Softer alert backgrounds in light mode */
+html[data-theme="light"] .alert-success {
+    background-color: color-mix(in srgb, var(--color-success-soft) 24%, white);
+    border-color: color-mix(in srgb, var(--color-success) 45%, transparent);
+    color: color-mix(in srgb, var(--color-success) 60%, black);
+}
+
+html[data-theme="light"] .alert-warning {
+    background-color: color-mix(in srgb, var(--color-warning) 20%, white);
+    border-color: color-mix(in srgb, var(--color-warning) 45%, transparent);
+    color: color-mix(in srgb, var(--color-warning) 62%, black);
+}
+
+/* Accent-driven heading helper */
+.heading-accent { color: var(--color-accent); }
+
+/* Stronger color utilities for light theme */
+html[data-theme="light"] .text-blue { color: var(--color-blue) !important; }
+html[data-theme="light"] .text-blue-strong { color: var(--color-blue-strong) !important; }
+html[data-theme="light"] .text-green { color: var(--color-green) !important; }
+html[data-theme="light"] .text-green-strong { color: var(--color-green-strong) !important; }
+html[data-theme="light"] .text-coral { color: var(--color-coral) !important; }
+
+html[data-theme="light"] .bg-blue-soft { background-color: color-mix(in srgb, var(--color-blue) 12%, white) !important; }
+html[data-theme="light"] .bg-blue { background-color: var(--color-blue) !important; color: #fff !important; }
+html[data-theme="light"] .bg-green-soft { background-color: color-mix(in srgb, var(--color-green) 12%, white) !important; }
+html[data-theme="light"] .bg-green { background-color: var(--color-green) !important; color: #fff !important; }
+html[data-theme="light"] .bg-coral-soft { background-color: color-mix(in srgb, var(--color-coral) 12%, white) !important; }
+html[data-theme="light"] .bg-coral { background-color: var(--color-coral) !important; color: #fff !important; }
+
+/* Buttons with stronger colors (overrides bootstrap defaults) */
+html[data-theme="light"] .btn-success {
+    background-color: var(--color-green) !important;
+    border-color: var(--color-green) !important;
+    color: #fff !important;
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--color-green) 24%, transparent);
+}
+html[data-theme="light"] .btn-success:hover {
+    background-color: var(--color-green-strong) !important;
+    border-color: var(--color-green-strong) !important;
+}
+
+html[data-theme="light"] .btn-info {
+    background-color: var(--color-blue) !important;
+    border-color: var(--color-blue) !important;
+    color: #fff !important;
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--color-blue) 24%, transparent);
+}
+html[data-theme="light"] .btn-info:hover {
+    background-color: var(--color-blue-strong) !important;
+    border-color: var(--color-blue-strong) !important;
+}
+
+html[data-theme="light"] .btn-warning {
+    background-color: var(--color-warning) !important;
+    border-color: var(--color-warning) !important;
+    color: #6b3a1f !important;
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--color-warning) 24%, transparent);
+}
+html[data-theme="light"] .btn-warning:hover {
+    background-color: var(--color-warning-soft) !important;
+    border-color: var(--color-warning-soft) !important;
+}
+
+/* Active menu state with richer accent */
+html[data-theme="light"] .nav-link.active {
+    background-color: color-mix(in srgb, var(--color-accent) 18%, white);
+    border: 1px solid var(--color-border-accent);
+    color: var(--color-heading) !important;
+    box-shadow: 0 12px 22px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+/* Badges with soft, theme-aware colors */
+.badge-accent {
+    background-color: color-mix(in srgb, var(--color-accent) 14%, white);
+    color: var(--color-accent);
+    border: 1px solid var(--color-border-accent);
+}
+
+.badge-success {
+    background-color: color-mix(in srgb, var(--color-success-soft) 24%, white);
+    color: color-mix(in srgb, var(--color-success) 70%, black);
+    border: 1px solid color-mix(in srgb, var(--color-success) 45%, transparent);
+}
+
+.badge-warning {
+    background-color: color-mix(in srgb, var(--color-warning) 24%, white);
+    color: color-mix(in srgb, var(--color-warning) 70%, black);
+    border: 1px solid color-mix(in srgb, var(--color-warning) 45%, transparent);
 }
 
 /* Dashboard Theme Adjustments */

@@ -251,9 +251,9 @@
         color: var(--black-primary);
     }
     
-    .text-white-50 {
-        color: rgba(255, 255, 255, 0.5) !important;
-    }
+    /* Use theme-aware muted text; only force white in dark theme */
+    .text-white-50 { color: var(--color-text-muted) !important; }
+    [data-theme="dark"] .text-white-50 { color: rgba(255, 255, 255, 0.5) !important; }
     
     .card {
         border: 1px solid var(--black-light);

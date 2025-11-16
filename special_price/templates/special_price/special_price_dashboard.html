@@ -18,7 +18,7 @@
             <hr class="border-gold">
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <a href="{% url 'special_price:add_type' %}" class="btn btn-gold">
-                    <i class="fas fa-plus me-2"></i>Add New Special Price Type
+                    <i class="bi bi-plus-lg me-2"></i>Add New Special Price Type
                 </a>
             </div>
         </div>
@@ -28,7 +28,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="alert alert-warning border-gold">
-                <i class="fas fa-exclamation-triangle me-2"></i>
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <strong>Important:</strong> Special prices are valid for up to <strong>6 hours</strong>, or until new special price types are added. After that, they will no longer be valid.
             </div>
         </div>
@@ -46,14 +46,14 @@
                             <a href="{% url 'special_price:edit_type' special_price_type.id %}" 
                                class="btn btn-outline-light border-gold text-gold price-action-btn" 
                                title="Edit Special Price Type">
-                                <i class="fas fa-cog me-1"></i>
+                                <i class="bi bi-gear me-1"></i>
                                 <span class="text-nowrap">Settings</span>
                             </a>
                             <a href="{% url 'special_price:delete_type' special_price_type.id %}" 
                                class="btn btn-danger price-action-btn" 
                                title="Delete Special Price Type"
                                onclick="return confirm('Are you sure you want to delete this special price type? This will also delete all its price history.');">
-                                <i class="fas fa-trash-alt me-1"></i>
+                                <i class="bi bi-trash me-1"></i>
                                 <span class="text-nowrap">Delete</span>
                             </a>
                         </div>
@@ -61,50 +61,50 @@
                 </div>
                 <div class="card-body price-card-body">
                     <div class="price-item border-light-gold">
-                        <div class="price-info" dir="auto">
+                                <div class="price-info" dir="auto">
                             <div class="small d-flex flex-wrap align-items-center gap-2 mb-2 mb-md-3">
-                                <span class="text-gold-light">{{ special_price_type.source_currency.code }} / {{ special_price_type.target_currency.code }}</span>
-                                <span class="badge bg-light-gold text-dark">{{ special_price_type.get_trade_type_display }}</span>
-                            </div>
-                            {% if special_price_type.description %}
+                                        <span class="text-gold-light">{{ special_price_type.source_currency.code }} / {{ special_price_type.target_currency.code }}</span>
+                                        <span class="badge bg-light-gold text-dark">{{ special_price_type.get_trade_type_display }}</span>
+                                    </div>
+                                    {% if special_price_type.description %}
                             <div class="price-description">
-                                <small class="text-white-50">{{ special_price_type.description }}</small>
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="price-meta" dir="auto">
-                            {% with latest_price=special_price_type.special_price_histories.first %}
-                            {% if latest_price %}
-                            <div class="price-meta-inner">
-                                <div class="text-gold fw-semibold price-value">
-                                    <span>{{ latest_price.price }}</span>
-                                </div>
-                                <div class="text-gold small meta-time">
-                                    <span>{{ latest_price.updated_at|date:"F d, Y H:i" }}</span>
-                                    {% if latest_price.updated_at|to_jalali:"short" %}
-                                        <span class="text-white-50 time-divider">/</span>
-                                        <span class="text-white-50">{{ latest_price.updated_at|to_jalali:"short" }}</span>
+                                        <small class="text-white-50">{{ special_price_type.description }}</small>
+                                    </div>
                                     {% endif %}
                                 </div>
-                            </div>
-                            {% else %}
-                            <div class="text-gold small text-nowrap">No prices set</div>
-                            {% endif %}
-                            {% endwith %}
-                        </div>
+                        <div class="price-meta" dir="auto">
+                                    {% with latest_price=special_price_type.special_price_histories.first %}
+                                    {% if latest_price %}
+                                    <div class="price-meta-inner">
+                                <div class="text-gold fw-semibold price-value">
+                                            <span>{{ latest_price.price }}</span>
+                                        </div>
+                                        <div class="text-gold small meta-time">
+                                            <span>{{ latest_price.updated_at|date:"F d, Y H:i" }}</span>
+                                            {% if latest_price.updated_at|to_jalali:"short" %}
+                                        <span class="text-white-50 time-divider">/</span>
+                                        <span class="text-white-50">{{ latest_price.updated_at|to_jalali:"short" }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="text-gold small text-nowrap">No prices set</div>
+                                    {% endif %}
+                                    {% endwith %}
+                                </div>
                         <div class="price-actions" dir="auto">
-                            <a href="{% url 'special_price:update_price' special_price_type.id %}" 
-                               class="btn btn-gold price-action-btn" 
-                               title="Update Price">
-                                <i class="fas fa-edit"></i>
+                                    <a href="{% url 'special_price:update_price' special_price_type.id %}" 
+                                       class="btn btn-gold price-action-btn" 
+                                       title="Update Price">
+                                        <i class="bi bi-pencil-square"></i>
                                 <span class="action-label">Update</span>
-                            </a>
-                            <a href="{% url 'special_price:price_history' special_price_type.id %}" 
-                               class="btn btn-outline-light border-gold text-gold price-action-btn" 
-                               title="View History">
-                                <i class="fas fa-history"></i>
+                                    </a>
+                                    <a href="{% url 'special_price:price_history' special_price_type.id %}" 
+                                       class="btn btn-outline-light border-gold text-gold price-action-btn" 
+                                       title="View History">
+                                        <i class="bi bi-clock-history"></i>
                                 <span class="action-label">History</span>
-                            </a>
+                                    </a>
                         </div>
                     </div>
                 </div>
@@ -113,7 +113,7 @@
         {% empty %}
         <div class="col-12">
             <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
+                <i class="bi bi-info-circle me-2"></i>
                 No special price types found. Click the "Add New Special Price Type" button above to create one.
             </div>
         </div>

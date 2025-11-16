@@ -1,29 +1,68 @@
-<footer class="footer mt-auto py-4">
+<footer class="footer mt-auto pt-5 pb-4 bg-section">
     <div class="container-fluid">
-        <div class="row align-items-center">
-            <div class="col-md-6 text-center text-md-start">
-                <div class="d-flex align-items-center justify-content-center justify-content-md-start">
-                    <div class="me-3">
-                        <i class="fas fa-gem text-gold fs-5"></i>
-                    </div>
+        <div class="row g-4">
+            <!-- Branding & Contact -->
+            <div class="col-12 col-lg-4">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-gem text-accent fs-4"></i>
                     <div>
-                        <h6 class="mb-0 text-gold fw-bold">SarafiPardis</h6>
-                        <small class="text-gold-light">Professional Financial Dashboard</small>
+                        <h6 class="mb-1 heading-accent fw-bold">SarafiPardis</h6>
+                        <small class="text-muted d-block mb-3">Professional Financial Dashboard</small>
+                        <ul class="list-unstyled mb-0 small">
+                            <li class="mb-1">
+                                <i class="bi bi-envelope me-2"></i>
+                                <a href="mailto:info@sarafipardis.co.uk" class="link-underline-opacity-0">info@sarafipardis.co.uk</a>
+                            </li>
+                            <li class="mb-1">
+                                <i class="bi bi-telephone me-2"></i>
+                                <a href="tel:+441234567890" class="link-underline-opacity-0">+44 1234 567 890</a>
+                            </li>
+                            <li class="mb-1">
+                                <i class="bi bi-geo-alt me-2"></i>
+                                <span class="text-muted">London, UK</span>
+                            </li>
+                        </ul>
+                        <div class="d-flex gap-3 mt-3">
+                            <a href="#" aria-label="Twitter" class="text-muted"><i class="bi bi-twitter fs-5"></i></a>
+                            <a href="#" aria-label="LinkedIn" class="text-muted"><i class="bi bi-linkedin fs-5"></i></a>
+                            <a href="#" aria-label="Instagram" class="text-muted"><i class="bi bi-instagram fs-5"></i></a>
+                            <a href="#" aria-label="Telegram" class="text-muted"><i class="bi bi-telegram fs-5"></i></a>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">
-                <div class="d-flex flex-column flex-sm-row align-items-center justify-content-center justify-content-md-end gap-3">
-                    <small class="text-gold-light">
-                        <i class="fas fa-clock me-1"></i>
-                        {% now "F j, Y" %}   
-                    </small>
-                    <div class="vr d-none d-sm-block"></div>
-                    <small class="text-gold-light">
-                        <i class="fas fa-copyright me-1"></i>
-                          SarafiPardis. All rights reserved.
-                    </small>
-                </div>
+
+            <!-- Quick Links -->
+            <div class="col-6 col-lg-2">
+                <h6 class="mb-3 fw-semibold">Quick Links</h6>
+                <ul class="list-unstyled small mb-0">
+                    <li class="mb-2"><a href="{% url 'dashboard:home' %}" class="link-underline-opacity-0">Home</a></li>
+                    <li class="mb-2"><a href="#" class="link-underline-opacity-0">About</a></li>
+                    <li class="mb-2"><a href="{% url 'category:category_dashboard' %}" class="link-underline-opacity-0">Categories</a></li>
+                    <li class="mb-2"><a href="{% url 'special_price:dashboard' %}" class="link-underline-opacity-0">Special Prices</a></li>
+                    <li class="mb-2"><a href="#" class="link-underline-opacity-0">Contact</a></li>
+                </ul>
+            </div>
+
+            <!-- Removed Legal & Newsletter sections as requested -->
+        </div>
+
+        <hr class="my-4 border-light">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+            <div class="small text-muted">
+                <i class="bi bi-clock me-1"></i>
+                {% now "F j, Y" %}
+            </div>
+            <div class="small text-muted text-center">
+                © SarafiPardis. All rights reserved.
+            </div>
+            <div class="d-flex align-items-center gap-3 small">
+                <span class="text-muted">Language:</span>
+                <select class="form-select form-select-sm" style="width: auto;">
+                    <option selected>English</option>
+                    <option>فارسی</option>
+                </select>
             </div>
         </div>
     </div>

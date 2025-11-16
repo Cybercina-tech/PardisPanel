@@ -10,7 +10,7 @@
             <p class="text-white mb-0">Manage product categories and their price types</p>
         </div>
         <a href="{% url 'category:add_category' %}" class="btn btn-gold">
-            <i class="fas fa-plus me-2"></i>Add New Category
+            <i class="bi bi-plus-lg me-2"></i>Add New Category
         </a>
     </div>
 
@@ -26,12 +26,12 @@
                         <a href="{% url 'category:edit_category' category.id %}" 
                            class="btn btn-sm btn-gold" 
                            title="Edit Category">
-                            <i class="fas fa-edit"></i>
+                            <i class="bi bi-pencil-square"></i>
                         </a>
                         <a href="{% url 'category:delete_category' category.id %}" 
                            class="btn btn-sm btn-danger" 
                            title="Delete Category">
-                            <i class="fas fa-trash"></i>
+                            <i class="bi bi-trash"></i>
                         </a>
                     </div>
                 </div>
@@ -65,12 +65,12 @@
                                 <a href="{% url 'category:edit_pricetype' pt.id %}" 
                                    class="btn btn-sm btn-gold" 
                                    title="Edit Price Type">
-                                    <i class="fas fa-edit fa-xs"></i>
+                                    <i class="bi bi-pencil-square fa-xs"></i>
                                 </a>
                                 <a href="{% url 'category:delete_pricetype' pt.id %}" 
                                    class="btn btn-sm btn-danger" 
                                    title="Delete Price Type">
-                                    <i class="fas fa-trash fa-xs"></i>
+                                    <i class="bi bi-trash fa-xs"></i>
                                 </a>
                             </div>
                         </div>
@@ -78,7 +78,7 @@
                     </div>
                     {% else %}
                     <div class="text-center py-3">
-                        <i class="fas fa-tags fa-2x text-white mb-2"></i>
+                        <i class="bi bi-tags fa-2x text-white mb-2"></i>
                         <p class="text-white small mb-3">No price types defined</p>
                     </div>
                     {% endif %}
@@ -88,7 +88,7 @@
                 <div class="card-footer bg-dark border-top-gold pt-0">
                     <a href="{% url 'category:add_pricetype' category.id %}" 
                        class="btn btn-gold btn-sm w-100">
-                        <i class="fas fa-plus me-1"></i>Add Price Type
+                        <i class="bi bi-plus-lg me-1"></i>Add Price Type
                     </a>
                 </div>
             </div>
@@ -99,11 +99,11 @@
     <!-- Empty State -->
     <div class="text-center py-5">
         <div class="py-5">
-            <i class="fas fa-folder-open fa-4x text-gold mb-4"></i>
+            <i class="bi bi-folder2-open fa-4x text-gold mb-4"></i>
             <h3 class="h4 text-gold mb-3">No Categories Found</h3>
             <p class="text-white mb-4">Get started by creating your first category</p>
             <a href="{% url 'category:add_category' %}" class="btn btn-gold btn-lg">
-                <i class="fas fa-plus me-2"></i>Create First Category
+                <i class="bi bi-plus-lg me-2"></i>Create First Category
             </a>
         </div>
     </div>

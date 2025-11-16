@@ -14,66 +14,64 @@
     }
 
     .login-card {
-        background: rgba(26, 26, 26, 0.95);
         border-radius: 16px;
-        box-shadow:
-            0 10px 30px rgba(0, 0, 0, 0.3),
-            0 0 0 1px rgba(212, 175, 55, 0.12);
-        border: 1px solid rgba(212, 175, 55, 0.18);
+        box-shadow: var(--color-shadow-soft);
+        border: 1px solid var(--color-border);
+        background: var(--color-surface);
         overflow: hidden;
-        max-width: 420px;
+        max-width: 460px;
         width: 100%;
     }
 
     .login-card .card-header {
-        background: linear-gradient(135deg, var(--gold-dark), var(--gold-primary));
-        color: var(--black-primary);
+        background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 18%, var(--color-surface)), var(--color-surface-alt));
+        color: var(--color-heading);
         text-align: center;
-        padding: 2.5rem 2rem;
-        border-bottom: none;
+        padding: 2.25rem 2rem;
+        border-bottom: 1px solid var(--color-border);
     }
 
     .login-card .card-header .brand-logo {
         font-size: 2.25rem;
         font-weight: 700;
         margin-bottom: 0.5rem;
-        color: var(--black-primary);
+        color: var(--color-heading);
     }
 
     .login-card .card-header .brand-subtitle {
         font-weight: 400;
         font-size: 1rem;
         opacity: 0.85;
-        color: var(--black-primary);
+        color: var(--color-text-muted);
     }
 
     .login-card .card-body {
-        padding: 2.5rem;
-        background: rgba(15, 15, 15, 0.92);
+        padding: 2rem;
+        background: var(--color-surface);
     }
 
     .login-card .form-label {
         font-weight: 600;
-        color: var(--gold-light);
+        color: var(--color-heading);
         margin-bottom: 0.5rem;
         display: block;
         font-size: 0.95rem;
     }
 
     .login-card .form-control {
-        border: 1px solid rgba(212, 175, 55, 0.35);
-        border-radius: 8px;
-        padding: 12px 16px;
+        border: 1px solid var(--input-border);
+        border-radius: 10px;
+        padding: 12px 14px;
         font-size: 1rem;
-        transition: all 0.3s ease;
-        background: rgba(45, 45, 45, 0.85);
-        color: var(--text-primary);
+        transition: box-shadow var(--transition-base), border-color var(--transition-base), background-color var(--transition-base);
+        background: var(--input-bg);
+        color: var(--color-text);
     }
 
     .login-card .form-control:focus {
-        border-color: var(--gold-primary);
-        box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
-        background: rgba(45, 45, 45, 0.95);
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 0.2rem var(--color-focus-ring);
+        background: var(--input-bg);
         outline: none;
     }
 
@@ -88,7 +86,7 @@
         transform: translateY(-50%);
         background: none;
         border: none;
-        color: #adb5bd;
+        color: var(--color-text-subtle);
         cursor: pointer;
         padding: 0;
         width: 20px;
@@ -96,46 +94,46 @@
     }
 
     .login-card .password-toggle:hover {
-        color: var(--gold-primary);
+        color: var(--color-accent);
     }
 
     .login-card .btn-login {
-        background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
-        border: none;
-        border-radius: 8px;
-        padding: 14px 24px;
+        background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-strong) 100%);
+        border: 1px solid var(--color-border-accent);
+        border-radius: 12px;
+        padding: 14px 20px;
         font-size: 1rem;
         font-weight: 600;
-        color: var(--black-primary);
+        color: var(--btn-text-on-accent);
         width: 100%;
-        transition: all 0.3s ease;
+        transition: transform var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base);
         cursor: pointer;
-        margin-top: 1rem;
+        margin-top: 0.75rem;
     }
 
     .login-card .btn-login:hover {
-        background: linear-gradient(135deg, var(--gold-light), var(--gold-primary));
+        background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent) 100%);
         transform: translateY(-2px);
-        box-shadow: 0 8px 18px rgba(212, 175, 55, 0.25);
+        box-shadow: 0 12px 24px var(--color-shadow-glow);
     }
 
     .login-card .form-check-input {
         width: 18px;
         height: 18px;
         border-radius: 4px;
-        border: 2px solid rgba(212, 175, 55, 0.45);
+        border: 2px solid var(--input-border);
         margin-right: 10px;
         cursor: pointer;
-        background: rgba(45, 45, 45, 0.85);
+        background: var(--input-bg);
     }
 
     .login-card .form-check-input:checked {
-        background-color: var(--gold-primary);
-        border-color: var(--gold-primary);
+        background-color: var(--color-accent);
+        border-color: var(--color-accent);
     }
 
     .login-card .form-check-label {
-        color: var(--gold-light);
+        color: var(--color-text);
         font-weight: 500;
         cursor: pointer;
         font-size: 0.9rem;
@@ -143,16 +141,16 @@
 
     .login-card .alert {
         border-radius: 8px;
-        border: none;
+        border: 1px solid color-mix(in srgb, var(--color-danger) 35%, transparent);
         padding: 1rem 1.25rem;
         margin-bottom: 1.5rem;
-        background: rgba(239, 68, 68, 0.12);
-        color: #f8a5a5;
-        border-left: 4px solid #e74c3c;
+        background: color-mix(in srgb, var(--color-danger) 14%, white);
+        color: color-mix(in srgb, var(--color-danger) 82%, black);
+        border-left: 4px solid var(--color-danger);
     }
 
     .login-card .forgot-password {
-        color: var(--gold-light);
+        color: var(--color-accent);
         text-decoration: none;
         font-weight: 500;
         transition: all 0.3s ease;
@@ -161,7 +159,7 @@
     }
 
     .login-card .forgot-password:hover {
-        color: var(--gold-primary);
+        color: var(--color-accent-hover);
         text-decoration: underline;
     }
 
@@ -228,7 +226,7 @@
                                placeholder="Enter your password"
                                required>
                         <button type="button" class="password-toggle" id="passwordToggle" aria-label="Toggle password visibility">
-                            <i class="fas fa-eye"></i>
+                            <i class="bi bi-eye"></i>
                         </button>
                     </div>
                 </div>
@@ -266,8 +264,8 @@
                 passwordInput.setAttribute('type', type);
 
                 passwordToggle.innerHTML = type === 'text'
-                    ? '<i class="fas fa-eye-slash"></i>'
-                    : '<i class="fas fa-eye"></i>';
+                    ? '<i class="bi bi-eye-slash"></i>'
+                    : '<i class="bi bi-eye"></i>';
             });
         }
     });

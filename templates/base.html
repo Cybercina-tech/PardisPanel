@@ -8,9 +8,8 @@
     
     <!-- Bootstrap CSS -->
     <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
-    <!-- Font Awesome for icons used in partials -->
-    <link href="{% static 'vendor/fontawesome/css/all.min.css' %}" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <!-- Bootstrap Icons (global icon set) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <!-- Theme Styles -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     
@@ -80,11 +79,8 @@
             function updateThemeIcon(theme) {
                 const icon = document.getElementById('themeIcon');
                 if (icon) {
-                    if (theme === 'light') {
-                        icon.className = 'fas fa-sun';
-                    } else {
-                        icon.className = 'fas fa-moon';
-                    }
+                    // Use Bootstrap Icons for theme indicator
+                    icon.className = theme === 'light' ? 'bi bi-sun' : 'bi bi-moon';
                 }
             }
         });
