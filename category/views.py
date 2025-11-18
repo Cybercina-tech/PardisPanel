@@ -1,11 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from django.views.decorators.cache import never_cache
 from .models import Category, PriceType
 from .forms import CategoryForm, PriceTypeForm
 
 
-@never_cache
 def category_dashboard(request):
     """Show categories and embedded forms for quick add (but links go to dedicated pages).
 

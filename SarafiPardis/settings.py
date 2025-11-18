@@ -34,7 +34,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -46,7 +45,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Custom 404 middleware to show custom 404 page even when DEBUG=True
     'SarafiPardis.middleware.Custom404Middleware',
-    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'SarafiPardis.urls'
@@ -79,32 +77,7 @@ DATABASES = {
     }
 }
 
-# Caching
-# In DEBUG mode, disable cache or use very short timeout for development
-if DEBUG:
-    # Use dummy cache in development to avoid caching issues
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-        }
-    }
-    CACHE_MIDDLEWARE_SECONDS = 0  # Disable cache middleware in development
-else:
-    # Use file-based cache in production
-    CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-            'LOCATION': BASE_DIR / 'cache',
-            'TIMEOUT': 300,
-            'OPTIONS': {
-                'MAX_ENTRIES': 1000,
-            },
-        }
-    }
-    CACHE_MIDDLEWARE_SECONDS = 300
-
-CACHE_MIDDLEWARE_ALIAS = 'default'
-CACHE_MIDDLEWARE_KEY_PREFIX = 'pardispanel'
+# Caching - Removed: No caching is used in this application
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
