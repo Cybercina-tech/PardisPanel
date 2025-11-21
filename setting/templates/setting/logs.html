@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+
+{% block title %}Logs - Sarafi Pardis Panel{% endblock %}
+
+{% block extra_head %}
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <!-- Page Header -->
+    <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="text-gold fw-bold mb-2">
+                    <i class="fas fa-file-alt section-icon"></i>
+                    Application Logs
+                </h1>
+                <p class="text-white-50 mb-0">View and monitor application logs from all sources</p>
+            </div>
+            <a href="{% url 'setting:settings' %}" class="btn btn-outline-gold">
+                <i class="fas fa-arrow-left me-2"></i>Back to Settings
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-lg border-0 rounded-4 theme-card-bg">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Total Logs</h6>
+                            <h3 class="text-gold mb-0">{{ total_logs }}</h3>
+                        </div>
+                        <div class="icon-circle bg-gold-opacity">
+                            <i class="fas fa-list text-gold"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-lg border-0 rounded-4 theme-card-bg">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Errors</h6>
+                            <h3 class="text-danger mb-0">{{ error_logs }}</h3>
+                        </div>
+                        <div class="icon-circle bg-danger-opacity">
+                            <i class="fas fa-exclamation-triangle text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-lg border-0 rounded-4 theme-card-bg">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white-50 mb-2">Warnings</h6>
+                            <h3 class="text-warning mb-0">{{ warning_logs }}</h3>
+                        </div>
+                        <div class="icon-circle bg-warning-opacity">
+                            <i class="fas fa-exclamation-circle text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="settings-section mb-4">
+        <div class="card shadow-lg border-0 rounded-4 theme-card-bg">
+            <div class="card-header py-3 theme-header-bg border-0 rounded-top-4">
+                <h5 class="mb-0 text-gold fw-bold">
+                    <i class="fas fa-filter me-2"></i>Filters
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="GET" action="{% url 'setting:logs' %}" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="level" class="form-label fw-semibold text-gold">Level</label>
+                        <select name="level" id="level" class="form-control theme-input">
+                            <option value="">All Levels</option>
+                            {% for value, label in level_choices %}
+                                <option value="{{ value }}" {% if level_filter == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="source" class="form-label fw-semibold text-gold">Source</label>
+                        <select name="source" id="source" class="form-control theme-input">
+                            <option value="">All Sources</option>
+                            {% for value, label in source_choices %}
+                                <option value="{{ value }}" {% if source_filter == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="search" class="form-label fw-semibold text-gold">Search</label>
+                        <input type="text" name="search" id="search" class="form-control theme-input" 
+                               placeholder="Search in messages..." value="{{ search_query }}">
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-gold w-100">
+                            <i class="fas fa-search me-2"></i>Filter
+                        </button>
+                    </div>
+                    {% if level_filter or source_filter or search_query %}
+                    <div class="col-12">
+                        <a href="{% url 'setting:logs' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Clear Filters
+                        </a>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="settings-section">
+        <div class="card shadow-lg border-0 rounded-4 theme-card-bg">
+            <div class="card-header py-4 theme-header-bg border-0 rounded-top-4">
+                <h3 class="mb-0 text-gold fw-bold">
+                    <i class="fas fa-list-alt me-2"></i>
+                    Logs
+                </h3>
+                <p class="text-white-50 mb-0 mt-2 small">Application activity logs</p>
+            </div>
+            <div class="card-body p-0">
+                {% if logs %}
+                    <div class="table-responsive">
+                        <table class="table table-dark-custom table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-gold-light">Time</th>
+                                    <th class="text-gold-light">Level</th>
+                                    <th class="text-gold-light">Source</th>
+                                    <th class="text-gold-light">Message</th>
+                                    <th class="text-gold-light">User</th>
+                                    <th class="text-gold-light">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in logs %}
+                                <tr>
+                                    <td class="text-white-50">
+                                        <small>{{ log.created_at|date:"Y-m-d H:i:s" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if log.level == 'ERROR' or log.level == 'CRITICAL' %}
+                                            <span class="badge badge-danger">{{ log.level }}</span>
+                                        {% elif log.level == 'WARNING' %}
+                                            <span class="badge badge-warning">{{ log.level }}</span>
+                                        {% elif log.level == 'INFO' %}
+                                            <span class="badge badge-info">{{ log.level }}</span>
+                                        {% elif log.level == 'DEBUG' %}
+                                            <span class="badge badge-secondary">{{ log.level }}</span>
+                                        {% else %}
+                                            <span class="badge badge-active">{{ log.level }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-secondary">{{ log.get_source_display }}</span>
+                                    </td>
+                                    <td class="text-white">
+                                        <div class="log-message" style="max-width: 400px;">
+                                            {{ log.message|truncatewords:20 }}
+                                        </div>
+                                    </td>
+                                    <td class="text-white-50">
+                                        {% if log.user %}
+                                            {{ log.user.get_full_name|default:log.user.username }}
+                                        {% else %}
+                                            <span class="text-muted">System</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-outline-gold" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#logModal{{ log.id }}">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Log Detail Modal -->
+                                <div class="modal fade" id="logModal{{ log.id }}" tabindex="-1" 
+                                     aria-labelledby="logModalLabel{{ log.id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content theme-card-bg">
+                                            <div class="modal-header theme-header-bg border-bottom-gold">
+                                                <h5 class="modal-title text-gold" id="logModalLabel{{ log.id }}">
+                                                    <i class="fas fa-file-alt me-2"></i>Log Details
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" 
+                                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <strong class="text-gold">Level:</strong>
+                                                        <span class="ms-2">
+                                                            {% if log.level == 'ERROR' or log.level == 'CRITICAL' %}
+                                                                <span class="badge badge-danger">{{ log.level }}</span>
+                                                            {% elif log.level == 'WARNING' %}
+                                                                <span class="badge badge-warning">{{ log.level }}</span>
+                                                            {% elif log.level == 'INFO' %}
+                                                                <span class="badge badge-info">{{ log.level }}</span>
+                                                            {% else %}
+                                                                <span class="badge badge-secondary">{{ log.level }}</span>
+                                                            {% endif %}
+                                                        </span>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <strong class="text-gold">Source:</strong>
+                                                        <span class="ms-2 badge badge-secondary">{{ log.get_source_display }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <strong class="text-gold">Time:</strong>
+                                                        <span class="ms-2 text-white-50">{{ log.created_at|date:"Y-m-d H:i:s" }}</span>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <strong class="text-gold">User:</strong>
+                                                        <span class="ms-2 text-white-50">
+                                                            {% if log.user %}
+                                                                {{ log.user.get_full_name|default:log.user.username }}
+                                                            {% else %}
+                                                                System
+                                                            {% endif %}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <strong class="text-gold">Message:</strong>
+                                                    <div class="mt-2 p-3 bg-dark rounded text-white" style="word-wrap: break-word;">
+                                                        {{ log.message }}
+                                                    </div>
+                                                </div>
+                                                {% if log.details %}
+                                                <div class="mb-3">
+                                                    <strong class="text-gold">Details:</strong>
+                                                    <div class="mt-2 p-3 bg-dark rounded text-white-50" style="word-wrap: break-word; white-space: pre-wrap; font-family: monospace; font-size: 0.9em;">
+                                                        {{ log.details }}
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer theme-header-bg border-top-gold">
+                                                <button type="button" class="btn btn-gold" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if logs.has_other_pages %}
+                    <div class="card-footer theme-header-bg border-0 rounded-bottom-4 py-3">
+                        <nav aria-label="Logs pagination">
+                            <ul class="pagination justify-content-center mb-0">
+                                {% if logs.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link theme-pagination" href="?page=1{% if level_filter %}&level={{ level_filter }}{% endif %}{% if source_filter %}&source={{ source_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link theme-pagination" href="?page={{ logs.previous_page_number }}{% if level_filter %}&level={{ level_filter }}{% endif %}{% if source_filter %}&source={{ source_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-left"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+
+                                <li class="page-item active">
+                                    <span class="page-link theme-pagination-active">
+                                        Page {{ logs.number }} of {{ logs.paginator.num_pages }}
+                                    </span>
+                                </li>
+
+                                {% if logs.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link theme-pagination" href="?page={{ logs.next_page_number }}{% if level_filter %}&level={{ level_filter }}{% endif %}{% if source_filter %}&source={{ source_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link theme-pagination" href="?page={{ logs.paginator.num_pages }}{% if level_filter %}&level={{ level_filter }}{% endif %}{% if source_filter %}&source={{ source_filter }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="card-body p-5 text-center">
+                        <i class="fas fa-inbox fa-3x text-white-50 mb-3"></i>
+                        <p class="text-white-50 mb-0">No logs found{% if level_filter or source_filter or search_query %} matching your filters{% endif %}.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.icon-circle {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.bg-gold-opacity {
+    background-color: rgba(255, 215, 0, 0.1);
+}
+
+.bg-danger-opacity {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.bg-warning-opacity {
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.log-message {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.theme-pagination {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.theme-pagination:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--gold-color);
+    color: var(--gold-color);
+}
+
+.theme-pagination-active {
+    background-color: var(--gold-color);
+    border-color: var(--gold-color);
+    color: var(--dark-bg);
+}
+</style>
+{% endblock %}
+

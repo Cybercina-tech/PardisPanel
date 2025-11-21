@@ -4,7 +4,7 @@
 {% block content %}
 <div class="container py-5">
     <div class="card bg-dark border-gold shadow-lg" style="max-width: 750px; margin: 0 auto;">
-        <div class="card-header bg-dark border-bottom-gold text-center">
+        <div class="card-header bg-dark border-bottom-gold text-center theme-header-bg">
             <h4 class="mb-0 text-gold fw-bold letter-spacing-1">{{ title }}</h4>
         </div>
         <div class="card-body p-4">
@@ -76,48 +76,124 @@
 </div>
 
 <style>
-/* --- Gold & Black Theme & Card Improvements --- */
+/* --- Theme-Aware Styles --- */
+/* Dark Theme (Default) */
 .bg-dark {
-    background-color: var(--card-bg, #111418) !important;
+    background-color: var(--color-surface-alt, #1a1a1a) !important;
+}
+
+[data-theme="dark"] .bg-dark {
+    background-color: var(--color-surface-alt, #1a1a1a) !important;
 }
 
 .text-gold {
-    color: var(--theme-primary, #D4AF37) !important;
+    color: var(--color-accent, #D4AF37) !important;
     letter-spacing: 0.03em;
 }
 
+[data-theme="dark"] .text-gold {
+    color: var(--color-accent, #D4AF37) !important;
+}
+
 .border-gold {
-    border: 1.5px solid var(--border-color, rgba(212, 175, 55, 0.30)) !important;
+    border: 1.5px solid var(--color-border-accent, rgba(212, 175, 55, 0.30)) !important;
     border-radius: 18px !important;
 }
 
+[data-theme="dark"] .border-gold {
+    border-color: rgba(212, 175, 55, 0.30) !important;
+}
+
 .border-bottom-gold {
-    border-bottom: 1.5px solid var(--border-color, rgba(212, 175, 55, 0.3)) !important;
+    border-bottom: 1.5px solid var(--color-border-accent, rgba(212, 175, 55, 0.3)) !important;
+}
+
+[data-theme="dark"] .border-bottom-gold {
+    border-bottom-color: rgba(212, 175, 55, 0.3) !important;
+}
+
+/* Light Theme Overrides */
+html[data-theme="light"] .bg-dark {
+    background-color: var(--color-surface, #FFFFFF) !important;
+    border-color: rgba(90, 111, 174, 0.15) !important;
+}
+
+html[data-theme="light"] .text-gold {
+    color: var(--color-accent, #5A6FAE) !important;
+}
+
+html[data-theme="light"] .border-gold {
+    border-color: rgba(90, 111, 174, 0.25) !important;
+}
+
+html[data-theme="light"] .border-bottom-gold {
+    border-bottom-color: rgba(90, 111, 174, 0.25) !important;
 }
 
 /* ---- Form Field and Label Alignment and Effects ---- */
 .form-label {
     font-weight: 600;
     margin-bottom: 0.25rem;
-    color: var(--theme-primary, #D4AF37);
+    color: var(--color-accent, #D4AF37);
     text-shadow: 0 1px 4px rgba(212, 175, 55, 0.06);
 }
+
+[data-theme="dark"] .form-label {
+    color: var(--color-accent, #D4AF37);
+    text-shadow: 0 1px 4px rgba(212, 175, 55, 0.06);
+}
+
+html[data-theme="light"] .form-label {
+    color: var(--color-accent, #5A6FAE) !important;
+    text-shadow: none;
+}
+
 .form-control, .form-select {
     padding: 0.625rem 1rem;
     background-color: var(--input-bg, #191b1f) !important;
     border: 1.2px solid var(--input-border, rgba(212,175,55,0.18)) !important;
     border-radius: 8px;
-    color: var(--text-primary, #E6E8EA) !important;
+    color: var(--color-text, #E6E8EA) !important;
     font-size: 1.04rem;
     min-height: 47px;
     transition: all 0.2s cubic-bezier(.68,-0.55,.27,1.55);
 }
 
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+    background-color: var(--input-bg, #191b1f) !important;
+    border-color: rgba(212,175,55,0.18) !important;
+    color: var(--color-text, #E6E8EA) !important;
+}
+
+html[data-theme="light"] .form-control,
+html[data-theme="light"] .form-select {
+    background-color: var(--input-bg, rgba(255, 255, 255, 0.96)) !important;
+    border-color: var(--input-border, rgba(51, 51, 51, 0.12)) !important;
+    color: var(--color-text, #444444) !important;
+}
+
 .form-control:focus, .form-select:focus {
     background-color: var(--input-bg, #1e2025) !important;
-    border-color: var(--theme-primary, #D4AF37) !important;
-    box-shadow: 0 0 0 0.17rem color-mix(in srgb, var(--theme-primary) 22%, transparent);
-    color: var(--text-primary, #f7f8f8) !important;
+    border-color: var(--color-accent, #D4AF37) !important;
+    box-shadow: 0 0 0 0.17rem color-mix(in srgb, var(--color-accent) 22%, transparent);
+    color: var(--color-text, #f7f8f8) !important;
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+    background-color: var(--input-bg, #1e2025) !important;
+    border-color: var(--color-accent, #D4AF37) !important;
+    box-shadow: 0 0 0 0.17rem color-mix(in srgb, var(--color-accent) 22%, transparent);
+    color: var(--color-text, #f7f8f8) !important;
+}
+
+html[data-theme="light"] .form-control:focus,
+html[data-theme="light"] .form-select:focus {
+    background-color: var(--input-bg, rgba(255, 255, 255, 0.96)) !important;
+    border-color: var(--color-accent, #5A6FAE) !important;
+    box-shadow: 0 0 0 0.2rem var(--color-focus-ring, rgba(90, 111, 174, 0.32)) !important;
+    color: var(--color-text, #444444) !important;
 }
 
 /* make selects consistent in height with inputs */
@@ -138,9 +214,9 @@ input, select, textarea {
 
 /* --- Button Styles --- */
 .btn-gold {
-    background: linear-gradient(100deg, var(--theme-primary, #D4AF37) 0%, var(--theme-dark, #B8860B) 100%) !important;
-    border: 1.7px solid var(--theme-primary, #D4AF37) !important;
-    color: var(--btn-text-color, #1a1712) !important;
+    background: linear-gradient(100deg, var(--color-accent, #D4AF37) 0%, var(--color-accent-strong, #B8860B) 100%) !important;
+    border: 1.7px solid var(--color-accent, #D4AF37) !important;
+    color: var(--btn-text-on-accent, #1a1712) !important;
     font-weight: 700;
     font-size: 1.07rem;
     border-radius: 8px;
@@ -148,36 +224,100 @@ input, select, textarea {
     letter-spacing: 0.03em;
     box-shadow: 0 2px 10px rgba(212, 175, 55, 0.09);
 }
-[data-theme="light"] .btn-gold { --btn-text-color: #fff; }
+
+[data-theme="dark"] .btn-gold {
+    background: linear-gradient(100deg, #D4AF37 0%, #B8860B 100%) !important;
+    border-color: #D4AF37 !important;
+    color: #1a1712 !important;
+    box-shadow: 0 2px 10px rgba(212, 175, 55, 0.09);
+}
+
+html[data-theme="light"] .btn-gold {
+    background: linear-gradient(135deg, var(--color-accent, #5A6FAE) 0%, var(--color-accent-strong, #4B5D96) 100%) !important;
+    border-color: var(--color-accent, #5A6FAE) !important;
+    color: var(--btn-text-on-accent, #FFFFFF) !important;
+    box-shadow: 0 10px 20px color-mix(in srgb, var(--color-accent) 22%, transparent);
+}
+
 .btn-gold:hover {
-    background: linear-gradient(110deg, var(--theme-light, #FFD700) 0%, var(--theme-primary, #D4AF37) 100%) !important;
-    border-color: var(--theme-light, #FFD700) !important;
-    color: var(--btn-text-color, #000) !important;
-    box-shadow: 0 7px 18px 0 color-mix(in srgb, var(--theme-primary) 15%, transparent);
+    background: linear-gradient(110deg, var(--color-accent-hover, #FFD700) 0%, var(--color-accent, #D4AF37) 100%) !important;
+    border-color: var(--color-accent-hover, #FFD700) !important;
+    color: var(--btn-text-on-accent, #000) !important;
+    box-shadow: 0 7px 18px 0 color-mix(in srgb, var(--color-accent) 15%, transparent);
+    transform: translateY(-2px) scale(1.04);
+}
+
+[data-theme="dark"] .btn-gold:hover {
+    background: linear-gradient(110deg, #FFD700 0%, #D4AF37 100%) !important;
+    border-color: #FFD700 !important;
+    color: #000 !important;
+    box-shadow: 0 7px 18px 0 color-mix(in srgb, #D4AF37 15%, transparent);
+}
+
+html[data-theme="light"] .btn-gold:hover {
+    background: linear-gradient(135deg, var(--color-accent-hover, #6C7ECF) 0%, var(--color-accent, #5A6FAE) 100%) !important;
+    border-color: var(--color-accent-hover, #6C7ECF) !important;
+    color: var(--btn-text-on-accent, #FFFFFF) !important;
+    box-shadow: 0 16px 28px var(--color-shadow-glow, rgba(90, 111, 174, 0.24));
     transform: translateY(-2px) scale(1.04);
 }
 
 .btn-secondary-gold {
     background: transparent !important;
-    border: 1.5px solid var(--border-color, rgba(212, 175, 55, 0.25)) !important;
-    color: var(--text-primary, #F3CE75) !important;
+    border: 1.5px solid var(--color-border-accent, rgba(212, 175, 55, 0.25)) !important;
+    color: var(--color-text, #F3CE75) !important;
     font-weight: 600;
     font-size: 1.07rem;
     border-radius: 8px;
     letter-spacing: 0.02em;
     transition: all 0.20s cubic-bezier(.74,.03,.35,1.08);
 }
+
+[data-theme="dark"] .btn-secondary-gold {
+    border-color: rgba(212, 175, 55, 0.25) !important;
+    color: #F3CE75 !important;
+}
+
+html[data-theme="light"] .btn-secondary-gold {
+    border-color: rgba(90, 111, 174, 0.24) !important;
+    color: var(--color-secondary-btn-text, #394E63) !important;
+    background-color: var(--color-secondary-btn-bg, rgba(90, 111, 174, 0.12)) !important;
+}
+
 .btn-secondary-gold:hover {
-    background: color-mix(in srgb, var(--theme-primary) 13%, transparent) !important;
-    border-color: var(--theme-primary, #D4AF37) !important;
-    color: var(--theme-primary, #EAB94D) !important;
-    box-shadow: 0 0px 12px color-mix(in srgb, var(--theme-primary) 14%, transparent);
+    background: color-mix(in srgb, var(--color-accent) 13%, transparent) !important;
+    border-color: var(--color-accent, #D4AF37) !important;
+    color: var(--color-accent, #EAB94D) !important;
+    box-shadow: 0 0px 12px color-mix(in srgb, var(--color-accent) 14%, transparent);
     transform: translateY(-2px) scale(1.025);
+}
+
+[data-theme="dark"] .btn-secondary-gold:hover {
+    background: color-mix(in srgb, #D4AF37 13%, transparent) !important;
+    border-color: #D4AF37 !important;
+    color: #EAB94D !important;
+    box-shadow: 0 0px 12px color-mix(in srgb, #D4AF37 14%, transparent);
+}
+
+html[data-theme="light"] .btn-secondary-gold:hover {
+    background-color: var(--color-secondary-btn-hover-bg, rgba(90, 111, 174, 0.18)) !important;
+    border-color: var(--color-secondary-btn-hover-border, rgba(90, 111, 174, 0.32)) !important;
+    color: var(--color-heading, #333333) !important;
+    box-shadow: 0 14px 26px var(--color-shadow-glow, rgba(90, 111, 174, 0.24));
 }
 
 /* --- Card and Shadow Refinement --- */
 .card {
     box-shadow: 0 6px 28px 0 rgba(0, 0, 0, 0.23), 0 1.5px 6px rgba(212, 175, 55, 0.09);
+}
+
+[data-theme="dark"] .card {
+    box-shadow: 0 6px 28px 0 rgba(0, 0, 0, 0.23), 0 1.5px 6px rgba(212, 175, 55, 0.09);
+}
+
+html[data-theme="light"] .card {
+    box-shadow: var(--color-shadow-soft, 0 10px 24px rgba(51, 51, 51, 0.08));
+    border-color: rgba(90, 111, 174, 0.15);
 }
 
 /* --- Text and Error Styles --- */
@@ -189,14 +329,47 @@ input, select, textarea {
     text-shadow: 0 1px 3px rgba(220, 53, 69, 0.085);
 }
 
-.alert-danger {
-    background-color: var(--card-bg, #18191c) !important;
-    border-color: #ff6161 !important;
+[data-theme="dark"] .text-danger {
     color: #ff6161 !important;
-    font-size: 1.05rem;
-    background-color: var(--card-bg, #121212) !important;
+    text-shadow: 0 1px 3px rgba(220, 53, 69, 0.085);
+}
+
+html[data-theme="light"] .text-danger {
+    color: var(--color-danger, #D76F7A) !important;
+    text-shadow: none;
+}
+
+.alert-danger {
+    background-color: var(--color-surface-alt, #18191c) !important;
     border-color: #dc3545 !important;
     color: #dc3545 !important;
+    font-size: 1.05rem;
+}
+
+[data-theme="dark"] .alert-danger {
+    background-color: #18191c !important;
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+
+html[data-theme="light"] .alert-danger {
+    background-color: color-mix(in srgb, var(--color-danger) 14%, white) !important;
+    border-color: color-mix(in srgb, var(--color-danger) 45%, transparent) !important;
+    color: color-mix(in srgb, var(--color-danger) 60%, black) !important;
+}
+
+/* Card Header Theme Support */
+.theme-header-bg {
+    background-color: var(--color-surface-alt, #1a1a1a) !important;
+}
+
+[data-theme="dark"] .theme-header-bg {
+    background-color: var(--color-surface-alt, #1a1a1a) !important;
+}
+
+html[data-theme="light"] .theme-header-bg {
+    background-color: var(--color-surface-alt, #F0F4FF) !important;
+    border-bottom-color: rgba(90, 111, 174, 0.25) !important;
 }
 
 /* Form spacing */

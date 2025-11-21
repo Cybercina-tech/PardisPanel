@@ -5,6 +5,7 @@ from django.db.models import Prefetch
 from category.models import PriceType, Category
 from .models import PriceHistory
 from .forms import PriceUpdateForm, CategoryPriceUpdateForm
+from setting.utils import log_event
 
 
 def price_dashboard(request):
@@ -37,7 +38,18 @@ def update_price(request, price_type_id):
         if form.is_valid():
             price_history = form.save(commit=False)
             price_history.price_type = price_type
+            old_price = latest_price.price if latest_price else None
             price_history.save()
+            
+            # Log the price update
+            log_event(
+                level='INFO',
+                source='system',
+                message=f'Price updated for {price_type.name} ({price_type.category.name})',
+                details=f'Old price: {old_price}, New price: {price_history.price}, Notes: {price_history.notes or "None"}',
+                user=request.user if request.user.is_authenticated else None
+            )
+            
             messages.success(request, f'Price updated successfully for {price_type.name}')
             return redirect('dashboard:home')
     else:
@@ -82,6 +94,7 @@ def update_category_prices(request, category_id):
         if form.is_valid():
             with transaction.atomic():
                 notes = form.cleaned_data.pop('notes')
+                updated_prices = []
                 for price_type in price_types:
                     # Get the submitted price, or use the previous price if empty
                     submitted_price = form.cleaned_data.get(f'price_{price_type.id}')
@@ -97,11 +110,22 @@ def update_category_prices(request, category_id):
                     else:
                         price = submitted_price
                     
+                    old_price = latest_prices[price_type.id].price if latest_prices[price_type.id] else None
                     PriceHistory.objects.create(
                         price_type=price_type,
                         price=price,
                         notes=notes
                     )
+                    updated_prices.append(f"{price_type.name}: {old_price} → {price}")
+            
+            # Log the category price update
+            log_event(
+                level='INFO',
+                source='system',
+                message=f'Category prices updated: {category.name}',
+                details=f'Updated {len(updated_prices)} price(s). Changes: {"; ".join(updated_prices)}. Notes: {notes or "None"}',
+                user=request.user if request.user.is_authenticated else None
+            )
             
             messages.success(request, f'All prices updated successfully for category {category.name}')
             return redirect('dashboard:home')

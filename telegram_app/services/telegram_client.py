@@ -11,6 +11,12 @@ from telegram.error import TelegramError, BadRequest, TimedOut, NetworkError
 
 logger = logging.getLogger(__name__)
 
+# Import logging utility (with try-except to avoid circular imports)
+try:
+    from setting.utils import log_telegram_event
+except ImportError:
+    log_telegram_event = None
+
 
 class TelegramService:
     """Service class for interacting with Telegram Bot API."""
@@ -96,26 +102,81 @@ class TelegramService:
                 reply_markup=reply_markup,
             )
             logger.info(f"Message sent successfully to {chat_id}")
+            # Log to database
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='INFO',
+                        message=f'Message sent to Telegram channel',
+                        details=f'Chat ID: {chat_id}, Message length: {len(text)} characters'
+                    )
+                except Exception:
+                    pass  # Don't fail if logging fails
             return True, "Message sent successfully."
         except BadRequest as e:
             error_msg = f"Bad request: {str(e)}"
             logger.error(error_msg)
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='ERROR',
+                        message=f'Failed to send message to Telegram',
+                        details=f'Chat ID: {chat_id}, Error: {error_msg}'
+                    )
+                except Exception:
+                    pass
             return False, error_msg
         except TimedOut as e:
             error_msg = f"Request timed out: {str(e)}"
             logger.error(error_msg)
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='ERROR',
+                        message=f'Telegram request timed out',
+                        details=f'Chat ID: {chat_id}, Error: {error_msg}'
+                    )
+                except Exception:
+                    pass
             return False, error_msg
         except NetworkError as e:
             error_msg = f"Network error: {str(e)}"
             logger.error(error_msg)
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='ERROR',
+                        message=f'Telegram network error',
+                        details=f'Chat ID: {chat_id}, Error: {error_msg}'
+                    )
+                except Exception:
+                    pass
             return False, error_msg
         except TelegramError as e:
             error_msg = f"Telegram error: {str(e)}"
             logger.error(error_msg)
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='ERROR',
+                        message=f'Telegram API error',
+                        details=f'Chat ID: {chat_id}, Error: {error_msg}'
+                    )
+                except Exception:
+                    pass
             return False, error_msg
         except Exception as e:
             error_msg = f"Unexpected error: {str(e)}"
             logger.exception(error_msg)
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='CRITICAL',
+                        message=f'Unexpected error sending Telegram message',
+                        details=f'Chat ID: {chat_id}, Error: {error_msg}'
+                    )
+                except Exception:
+                    pass
             return False, error_msg
 
     def send_message(self, chat_id, text, parse_mode="HTML", buttons=None):
@@ -190,26 +251,81 @@ class TelegramService:
                 reply_markup=reply_markup,
             )
             logger.info(f"Photo sent successfully to {chat_id}")
+            # Log to database
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='INFO',
+                        message=f'Photo sent to Telegram channel',
+                        details=f'Chat ID: {chat_id}, Caption: {caption[:100] if caption else "None"}'
+                    )
+                except Exception:
+                    pass  # Don't fail if logging fails
             return True, "Photo sent successfully."
         except BadRequest as e:
             error_msg = f"Bad request: {str(e)}"
             logger.error(error_msg)
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='ERROR',
+                        message=f'Failed to send photo to Telegram',
+                        details=f'Chat ID: {chat_id}, Error: {error_msg}'
+                    )
+                except Exception:
+                    pass
             return False, error_msg
         except TimedOut as e:
             error_msg = f"Request timed out: {str(e)}"
             logger.error(error_msg)
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='ERROR',
+                        message=f'Telegram photo request timed out',
+                        details=f'Chat ID: {chat_id}, Error: {error_msg}'
+                    )
+                except Exception:
+                    pass
             return False, error_msg
         except NetworkError as e:
             error_msg = f"Network error: {str(e)}"
             logger.error(error_msg)
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='ERROR',
+                        message=f'Telegram network error (photo)',
+                        details=f'Chat ID: {chat_id}, Error: {error_msg}'
+                    )
+                except Exception:
+                    pass
             return False, error_msg
         except TelegramError as e:
             error_msg = f"Telegram error: {str(e)}"
             logger.error(error_msg)
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='ERROR',
+                        message=f'Telegram API error (photo)',
+                        details=f'Chat ID: {chat_id}, Error: {error_msg}'
+                    )
+                except Exception:
+                    pass
             return False, error_msg
         except Exception as e:
             error_msg = f"Unexpected error: {str(e)}"
             logger.exception(error_msg)
+            if log_telegram_event:
+                try:
+                    log_telegram_event(
+                        level='CRITICAL',
+                        message=f'Unexpected error sending Telegram photo',
+                        details=f'Chat ID: {chat_id}, Error: {error_msg}'
+                    )
+                except Exception:
+                    pass
             return False, error_msg
 
     def send_photo(self, chat_id, photo, caption=None, parse_mode="HTML", buttons=None):

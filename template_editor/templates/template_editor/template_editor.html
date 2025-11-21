@@ -331,17 +331,17 @@
   data-background-url="{{ background_url }}"
 >
   <div class="editor-toolbar shadow-sm">
-    <button id="addTextBtn" type="button">
+    <button id="addTextBtn" type="button" data-no-loading>
       <i class="fas fa-font me-2"></i>
       Add Text Element
     </button>
-    <button id="addImageBtn" type="button">
+    <button id="addImageBtn" type="button" data-no-loading>
       <i class="fas fa-image me-2"></i>
       Add Image Element
     </button>
     <div class="ms-auto d-flex align-items-center gap-3">
       <span class="text-uppercase small text-muted">Template: {{ template_obj.name }}</span>
-      <button id="saveBtn" type="button" class="is-primary">
+      <button id="saveBtn" type="button" class="is-primary" data-no-loading>
         <i class="fas fa-save me-2"></i>
         Save Template
       </button>

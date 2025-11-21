@@ -1,10 +1,11 @@
 from django.shortcuts import render
-from django.db.models import Max, Count, Q
+from django.db.models import Max, Count, Q, Prefetch
 from django.utils import timezone
 from datetime import timedelta
 from category.models import Category, PriceType
 from change_price.models import PriceHistory
 from telegram_app.models import TelegramBot, TelegramChannel
+from special_price.models import SpecialPriceType, SpecialPriceHistory
 
 
 def home(request):
@@ -80,8 +81,17 @@ def home(request):
     # Price updates in last 24 hours
     recent_updates = PriceHistory.objects.filter(created_at__gte=twenty_four_hours_ago).count()
     
+    # Get all special price types with their latest prices
+    special_price_types = SpecialPriceType.objects.prefetch_related(
+        Prefetch(
+            'special_price_histories',
+            queryset=SpecialPriceHistory.objects.order_by('-created_at')
+        )
+    ).select_related('source_currency', 'target_currency').all()
+    
     context = {
         'categories': categories,
+        'special_price_types': special_price_types,
         # Metrics for cards
         'highest_price': highest_price,
         'highest_price_label': highest_price_label,

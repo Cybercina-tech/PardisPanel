@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.db.models import Prefetch
 from .models import SpecialPriceType, SpecialPriceHistory
 from .forms import SpecialPriceUpdateForm, SpecialPriceTypeForm
+from setting.utils import log_event
 
 
 def special_price_dashboard(request):
@@ -33,7 +34,18 @@ def update_special_price(request, special_price_type_id):
         if form.is_valid():
             price_history = form.save(commit=False)
             price_history.special_price_type = special_price_type
+            old_price = latest_price.price if latest_price else None
             price_history.save()
+            
+            # Log the special price update
+            log_event(
+                level='INFO',
+                source='system',
+                message=f'Special price updated: {special_price_type.name}',
+                details=f'Old price: {old_price}, New price: {price_history.price}, Notes: {price_history.notes or "None"}',
+                user=request.user if request.user.is_authenticated else None
+            )
+            
             messages.success(request, f'Special price updated successfully for {special_price_type.name}')
             return redirect('special_price:dashboard')
     else:

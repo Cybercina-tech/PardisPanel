@@ -171,11 +171,11 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
-                            <h4 class="card-title mb-1" style="font-size: 1rem;">
+                            <h4 class="card-title mb-1">
                                 {% if latest_update_time %}
                                     {{ latest_update_time|date:"H:i" }}
                                     {% if latest_update_time|to_jalali:"time_only" %}
-                                        <span class="text-white-50" style="font-size: 0.85rem;">({{ latest_update_time|to_jalali:"time_only" }})</span>
+                                        <small class="text-white-50">({{ latest_update_time|to_jalali:"time_only" }})</small>
                                     {% endif %}
                                 {% else %}
                                     Never
@@ -202,59 +202,102 @@
         </div>
     </div>
 
-    <!-- Market Data Section -->
+    <!-- Categories Section -->
     <div class="row mb-4">
-        <div class="col-md-12">
-            {% for category in categories %}
-            <div class="card bg-dark mb-4">
-                <div class="card-header bg-black-secondary">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0 text-gold">{{ category.name }} - Market Prices</h5>
-                        <a href="{% url 'change_price:update_category_prices' category.id %}" 
-                           class="btn btn-sm btn-gold">
-                            <i class="fas fa-edit me-1"></i>Update All Prices
-                        </a>
-                    </div>
+        <div class="col-12">
+            <div class="card bg-dark border-gold mb-4">
+                <div class="card-header bg-black-secondary border-bottom-gold">
+                    <h5 class="card-title mb-0 text-gold">
+                        <i class="fas fa-folder me-2"></i>Categories
+                    </h5>
+                    <small class="text-white-50">Manage price categories and update prices</small>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-dark table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th class="text-gold-light">Pair</th>
-                                    <th class="text-gold-light">Price</th>
-                                    <th class="text-gold-light">Last Update</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for price_type in category.price_types.all %}
-                                <tr>
-                                    <td>{{ price_type.name }}</td>
-                                    {% with latest_price=price_type.price_histories.first %}
-                                    <td class="text-gold">{% if latest_price %}{{ latest_price.price }}{% else %}N/A{% endif %}</td>
-                                    <td class="text-gold">
-                                        {% if latest_price %}
-                                            <div class="dual-date">
-                                                <span>{{ latest_price.updated_at|date:"F d, Y H:i" }}</span>
-                                                {% if latest_price.updated_at|to_jalali:"short" %}
-                                                    <span class="ms-2 text-white-50">/ {{ latest_price.updated_at|to_jalali:"short" }}</span>
-                                                {% endif %}
-                                            </div>
-                                        {% else %}
-                                            Never
-                                        {% endif %}
-                                    </td>
-                                    {% endwith %}
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                    <div class="row">
+                        {% for category in categories %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card bg-black-secondary border-light-gold h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-gold mb-2">
+                                        <i class="fas fa-folder me-2"></i>{{ category.name }}
+                                    </h6>
+                                    <p class="card-text text-white-50 small mb-3">
+                                        {{ category.price_types.count }} price type{{ category.price_types.count|pluralize }}
+                                    </p>
+                                    <div class="btn-group w-100" role="group">
+                                        <a href="{% url 'change_price:update_category_prices' category.id %}" 
+                                           class="btn btn-sm btn-outline-gold">
+                                            <i class="fas fa-edit me-1"></i>Update Prices
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <p class="text-white-50 text-center">No categories found.</p>
+                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
     </div>
+
+    <!-- Special Prices Section -->
+    {% if special_price_types %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark border-gold mb-4">
+                <div class="card-header bg-black-secondary border-bottom-gold">
+                    <h5 class="card-title mb-0 text-gold">
+                        <i class="fas fa-star me-2"></i>Special Prices
+                    </h5>
+                    <small class="text-white-50">Manage special price types</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for special_price_type in special_price_types %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card bg-black-secondary border-light-gold h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-gold mb-2">
+                                        <i class="fas fa-star me-2"></i>{{ special_price_type.name }}
+                                    </h6>
+                                    <p class="card-text text-white-50 small mb-2">
+                                        {{ special_price_type.source_currency.code }} / {{ special_price_type.target_currency.code }}
+                                    </p>
+                                    <p class="card-text text-white-50 small mb-3">
+                                        <span class="badge bg-light-gold text-dark">{{ special_price_type.get_trade_type_display }}</span>
+                                    </p>
+                                    {% with latest_price=special_price_type.special_price_histories.first %}
+                                    {% if latest_price %}
+                                    <p class="card-text mb-2">
+                                        <span class="text-gold fw-bold">{{ latest_price.price|floatformat:2 }}</span>
+                                    </p>
+                                    <p class="card-text text-white-50 small mb-3">
+                                        <small>Last update: {{ latest_price.updated_at|date:"M d, Y H:i" }}</small>
+                                    </p>
+                                    {% else %}
+                                    <p class="card-text text-white-50 small mb-3">No price history</p>
+                                    {% endif %}
+                                    {% endwith %}
+                                    <div class="btn-group w-100" role="group">
+                                        <a href="{% url 'special_price:update_price' special_price_type.id %}" 
+                                           class="btn btn-sm btn-outline-gold">
+                                            <i class="fas fa-edit me-1"></i>Update Price
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 {% endblock %}

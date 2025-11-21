@@ -119,18 +119,18 @@
                                       placeholder="Add any notes about this finalization..."></textarea>
                         </div>
                         
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle me-2"></i>
-                            <strong>Note:</strong> All {{ pending_prices|length }} price{{ pending_prices|length|pluralize }} in this category will be finalized and published together. 
-                            Once finalized, they will not appear as pending until new prices are updated.
-                        </div>
-                        
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="{% url 'finalize:dashboard' %}" class="btn btn-outline-secondary">
                                 <i class="bi bi-x me-1"></i>Cancel
                             </a>
-                            <button type="submit" class="btn btn-gold" {% if not channels %}disabled{% endif %}>
-                                <i class="bi bi-check-circle me-1"></i>Finalize & Publish
+                            <button type="submit" class="btn btn-gold finalize-submit-btn" {% if not channels %}disabled{% endif %}>
+                                <span class="btn-content">
+                                    <i class="bi bi-check-circle me-1"></i>Finalize & Publish
+                                </span>
+                                <span class="btn-loading-spinner d-none">
+                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    Publishing...
+                                </span>
                             </button>
                         </div>
                     </form>
@@ -139,31 +139,6 @@
         </div>
     </div>
 
-    <!-- Image Publication Info -->
-    <div class="row mt-4">
-        <div class="col-12 col-md-8 mx-auto">
-            <div class="card bg-dark border-gold">
-                <div class="card-header bg-black-secondary border-bottom-gold">
-                    <h5 class="card-title mb-0 text-gold">
-                        <i class="bi bi-image me-2"></i>Image Publication
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="bg-black-secondary p-3 rounded border border-light-gold text-white-50 small">
-                        <p class="mb-3">
-                            Price cards are rendered as high-quality images using the active template configuration.
-                            Captions and inline buttons are applied automatically from the default Telegram settings.
-                        </p>
-                        <ul class="list-unstyled mb-0">
-                            <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Numbers, currency pairs, and trade types are embedded directly in the artwork.</li>
-                            <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Images respect your brand background, logo, and watermark settings.</li>
-                            <li class="mb-0"><i class="bi bi-check text-gold me-2"></i>Need a different layout? Update the template in <strong>Template Editor</strong> and re-finalize.</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <style>
@@ -252,5 +227,51 @@
     .border-bottom-gold {
         border-bottom-color: var(--gold-primary) !important;
     }
+    
+    /* Finalize Button Loading State */
+    .finalize-submit-btn {
+        position: relative;
+        min-width: 160px;
+    }
+    
+    .finalize-submit-btn.loading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+    
+    .finalize-submit-btn.loading .btn-content {
+        display: none;
+    }
+    
+    .finalize-submit-btn.loading .btn-loading-spinner {
+        display: inline-flex !important;
+        align-items: center;
+    }
+    
+    .finalize-submit-btn .btn-loading-spinner {
+        display: none;
+    }
+    
+    .finalize-submit-btn .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+        border-width: 0.15em;
+    }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const finalizeForms = document.querySelectorAll('form[action*="finalize"]');
+    
+    finalizeForms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('.finalize-submit-btn');
+            if (submitBtn && !submitBtn.disabled) {
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

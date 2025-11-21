@@ -24,16 +24,6 @@
         </div>
     </div>
 
-    <!-- Validity Notice -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="alert alert-warning border-gold">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <strong>Important:</strong> Special prices are valid for up to <strong>6 hours</strong>, or until new special price types are added. After that, they will no longer be valid.
-            </div>
-        </div>
-    </div>
-
     <!-- Special Price Types Grid -->
     <div class="row g-4 price-dashboard-grid">
         {% for special_price_type in special_price_types %}
@@ -52,7 +42,8 @@
                             <a href="{% url 'special_price:delete_type' special_price_type.id %}" 
                                class="btn btn-danger price-action-btn" 
                                title="Delete Special Price Type"
-                               onclick="return confirm('Are you sure you want to delete this special price type? This will also delete all its price history.');">
+                               onclick="return confirm('Are you sure you want to delete this special price type? This will also delete all its price history.');"
+                               data-no-loading>
                                 <i class="bi bi-trash me-1"></i>
                                 <span class="text-nowrap">Delete</span>
                             </a>

@@ -14,6 +14,7 @@ from price_publisher.services.publisher import (
     PricePublisherService,
 )
 from .models import Finalization, FinalizedPriceHistory, SpecialPriceFinalization
+from setting.utils import log_finalize_event, log_telegram_event
 
 
 @login_required
@@ -218,12 +219,35 @@ def finalize_category(request, category_id):
                     price_history=item['price_history']
                 )
         
+        # Log the finalization
+        log_level = 'INFO' if message_sent else 'WARNING'
+        log_finalize_event(
+            level=log_level,
+            message=f'Category finalized: {category.name}',
+            details=f'Finalized {len(pending_prices)} price(s). Channel: {channel.name if channel else "None"}. Telegram sent: {message_sent}. Response: {publication_response or "N/A"}',
+            user=request.user
+        )
+        
         if message_sent:
+            # Log Telegram success
+            log_telegram_event(
+                level='INFO',
+                message=f'Category prices published to Telegram',
+                details=f'Category: {category.name}, Channel: {channel.name}, Prices count: {len(pending_prices)}',
+                user=request.user
+            )
             messages.success(
                 request,
                 f'Successfully finalized and published {len(pending_prices)} prices for category "{category.name}" as an image on Telegram.'
             )
         else:
+            # Log Telegram failure
+            log_telegram_event(
+                level='ERROR',
+                message=f'Failed to publish category prices to Telegram',
+                details=f'Category: {category.name}, Channel: {channel.name if channel else "None"}, Error: {publication_response}',
+                user=request.user
+            )
             messages.success(
                 request,
                 f'Successfully finalized {len(pending_prices)} prices for category "{category.name}". Telegram image publication failed.'
@@ -348,12 +372,35 @@ def finalize_special_price(request, special_price_history_id):
             notes=notes
         )
 
+        # Log the finalization
+        log_level = 'INFO' if message_sent else 'WARNING'
+        log_finalize_event(
+            level=log_level,
+            message=f'Special price finalized: {special_price_type.name}',
+            details=f'Price: {special_price_history.price}. Channel: {channel.name if channel else "None"}. Telegram sent: {message_sent}. Response: {publication_response or "N/A"}',
+            user=request.user
+        )
+        
         if message_sent:
+            # Log Telegram success
+            log_telegram_event(
+                level='INFO',
+                message=f'Special price published to Telegram',
+                details=f'Special price: {special_price_type.name}, Price: {special_price_history.price}, Channel: {channel.name}',
+                user=request.user
+            )
             messages.success(
                 request,
                 f'Successfully finalized and published special price "{special_price_type.name}" as an image on Telegram.'
             )
         else:
+            # Log Telegram failure
+            log_telegram_event(
+                level='ERROR',
+                message=f'Failed to publish special price to Telegram',
+                details=f'Special price: {special_price_type.name}, Channel: {channel.name if channel else "None"}, Error: {publication_response}',
+                user=request.user
+            )
             messages.success(
                 request,
                 f'Successfully finalized special price "{special_price_type.name}". Telegram image publication failed.'

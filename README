@@ -1,1 +1,333 @@
-we are in heaven now
+# Pardis Panel
+
+A comprehensive price management and publishing system for currency exchange operations. Pardis Panel provides a complete solution for managing exchange rates, tracking price history, generating branded price images, and automatically publishing them to Telegram channels.
+
+## 🚀 Features
+
+### Core Functionality
+
+- **Category-Based Price Management**: Organize currency pairs and price types into logical categories for better management
+- **Dual Price System**: 
+  - Regular prices organized by categories
+  - Special prices for promotional or time-sensitive rates
+- **Price History Tracking**: Complete audit trail of all price changes with timestamps and notes
+- **Currency Pair Management**: Support for multiple currencies with buy/sell trade types
+- **Price Finalization Workflow**: Review and finalize prices before publication with approval tracking
+
+### Publishing & Automation
+
+- **Automated Telegram Publishing**: Seamlessly publish price updates to multiple Telegram channels
+- **Custom Image Rendering**: Generate branded price images with customizable templates
+- **Template System**: 
+  - Default templates for general use
+  - Category-specific templates
+  - Special price templates
+  - Background images, logos, and watermarks support
+- **Visual Template Editor**: Drag-and-drop interface for creating and editing price templates
+- **Multi-Channel Support**: Manage multiple Telegram bots and channels
+
+### Analytics & Reporting
+
+- **Comprehensive Analytics Dashboard**: 
+  - Real-time price tracking with interactive charts
+  - Price trend analysis and volatility metrics
+  - Category summaries and statistics
+  - Top movers identification
+  - Finalization statistics
+- **Historical Data Analysis**: 30-day price history visualization
+- **Performance Metrics**: Track publication success rates and channel activity
+
+### User Management & Security
+
+- **Role-Based Access Control**: 
+  - Management role
+  - Employee role
+  - Developer role
+- **Custom Authentication**: Secure login system with session management
+- **Activity Logging**: Comprehensive logging system for all operations
+- **Audit Trail**: Track who finalized prices and when
+
+### Additional Features
+
+- **Settings Management**: Centralized configuration management
+- **Log Viewer**: View and filter application logs by level and source
+- **Persian Calendar Support**: Integration with jdatetime for Persian date handling
+- **Responsive UI**: Modern, mobile-friendly interface
+
+## 🏗️ Architecture
+
+### Technology Stack
+
+- **Backend**: Django 5.2+
+- **Database**: SQLite (development) / PostgreSQL (production-ready)
+- **Image Processing**: Pillow (PIL)
+- **Telegram Integration**: python-telegram-bot, Pyrogram
+- **REST API**: Django REST Framework
+- **Frontend**: HTML, CSS, JavaScript with Chart.js for analytics
+
+### Project Structure
+
+```
+PardisPanel/
+├── accounts/              # User authentication and management
+├── analysis/              # Analytics dashboard and reporting
+├── category/              # Category and price type management
+├── change_price/          # Price update functionality
+├── dashboard/             # Main dashboard
+├── finalize/              # Price finalization workflow
+├── price_publisher/       # Image rendering and Telegram publishing
+├── setting/               # System settings and logging
+├── special_price/         # Special price management
+├── telegram_app/          # Telegram bot and channel management
+├── template_editor/       # Visual template editor
+└── SarafiPardis/          # Main project configuration
+```
+
+### Key Modules
+
+#### Category Management (`category/`)
+- `Currency`: Currency definitions (code, name, symbol)
+- `Category`: Price categories for organization
+- `PriceType`: Price types within categories (currency pairs, trade direction)
+
+#### Price Management (`change_price/`)
+- `PriceHistory`: Historical record of all price changes
+- Bulk and individual price update interfaces
+- Price validation and constraints
+
+#### Special Prices (`special_price/`)
+- `SpecialPriceType`: Standalone special price types
+- `SpecialPriceHistory`: History tracking for special prices
+
+#### Finalization (`finalize/`)
+- `Finalization`: Tracks category price finalizations
+- `SpecialPriceFinalization`: Tracks special price finalizations
+- `FinalizedPriceHistory`: Links prices to finalizations
+
+#### Price Publisher (`price_publisher/`)
+- `PriceTemplate`: Template configuration (backgrounds, logos, watermarks)
+- Image rendering services:
+  - `PriceImageRenderer`: Main rendering engine
+  - `LegacyCategoryRenderer`: Legacy category support
+  - `TetherRenderer`: Specialized Tether rendering
+- `PricePublisherService`: High-level publishing coordination
+
+#### Template Editor (`template_editor/`)
+- Visual drag-and-drop template editor
+- RESTful API for template management
+- Element positioning and styling
+
+#### Analytics (`analysis/`)
+- Interactive charts and graphs
+- Statistical analysis (volatility, trends, averages)
+- Category and channel activity metrics
+
+#### Telegram Integration (`telegram_app/`)
+- `TelegramBot`: Bot token management
+- `TelegramChannel`: Channel configuration
+- `TelegramService`: Message and photo sending
+- Default message settings per bot
+
+## 📦 Installation
+
+### Prerequisites
+
+- Python 3.10+
+- pip
+- Virtual environment (recommended)
+
+### Setup Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd PardisPanel
+   ```
+
+2. **Create and activate virtual environment**
+   ```bash
+   python -m venv venv
+   # On Windows
+   venv\Scripts\activate
+   # On Linux/Mac
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Configure settings**
+   - Update `SarafiPardis/settings.py` with your configuration
+   - Set `SECRET_KEY`, `DEBUG`, and `ALLOWED_HOSTS`
+   - Configure database settings if using PostgreSQL
+
+5. **Run migrations**
+   ```bash
+   python manage.py migrate
+   ```
+
+6. **Create superuser**
+   ```bash
+   python manage.py createsuperuser
+   ```
+
+7. **Collect static files**
+   ```bash
+   python manage.py collectstatic
+   ```
+
+8. **Run development server**
+   ```bash
+   python manage.py runserver
+   ```
+
+## 🔧 Configuration
+
+### Telegram Setup
+
+1. Create Telegram bots via [@BotFather](https://t.me/botfather)
+2. Add bots in the admin panel (`/admin/telegram_app/telegrambot/`)
+3. Configure channels and add them to the system
+4. Set default message settings per bot if needed
+
+### Template Configuration
+
+1. Upload background images via admin panel
+2. Configure logos and watermarks
+3. Create category-specific or special price templates
+4. Use the visual template editor for custom layouts
+
+### User Roles
+
+- **Management**: Full access to all features
+- **Employee**: Standard operational access
+- **Developer**: Technical access with additional privileges
+
+## 📖 Usage
+
+### Price Management Workflow
+
+1. **Create Categories**: Organize your price types into categories
+2. **Define Price Types**: Create price types with currency pairs and trade directions
+3. **Update Prices**: Update prices individually or in bulk
+4. **Review**: Check pending prices in the finalization dashboard
+5. **Finalize**: Select prices, choose channel, add notes, and finalize
+6. **Publish**: System automatically renders image and publishes to Telegram
+
+### Special Prices
+
+- Create special price types independently
+- Update special prices separately from regular prices
+- Finalize and publish special prices individually
+
+### Analytics
+
+- Access the analytics dashboard to view:
+  - Price trends over time
+  - Category summaries
+  - Top movers
+  - Finalization statistics
+  - System-wide metrics
+
+### Template Editing
+
+- Use the visual template editor to:
+  - Position text and image elements
+  - Adjust fonts, colors, and sizes
+  - Preview templates before saving
+
+## 🔒 Security
+
+- All views require authentication (enforced by middleware)
+- Role-based access control
+- CSRF protection enabled
+- Secure session management
+- Input validation and sanitization
+
+## 📊 Database Models
+
+### Core Models
+
+- `CustomUser`: Extended user model with roles
+- `Currency`: Currency definitions
+- `Category`: Price categories
+- `PriceType`: Price type definitions
+- `PriceHistory`: Price change history
+- `SpecialPriceType`: Special price types
+- `SpecialPriceHistory`: Special price history
+- `Finalization`: Finalization records
+- `PriceTemplate`: Template configurations
+- `TelegramBot`: Telegram bot configurations
+- `TelegramChannel`: Telegram channel configurations
+- `Log`: Application logging
+
+## 🛠️ Development
+
+### Running Tests
+
+```bash
+python manage.py test
+```
+
+### Code Style
+
+Follow PEP 8 guidelines and Django best practices.
+
+### Adding New Features
+
+1. Create migrations for model changes: `python manage.py makemigrations`
+2. Apply migrations: `python manage.py migrate`
+3. Update admin configurations if needed
+4. Add URL patterns and views
+5. Create templates and static files
+
+## 📝 API Endpoints
+
+### Template Editor API
+
+- `GET /api/templates/`: List all templates
+- `POST /api/templates/`: Create new template
+- `GET /api/templates/{id}/`: Get template details
+- `PUT /api/templates/{id}/`: Update template
+- `DELETE /api/templates/{id}/`: Delete template
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Telegram publishing fails**
+   - Verify bot token is correct
+   - Ensure bot has permission to send messages to channel
+   - Check channel chat_id is correct
+
+2. **Image rendering errors**
+   - Verify template assets (backgrounds, fonts) exist
+   - Check file permissions
+   - Ensure Pillow is properly installed
+
+3. **Database errors**
+   - Run migrations: `python manage.py migrate`
+   - Check database connection settings
+
+## 📄 License
+
+[Specify your license here]
+
+## 👥 Contributors
+
+[Add contributors here]
+
+## 🔗 Links
+
+- Production: https://panel.sarafipardis.co.uk
+- Admin: https://admin.sarafipardis.co.uk
+
+## 📧 Support
+
+For support and questions, please contact the development team.
+
+---
+
+**Built with ❤️ for efficient currency exchange price management**

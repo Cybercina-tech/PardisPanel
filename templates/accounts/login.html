@@ -6,11 +6,26 @@
 
 {% block extra_head %}
 <style>
+    /* Hide navbar on login page */
+    #mainNavbar {
+        display: none !important;
+    }
+    
+    /* Hide footer on login page */
+    .footer {
+        display: none !important;
+    }
+    
+    /* Adjust main content margin when navbar is hidden */
+    main {
+        margin-top: 0 !important;
+    }
+    
     .login-page {
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: calc(100vh - 6rem);
+        min-height: 100vh;
     }
 
     .login-card {

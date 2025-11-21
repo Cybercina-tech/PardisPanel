@@ -1,8 +1,12 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}Analysis Hub{% endblock %}
+{% block title %}Analysis Hub - Sarafi Pardis Panel{% endblock %}
 
 {% block extra_head %}
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-0pCuwcZFgPDFoGCGuAycbzh144uvEca/0Vrz1IFXpgwY/ptvO52zJQA2Me5Bjq4U" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.min.js" integrity="sha384-2nMaasa7xwa3bPTsp9SWZuvLaYGu9o3z7C9Z1ONTpMtJJTnKCiw0j5djPwO1smim" crossorigin="anonymous"></script>
 <style>
@@ -13,9 +17,26 @@
         color: var(--bs-body-color);
     }
 
-    .insight-card .badge {
-        font-size: 0.75rem;
-        letter-spacing: 0.02em;
+    .stat-card {
+        border-radius: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
     }
 
     .price-card {
@@ -28,6 +49,10 @@
     .price-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 16px 40px -24px rgba(15, 23, 42, 0.45);
+    }
+
+    .price-card.special {
+        border-left: 4px solid #a855f7;
     }
 
     .price-metric {
@@ -65,149 +90,349 @@
         background: rgba(148, 163, 184, 0.12);
         color: #475569;
     }
+
+    .volatility-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+    }
+
+    .volatility-low {
+        background: rgba(34, 197, 94, 0.15);
+        color: #16a34a;
+    }
+
+    .volatility-medium {
+        background: rgba(251, 191, 36, 0.15);
+        color: #d97706;
+    }
+
+    .volatility-high {
+        background: rgba(239, 68, 68, 0.15);
+        color: #dc2626;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="mb-4">
-    <div class="row g-4 align-items-end">
-        <div class="col-lg-8">
-            <div class="insight-card p-4 h-100">
-                <div class="d-flex justify-content-between flex-wrap gap-3">
-                    <div>
-                        <span class="badge bg-primary-subtle text-primary fw-semibold text-uppercase">Live Market Intelligence</span>
-                        <h1 class="mt-3 mb-2 display-6 fw-semibold">Analysis Hub</h1>
-                        <p class="mb-0 fs-6 text-secondary">
-                            Track market momentum, spot anomalies, and uncover trends across every price stream in real time.
-                        </p>
+<div class="py-4">
+    <!-- Header Section -->
+    <section class="mb-4">
+        <div class="row g-4 align-items-end">
+            <div class="col-lg-8">
+                <div class="insight-card p-4 h-100">
+                    <div class="d-flex justify-content-between flex-wrap gap-3">
+                        <div>
+                            <span class="badge bg-primary-subtle text-primary fw-semibold text-uppercase">Live Market Intelligence</span>
+                            <h1 class="mt-3 mb-2 display-6 fw-semibold text-gold">
+                                <i class="fas fa-chart-line me-2"></i>Analysis Hub
+                            </h1>
+                            <p class="mb-0 fs-6 text-white-50">
+                                Track market momentum, spot anomalies, and uncover trends across every price stream in real time.
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-white-50">Snapshot updated</small>
+                            <div class="fs-5 fw-semibold text-gold">{{ generated_at|date:"M j, Y H:i" }}</div>
+                            <small class="text-white-50">{{ generated_at|timesince }} ago</small>
+                        </div>
                     </div>
-                    <div class="text-end">
-                        <small class="text-muted">Snapshot updated</small>
-                        <div class="fs-5 fw-semibold">{{ generated_at|date:"M j, Y H:i" }}</div>
-                        <small class="text-muted">{{ generated_at|timesince }} ago</small>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-card p-4 h-100 theme-card-bg">
+                    <h5 class="fw-semibold mb-3 text-gold">
+                        <i class="fas fa-fire me-2"></i>Top Movers
+                    </h5>
+                    {% if top_movers %}
+                        <ul class="list-unstyled mb-0">
+                            {% for mover in top_movers %}
+                                <li class="d-flex justify-content-between align-items-center mb-3">
+                                    <div>
+                                        <div class="fw-semibold text-white">{{ mover.pair }} • {{ mover.trade }}</div>
+                                        <small class="text-white-50">{{ mover.category }}</small>
+                                    </div>
+                                    <span class="trend-chip {% if mover.change_percent > 0 %}up{% elif mover.change_percent < 0 %}down{% else %}flat{% endif %}">
+                                        <i class="fas {% if mover.change_percent > 0 %}fa-arrow-trend-up{% elif mover.change_percent < 0 %}fa-arrow-trend-down{% else %}fa-minus{% endif %}"></i>
+                                        {% if mover.change_percent is not None %}
+                                            {{ mover.change_percent|floatformat:2 }}%
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-white-50 mb-0">We will highlight momentum once enough price history is recorded.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overall Statistics -->
+    <section class="mb-4">
+        <h3 class="text-gold mb-3">
+            <i class="fas fa-chart-bar me-2"></i>System Overview
+        </h3>
+        <div class="row g-3">
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card p-3 h-100">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-primary-opacity me-3">
+                            <i class="fas fa-coins text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="text-white-50 small">Total Price Updates</div>
+                            <div class="h4 mb-0 text-gold fw-bold">{{ overall_stats.total_price_updates|default:0 }}</div>
+                            <small class="text-success">+{{ overall_stats.week_price_updates|default:0 }} this week</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card p-3 h-100">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-purple-opacity me-3">
+                            <i class="fas fa-star text-purple"></i>
+                        </div>
+                        <div>
+                            <div class="text-white-50 small">Special Price Updates</div>
+                            <div class="h4 mb-0 text-gold fw-bold">{{ overall_stats.total_special_updates|default:0 }}</div>
+                            <small class="text-success">+{{ overall_stats.week_special_updates|default:0 }} this week</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card p-3 h-100">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-success-opacity me-3">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                        <div>
+                            <div class="text-white-50 small">Total Finalizations</div>
+                            <div class="h4 mb-0 text-gold fw-bold">{{ finalization_stats.total_finalizations|default:0 }}</div>
+                            <small class="text-success">+{{ finalization_stats.week_finalizations|default:0 }} this week</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card p-3 h-100">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-info-opacity me-3">
+                            <i class="fab fa-telegram text-info"></i>
+                        </div>
+                        <div>
+                            <div class="text-white-50 small">Active Channels</div>
+                            <div class="h4 mb-0 text-gold fw-bold">{{ overall_stats.active_channels|default:0 }}</div>
+                            <small class="text-white-50">{{ finalization_stats.successful_telegram|default:0 }} successful</small>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="chart-card p-4 h-100">
-                <h5 class="fw-semibold mb-3">Top Movers</h5>
-                {% if top_movers %}
-                    <ul class="list-unstyled mb-0">
-                        {% for mover in top_movers %}
-                            <li class="d-flex justify-content-between align-items-center mb-3">
-                                <div>
-                                    <div class="fw-semibold">{{ mover.pair }} • {{ mover.trade }}</div>
-                                    <small class="text-muted">{{ mover.category }}</small>
-                                </div>
-                                <span class="trend-chip {% if mover.change_percent > 0 %}up{% elif mover.change_percent < 0 %}down{% else %}flat{% endif %}">
-                                    <i class="fas {% if mover.change_percent > 0 %}fa-arrow-trend-up{% elif mover.change_percent < 0 %}fa-arrow-trend-down{% else %}fa-minus{% endif %}"></i>
-                                    {% if mover.change_percent is not None %}
-                                        {{ mover.change_percent|floatformat:2 }}%
-                                    {% else %}
-                                        —
-                                    {% endif %}
-                                </span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="text-muted mb-0">We will highlight momentum once enough price history is recorded.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</section>
+    </section>
 
-<section class="mb-5">
-    <div class="row g-4">
-        {% for card in latest_cards %}
-            <div class="col-xl-3 col-lg-4 col-md-6">
-                <article class="price-card p-4 h-100">
+    <!-- Price Cards Section -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="text-gold mb-0">
+                <i class="fas fa-list me-2"></i>Regular Prices
+            </h3>
+            <span class="badge badge-active">{{ latest_cards|length }} active</span>
+        </div>
+        <div class="row g-4">
+            {% for card in latest_cards %}
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <article class="price-card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <div class="fw-semibold text-white">{{ card.pair }}</div>
+                                <small class="text-white-50">{{ card.category }} • {{ card.trade }}</small>
+                            </div>
+                            <span class="trend-chip {% if card.change_percent > 0 %}up{% elif card.change_percent < 0 %}down{% else %}flat{% endif %}">
+                                <i class="fas {% if card.change_percent > 0 %}fa-arrow-up-right{% elif card.change_percent < 0 %}fa-arrow-down-right{% else %}fa-minus{% endif %}"></i>
+                                {% if card.change_percent is not None %}
+                                    {{ card.change_percent|floatformat:2 }}%
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="price-metric text-gold">{{ card.latest_price|floatformat:2 }}</div>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <small class="text-white-50">Last update</small>
+                            <small class="text-white-50">{{ card.timestamp|timesince }} ago</small>
+                        </div>
+                    </article>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-info mb-0">
+                        No price history is available yet. As soon as data streams in, we will render rich insights here.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Special Prices Section -->
+    {% if special_cards %}
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="text-gold mb-0">
+                <i class="fas fa-star me-2"></i>Special Prices
+            </h3>
+            <span class="badge badge-active">{{ special_cards|length }} active</span>
+        </div>
+        <div class="row g-4">
+            {% for card in special_cards %}
+                <div class="col-xl-3 col-lg-4 col-md-6">
+                    <article class="price-card special p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <div class="fw-semibold text-white">{{ card.name }}</div>
+                                <small class="text-white-50">{{ card.pair }} • {{ card.trade }}</small>
+                            </div>
+                            <span class="trend-chip {% if card.change_percent > 0 %}up{% elif card.change_percent < 0 %}down{% else %}flat{% endif %}">
+                                <i class="fas {% if card.change_percent > 0 %}fa-arrow-up-right{% elif card.change_percent < 0 %}fa-arrow-down-right{% else %}fa-minus{% endif %}"></i>
+                                {% if card.change_percent is not None %}
+                                    {{ card.change_percent|floatformat:2 }}%
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="price-metric text-gold">{{ card.latest_price|floatformat:2 }}</div>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <small class="text-white-50">Last update</small>
+                            <small class="text-white-50">{{ card.timestamp|timesince }} ago</small>
+                        </div>
+                    </article>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Charts Section -->
+    <section class="mb-5">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="chart-card p-4 h-100 theme-card-bg">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
-                            <div class="fw-semibold">{{ card.pair }}</div>
-                            <small class="text-muted">{{ card.category }} • {{ card.trade }}</small>
+                            <h5 class="fw-semibold mb-1 text-gold">
+                                <i class="fas fa-chart-line me-2"></i>Price Trajectories
+                            </h5>
+                            <small class="text-white-50">30-day movement per instrument</small>
                         </div>
-                        <span class="trend-chip {% if card.change_percent > 0 %}up{% elif card.change_percent < 0 %}down{% else %}flat{% endif %}">
-                            <i class="fas {% if card.change_percent > 0 %}fa-arrow-up-right{% elif card.change_percent < 0 %}fa-arrow-down-right{% else %}fa-minus{% endif %}"></i>
-                            {% if card.change_percent is not None %}
-                                {{ card.change_percent|floatformat:2 }}%
-                            {% else %}
-                                —
-                            {% endif %}
-                        </span>
+                        <div class="d-flex gap-2 align-items-center">
+                            <span class="badge badge-secondary">Zoom & drag</span>
+                        </div>
                     </div>
-                    <div class="price-metric">{{ card.latest_price|floatformat:2 }}</div>
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <small class="text-muted">Last update</small>
-                        <small class="text-muted">{{ card.timestamp|timesince }} ago</small>
-                    </div>
-                </article>
-            </div>
-        {% empty %}
-            <div class="col-12">
-                <div class="alert alert-info mb-0">
-                    No price history is available yet. As soon as data streams in, we will render rich insights here.
+                    <canvas id="priceTimelineChart" height="280"></canvas>
                 </div>
             </div>
-        {% endfor %}
-    </div>
-</section>
-
-<section class="mb-5">
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="chart-card p-4 h-100">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <h5 class="fw-semibold mb-1">Price Trajectories</h5>
-                        <small class="text-muted">30-day movement per instrument</small>
+            <div class="col-lg-4">
+                <div class="chart-card p-4 h-100 theme-card-bg">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h5 class="fw-semibold mb-1 text-gold">
+                                <i class="fas fa-chart-bar me-2"></i>Category Pulse
+                            </h5>
+                            <small class="text-white-50">Average price by category</small>
+                        </div>
                     </div>
-                    <div class="d-flex gap-2 align-items-center">
-                        <span class="badge bg-secondary-subtle text-secondary">Zoom & drag</span>
-                    </div>
+                    <canvas id="categorySummaryChart" height="280"></canvas>
                 </div>
-                <canvas id="priceTimelineChart" height="280"></canvas>
             </div>
         </div>
-        <div class="col-lg-4">
-            <div class="chart-card p-4 h-100">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <h5 class="fw-semibold mb-1">Category Pulse</h5>
-                        <small class="text-muted">Average price by category</small>
-                    </div>
-                </div>
-                <canvas id="categorySummaryChart" height="280"></canvas>
-            </div>
-        </div>
-    </div>
-</section>
+    </section>
 
+    <!-- Finalization Statistics -->
+    {% if finalization_stats.category_stats or finalization_stats.channel_stats %}
+    <section class="mb-5">
+        <h3 class="text-gold mb-3">
+            <i class="fas fa-paper-plane me-2"></i>Publication Statistics
+        </h3>
+        <div class="row g-4">
+            {% if finalization_stats.category_stats %}
+            <div class="col-md-6">
+                <div class="chart-card p-4 theme-card-bg">
+                    <h5 class="fw-semibold mb-3 text-gold">Most Active Categories</h5>
+                    <ul class="list-unstyled mb-0">
+                        {% for stat in finalization_stats.category_stats %}
+                        <li class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom border-secondary">
+                            <div>
+                                <div class="fw-semibold text-white">{{ stat.category__name }}</div>
+                                <small class="text-white-50">{{ stat.count }} finalization{{ stat.count|pluralize }}</small>
+                            </div>
+                            <div class="badge badge-active">{{ stat.count }}</div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+            {% if finalization_stats.channel_stats %}
+            <div class="col-md-6">
+                <div class="chart-card p-4 theme-card-bg">
+                    <h5 class="fw-semibold mb-3 text-gold">Most Active Channels</h5>
+                    <ul class="list-unstyled mb-0">
+                        {% for stat in finalization_stats.channel_stats %}
+                        <li class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom border-secondary">
+                            <div>
+                                <div class="fw-semibold text-white">{{ stat.channel__name }}</div>
+                                <small class="text-white-50">{{ stat.count }} publication{{ stat.count|pluralize }}</small>
+                            </div>
+                            <div class="badge badge-active">{{ stat.count }}</div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+
+<style>
+.bg-primary-opacity { background-color: rgba(37, 99, 235, 0.1); }
+.bg-purple-opacity { background-color: rgba(168, 85, 247, 0.1); }
+.bg-success-opacity { background-color: rgba(34, 197, 94, 0.1); }
+.bg-info-opacity { background-color: rgba(14, 165, 233, 0.1); }
+.text-purple { color: #a855f7; }
+</style>
 {% endblock %}
 
 {% block extra_scripts %}
 {{ timeline_data_json|json_script:"analysis-timeline-data" }}
+{{ special_timeline_data_json|json_script:"analysis-special-timeline-data" }}
 {{ category_summary_json|json_script:"analysis-category-data" }}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const timelineData = JSON.parse(document.getElementById("analysis-timeline-data").textContent || "[]");
+        const specialTimelineData = JSON.parse(document.getElementById("analysis-special-timeline-data").textContent || "[]");
         const categoryData = JSON.parse(document.getElementById("analysis-category-data").textContent || "[]");
 
+        // Combine regular and special price timelines
+        const allTimelineData = [...timelineData, ...specialTimelineData];
+
         const timelineCtx = document.getElementById("priceTimelineChart");
-        if (timelineCtx && timelineData.length) {
+        if (timelineCtx && allTimelineData.length) {
             new Chart(timelineCtx, {
                 type: "line",
                 data: {
-                    datasets: timelineData.map(dataset => ({
+                    datasets: allTimelineData.map(dataset => ({
                         ...dataset,
                         parsing: false,
                         pointRadius: 0,
                         pointHitRadius: 8,
-                        segment: {
-                            borderDash: ctx => ctx.p1DataIndex % 2 === 0 ? [] : [6, 6],
-                        },
                     })),
                 },
                 options: {
@@ -222,6 +447,7 @@
                             position: "bottom",
                             labels: {
                                 usePointStyle: true,
+                                color: 'rgba(255, 255, 255, 0.8)',
                             },
                         },
                         tooltip: {
@@ -240,11 +466,21 @@
                                 unit: "day",
                                 tooltipFormat: "MMM d, HH:mm",
                             },
-                            grid: { display: false },
+                            grid: { 
+                                display: false,
+                                color: 'rgba(255, 255, 255, 0.1)',
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                            },
                         },
                         y: {
                             beginAtZero: false,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                            },
                             ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
                                 callback: value => value.toLocaleString(),
                             },
                         },
@@ -252,7 +488,7 @@
                 },
             });
         } else if (timelineCtx) {
-            timelineCtx.closest(".chart-card").innerHTML = '<div class="text-muted">Not enough price history to display trajectories yet.</div>';
+            timelineCtx.closest(".chart-card").innerHTML = '<div class="text-white-50 p-4">Not enough price history to display trajectories yet.</div>';
         }
 
         const categoryCtx = document.getElementById("categorySummaryChart");
@@ -268,8 +504,8 @@
                         {
                             label: "Average price",
                             data: averages,
-                            backgroundColor: "rgba(56, 189, 248, 0.35)",
-                            borderColor: "rgba(14, 165, 233, 0.85)",
+                            backgroundColor: "rgba(255, 215, 0, 0.35)",
+                            borderColor: "rgba(255, 215, 0, 0.85)",
                             borderRadius: 12,
                             borderWidth: 1.2,
                         },
@@ -291,12 +527,23 @@
                     },
                     scales: {
                         x: {
-                            ticks: { maxRotation: 0, minRotation: 0 },
-                            grid: { display: false },
+                            ticks: { 
+                                maxRotation: 0, 
+                                minRotation: 0,
+                                color: 'rgba(255, 255, 255, 0.7)',
+                            },
+                            grid: { 
+                                display: false,
+                                color: 'rgba(255, 255, 255, 0.1)',
+                            },
                         },
                         y: {
                             beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                            },
                             ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
                                 callback: value => value.toLocaleString(),
                             },
                         },
@@ -304,9 +551,8 @@
                 },
             });
         } else if (categoryCtx) {
-            categoryCtx.closest(".chart-card").innerHTML = '<div class="text-muted">No categorical insights yet. Make sure prices are recorded for each category.</div>';
+            categoryCtx.closest(".chart-card").innerHTML = '<div class="text-white-50 p-4">No categorical insights yet. Make sure prices are recorded for each category.</div>';
         }
     });
 </script>
 {% endblock %}
-
