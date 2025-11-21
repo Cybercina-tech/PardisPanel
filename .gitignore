@@ -35,6 +35,8 @@ db.sqlite3-journal
 /media
 /staticfiles
 /static_collected
+staticfiles/
+public/staticfiles/
 *.sqlite3
 *.sqlite3-journal
 
@@ -120,3 +122,22 @@ cython_debug/
 .Trashes
 ehthumbs.db
 Desktop.ini
+
+# Django static files (collected)
+staticfiles/
+public/staticfiles/
+static_root/
+
+# Django secret keys and sensitive files
+*.secret
+*.key
+secret_key.txt
+.secret_key
+
+# Process files
+*.pid
+*.sock
+
+# Django migrations (if you want to ignore them - currently commented)
+# */migrations/*.py
+# !*/migrations/__init__.py    
