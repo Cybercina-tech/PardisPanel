@@ -142,9 +142,23 @@ def template_delete(request, pk: int):
 
 @login_required
 def template_editor_redirect(request, pk: int):
-    template = get_object_or_404(PriceTemplate, pk=pk)
-    editor_url = reverse("template_editor_frontend:editor", args=[template.pk])
-    return redirect(editor_url)
+    price_template = get_object_or_404(PriceTemplate, pk=pk)
+    # Try to find a matching Template in the new template_editor system
+    from template_editor.models import Template
+    try:
+        # Try to find by name first
+        template = Template.objects.get(name=price_template.name)
+        editor_url = reverse("template_editor_frontend:edit", args=[template.pk])
+        return redirect(editor_url)
+    except Template.DoesNotExist:
+        # If no matching template found, redirect to template list
+        # User can create a new template or edit existing ones
+        messages.info(
+            request,
+            f"No matching template found for '{price_template.name}'. "
+            "Please create a template in the Template Manager first."
+        )
+        return redirect("template_editor_frontend:list")
 
 
 @login_required

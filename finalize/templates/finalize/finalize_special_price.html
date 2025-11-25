@@ -5,10 +5,10 @@
 {% block title %}Finalize Special Price: {{ special_price_type.name }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 special-finalize-page">
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <div>
                     <h1 class="h3 mb-0 text-gold">
                         <i class="bi bi-star me-2"></i>Finalize: {{ special_price_type.name }}
@@ -23,10 +23,61 @@
         </div>
     </div>
 
+    <!-- Quick Stats -->
+    <div class="row row-cols-1 row-cols-md-3 g-3 mb-4 special-quick-stats">
+        <div class="col">
+            <div class="stat-card price-card h-100">
+                <div class="stat-icon">
+                    <i class="bi bi-cash-coin"></i>
+                </div>
+                <div class="stat-label">Current Price</div>
+                <div class="stat-value text-gold">
+                    {{ special_price_history.price|floatformat:2 }}
+                </div>
+                <div class="stat-subtext">
+                    Updated {{ special_price_history.updated_at|date:"M d, Y H:i" }}
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card pair-card h-100">
+                <div class="stat-icon">
+                    <i class="bi bi-globe2"></i>
+                </div>
+                <div class="stat-label">Currency Pair</div>
+                <div class="stat-value">
+                    {{ special_price_type.source_currency.code }} / {{ special_price_type.target_currency.code }}
+                </div>
+                <div class="stat-subtext text-white-50">
+                    Trade type: {{ special_price_type.get_trade_type_display }}
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="stat-card status-card h-100">
+                <div class="stat-icon">
+                    <i class="bi bi-activity"></i>
+                </div>
+                <div class="stat-label">Finalization Status</div>
+                {% if is_already_finalized %}
+                <span class="status-pill status-pill-warning">Previously Published</span>
+                <div class="stat-subtext text-white-50">
+                    Last finalize: {{ existing_finalization.finalized_at|date:"M d, Y H:i" }}
+                </div>
+                {% else %}
+                <span class="status-pill status-pill-success">Ready to Publish</span>
+                <div class="stat-subtext text-white-50">
+                    No prior finalization detected
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <!-- Special Price Preview -->
     <div class="row mb-4">
-        <div class="col-12">
-            <div class="card bg-dark border-gold">
+        <div class="col-lg-8 mb-3 mb-lg-0">
+            <div class="card bg-dark border-gold h-100">
                 <div class="card-header bg-black-secondary border-bottom-gold">
                     <h5 class="card-title mb-0 text-gold">
                         <i class="bi bi-info-circle me-2"></i>Special Price Details
@@ -77,11 +128,63 @@
                         </div>
                     </div>
                     {% if is_already_finalized %}
-                    <div class="alert alert-warning mt-3">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        <strong>Note:</strong> This special price has already been finalized on 
-                        {{ existing_finalization.finalized_at|date:"M d, Y H:i" }}.
-                        You can still finalize it again to publish an updated version.
+                    <div class="alert alert-warning mt-4">
+                        <div class="d-flex align-items-start gap-2">
+                            <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                            <div>
+                                <strong>Already published once</strong>
+                                <p class="mb-0 small">Finalized on {{ existing_finalization.finalized_at|date:"M d, Y H:i" }}. You can still re-publish with the updated data.</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card bg-dark border-gold h-100 timeline-card">
+                <div class="card-header bg-black-secondary border-bottom-gold">
+                    <h5 class="card-title mb-0 text-gold">
+                        <i class="bi bi-clock-history me-2"></i>Activity Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="timeline-list">
+                        <li>
+                            <div class="timeline-point bg-gold"></div>
+                            <div>
+                                <p class="timeline-title">Price updated</p>
+                                <p class="timeline-meta">
+                                    {{ special_price_history.updated_at|date:"M d, Y H:i" }}
+                                    {% if special_price_history.updated_at|to_jalali:"short" %}
+                                    <span class="text-white-50 d-block">{{ special_price_history.updated_at|to_jalali:"short" }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </li>
+                        {% if is_already_finalized %}
+                        <li>
+                            <div class="timeline-point bg-warning"></div>
+                            <div>
+                                <p class="timeline-title">Finalized previously</p>
+                                <p class="timeline-meta mb-0">{{ existing_finalization.finalized_at|date:"M d, Y H:i" }}</p>
+                            </div>
+                        </li>
+                        {% endif %}
+                        <li>
+                            <div class="timeline-point bg-info"></div>
+                            <div>
+                                <p class="timeline-title">Next step</p>
+                                <p class="timeline-meta mb-0">Select a Telegram channel and publish.</p>
+                            </div>
+                        </li>
+                    </ul>
+                    {% if special_price_history.notes %}
+                    <div class="notes-preview mt-3">
+                        <div class="notes-label">
+                            <i class="bi bi-journal-text me-1"></i>Latest note
+                        </div>
+                        <p class="notes-content mb-0">{{ special_price_history.notes }}</p>
                     </div>
                     {% endif %}
                 </div>
@@ -91,20 +194,24 @@
 
     <!-- Finalization Form -->
     <div class="row">
-        <div class="col-12 col-md-8 mx-auto">
-            <div class="card bg-dark border-gold">
+        <div class="col-12 col-lg-10 mx-auto">
+            <div class="card bg-dark border-gold form-card">
                 <div class="card-header bg-black-secondary border-bottom-gold">
-                    <h5 class="card-title mb-0 text-gold">
-                        <i class="bi bi-send me-2"></i>Publish to Telegram
-                    </h5>
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                        <h5 class="card-title mb-0 text-gold">
+                            <i class="bi bi-send me-2"></i>Publish to Telegram
+                        </h5>
+                        <span class="text-white-50 small">Ensure the selected channel is ready before publishing.</span>
+                    </div>
                 </div>
                 <div class="card-body">
                     <form method="post" action="{% url 'finalize:finalize_special_price' special_price_history.id %}">
                         {% csrf_token %}
                         
-                        <div class="mb-3">
-                            <label for="channel_id" class="form-label text-gold">
-                                <i class="bi bi-broadcast me-2"></i>Telegram Channel
+                        <div class="mb-4">
+                            <label for="channel_id" class="form-label text-gold d-flex align-items-center gap-2">
+                                <i class="bi bi-broadcast"></i>
+                                Telegram Channel
                             </label>
                             <select name="channel_id" id="channel_id" class="form-select theme-input" required>
                                 <option value="">-- Select a channel --</option>
@@ -117,25 +224,29 @@
                                 {% endfor %}
                             </select>
                             {% if not channels %}
-                            <div class="form-text text-warning">
-                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                            <div class="form-text text-warning d-flex align-items-center gap-2 mt-2">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
                                 No active Telegram channels found. Please configure channels in Settings.
                             </div>
                             {% endif %}
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="notes" class="form-label text-gold">
-                                <i class="bi bi-sticky me-2"></i>Notes (Optional)
+                        <div class="mb-4">
+                            <label for="notes" class="form-label text-gold d-flex align-items-center gap-2">
+                                <i class="bi bi-sticky"></i>
+                                Notes (Optional)
                             </label>
                             <textarea name="notes" id="notes" class="form-control theme-input" rows="3" 
                                       placeholder="Add any notes about this finalization..."></textarea>
+                            <small class="text-white-50">Notes are stored with the finalization record and shown on the card footer.</small>
                         </div>
                         
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle me-2"></i>
-                            <strong>Note:</strong> This special price will be published individually to the selected Telegram channel. 
-                            Special prices are posted one at a time, not in bulk.
+                        <div class="alert alert-info enhanced-alert">
+                            <i class="bi bi-info-circle me-2 fs-5"></i>
+                            <div>
+                                <strong>Publishing tip</strong>
+                                <p class="mb-0 small">This special price is sent as a standalone image. Each finalization targets only the selected channel.</p>
+                            </div>
                         </div>
                         
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -161,6 +272,164 @@
 </div>
 
 <style>
+    .special-finalize-page {
+        --special-card-border: rgba(212, 175, 55, 0.2);
+        --special-card-bg: rgba(15, 15, 15, 0.65);
+        --special-text-muted: rgba(255, 255, 255, 0.65);
+        --special-text-body: rgba(255, 255, 255, 0.85);
+        --special-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+        --special-pill-success-bg: rgba(43, 169, 122, 0.2);
+        --special-pill-success-text: #2ba97a;
+        --special-pill-warning-bg: rgba(212, 175, 55, 0.18);
+        --special-pill-warning-text: var(--gold-primary);
+        --special-timeline-meta: rgba(255, 255, 255, 0.65);
+        --special-notes-bg: rgba(212, 175, 55, 0.05);
+        --special-notes-border: rgba(212, 175, 55, 0.4);
+        --special-alert-info-bg: rgba(33, 150, 243, 0.1);
+        --special-alert-info-border: rgba(33, 150, 243, 0.3);
+        --special-alert-info-text: rgba(33, 150, 243, 0.9);
+        background: radial-gradient(circle at top, rgba(212, 175, 55, 0.08), transparent 45%);
+    }
+
+    html[data-theme="light"] .special-finalize-page {
+        --special-card-border: rgba(58, 124, 235, 0.2);
+        --special-card-bg: rgba(255, 255, 255, 0.9);
+        --special-text-muted: rgba(34, 34, 34, 0.6);
+        --special-text-body: rgba(10, 15, 34, 0.85);
+        --special-shadow: 0 18px 36px rgba(33, 50, 115, 0.16);
+        --special-pill-success-bg: rgba(43, 169, 122, 0.18);
+        --special-pill-success-text: #1f7a58;
+        --special-pill-warning-bg: rgba(58, 124, 235, 0.18);
+        --special-pill-warning-text: #284070;
+        --special-timeline-meta: rgba(34, 34, 34, 0.55);
+        --special-notes-bg: rgba(58, 124, 235, 0.08);
+        --special-notes-border: rgba(58, 124, 235, 0.25);
+        --special-alert-info-bg: rgba(58, 124, 235, 0.08);
+        --special-alert-info-border: rgba(58, 124, 235, 0.25);
+        --special-alert-info-text: rgba(37, 71, 153, 0.95);
+        background: radial-gradient(circle at top, rgba(58, 124, 235, 0.16), transparent 50%);
+    }
+
+    .special-quick-stats .stat-card {
+        border: 1px solid var(--special-card-border);
+        border-radius: var(--radius-lg, 20px);
+        padding: 1.4rem;
+        background: var(--special-card-bg);
+        height: 100%;
+        box-shadow: var(--special-shadow);
+    }
+
+    .stat-card .stat-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: rgba(212, 175, 55, 0.18);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold-primary);
+        margin-bottom: 0.75rem;
+        font-size: 1.3rem;
+    }
+
+    html[data-theme="light"] .stat-card .stat-icon {
+        background: rgba(58, 124, 235, 0.16);
+        color: var(--color-blue-strong, #3a7ceb);
+    }
+
+    .stat-card .stat-label {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--special-text-muted);
+    }
+
+    .stat-card .stat-value {
+        font-size: 1.7rem;
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+        color: var(--special-text-body);
+    }
+
+    .stat-card .stat-subtext {
+        font-size: 0.85rem;
+        color: var(--special-text-muted);
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 0.9rem;
+        border-radius: var(--radius-pill, 999px);
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-pill-success {
+        background: var(--special-pill-success-bg);
+        color: var(--special-pill-success-text);
+    }
+
+    .status-pill-warning {
+        background: var(--special-pill-warning-bg);
+        color: var(--special-pill-warning-text);
+    }
+
+    .timeline-card .timeline-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .timeline-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.9rem;
+    }
+
+    .timeline-point {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-top: 0.35rem;
+    }
+
+    .timeline-title {
+        margin: 0;
+        font-weight: 600;
+        color: var(--special-text-body);
+    }
+
+    .timeline-meta {
+        margin-bottom: 0;
+        font-size: 0.9rem;
+        color: var(--special-timeline-meta);
+    }
+
+    .notes-preview {
+        border: 1px dashed var(--special-notes-border);
+        border-radius: var(--radius-md, 16px);
+        padding: 0.9rem 1.1rem;
+        background: var(--special-notes-bg);
+    }
+
+    .notes-label {
+        font-size: 0.85rem;
+        color: var(--gold-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.35rem;
+    }
+
+    .notes-content {
+        color: var(--special-text-body);
+        font-size: 0.95rem;
+    }
+
     .border-gold {
         border-color: var(--gold-primary) !important;
     }
@@ -205,17 +474,34 @@
         color: #e0e0e0;
     }
     
+    html[data-theme="light"] .theme-input {
+        background-color: rgba(255, 255, 255, 0.95);
+        border-color: rgba(58, 124, 235, 0.25);
+        color: var(--color-text, #333);
+    }
+
     .theme-input:focus {
         background-color: var(--black-secondary);
         border-color: var(--gold-primary);
         color: #e0e0e0;
         box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
     }
+
+    html[data-theme="light"] .theme-input:focus {
+        background-color: rgba(255, 255, 255, 0.98);
+        border-color: rgba(58, 124, 235, 0.5);
+        color: var(--color-text, #333);
+        box-shadow: 0 0 0 0.2rem rgba(58, 124, 235, 0.25);
+    }
     
     .text-white-50 {
         color: rgba(255, 255, 255, 0.5) !important;
     }
     
+    html[data-theme="light"] .text-white-50 {
+        color: rgba(34, 34, 34, 0.45) !important;
+    }
+
     .text-gold-light {
         color: rgba(212, 175, 55, 0.7) !important;
     }
@@ -250,9 +536,23 @@
     }
     
     .alert-info {
-        background-color: rgba(33, 150, 243, 0.1) !important;
-        border-color: rgba(33, 150, 243, 0.3) !important;
-        color: rgba(33, 150, 243, 0.9) !important;
+        background-color: var(--special-alert-info-bg) !important;
+        border-color: var(--special-alert-info-border) !important;
+        color: var(--special-alert-info-text) !important;
+    }
+
+    .enhanced-alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+
+    .form-card .form-label {
+        font-weight: 600;
+    }
+
+    .form-card .theme-input {
+        min-height: 3rem;
     }
     
     /* Finalize Button Loading State */

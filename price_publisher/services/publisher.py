@@ -26,6 +26,10 @@ from price_publisher.services.tether_renderer import (
     render_tether_board,
     supports_tether_category,
 )
+from price_publisher.services.special_offer_renderer import (
+    render_special_offer_board,
+    supports_special_offer_type,
+)
 from telegram_app.services.telegram_client import TelegramService
 
 
@@ -171,25 +175,34 @@ class PricePublisherService:
     ) -> PublicationResult:
         """Render and post a special price to Telegram."""
 
-        subtitle = self._build_pricetype_subtitle(special_price_type)
+        custom_offer = supports_special_offer_type(special_price_type)
+        if custom_offer:
+            try:
+                image = render_special_offer_board(
+                    special_price_type=special_price_type,
+                    price_history=price_history,
+                )
+            except FileNotFoundError as exc:
+                raise PricePublicationError(str(exc)) from exc
+        else:
+            subtitle = self._build_pricetype_subtitle(special_price_type)
+            entry = PriceEntry(
+                title=special_price_type.name,
+                price=self._format_price(price_history.price),
+                subtitle=subtitle,
+                meta=self._build_price_meta(price_history),
+            )
 
-        entry = PriceEntry(
-            title=special_price_type.name,
-            price=self._format_price(price_history.price),
-            subtitle=subtitle,
-            meta=self._build_price_meta(price_history),
-        )
+            template = self._get_template_for_special(special_price_type)
+            template_assets = self._build_template_assets(template)
 
-        template = self._get_template_for_special(special_price_type)
-        template_assets = self._build_template_assets(template)
-
-        image = self._render_special_price_image(
-            title=f"Special Price: {special_price_type.name}",
-            entry=entry,
-            notes=notes or price_history.notes,
-            timestamp=self._get_history_timestamp(price_history),
-            template_assets=template_assets,
-        )
+            image = self._render_special_price_image(
+                title=f"Special Price: {special_price_type.name}",
+                entry=entry,
+                notes=notes or price_history.notes,
+                timestamp=self._get_history_timestamp(price_history),
+                template_assets=template_assets,
+            )
 
         caption = f"Special price • {special_price_type.name}"
         return self._send_photo(

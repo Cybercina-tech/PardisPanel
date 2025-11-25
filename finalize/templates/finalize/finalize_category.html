@@ -213,6 +213,14 @@
         background-color: rgba(212, 175, 55, 0.05);
     }
     
+    .table.table-dark.table-striped > tbody > tr:nth-of-type(even) {
+        background-color: #2a2a2a !important; /* ensure even rows show grey striping */
+    }
+    
+    html[data-theme="light"] .table.table-dark.table-striped > tbody > tr:nth-of-type(even) {
+        background-color: #f2f2f2 !important;
+    }
+    
     .dual-date {
         display: inline-flex;
         align-items: center;

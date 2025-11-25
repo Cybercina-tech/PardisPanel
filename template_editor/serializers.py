@@ -1,64 +1,33 @@
-from django.db import transaction
+"""
+DEPRECATED: This file is kept for backward compatibility but is no longer used.
+The new template system uses JSONField configuration instead of Element models.
+
+All new code should use the Template model directly with its config JSONField.
+"""
 from rest_framework import serializers
 
-from .models import Element, Template
+# This file is deprecated - the new system doesn't use DRF serializers
+# Keeping this file to avoid import errors in case any old code references it
+
+# Old serializers that are no longer used
+# The new system uses:
+# - Template model with JSONField for config
+# - Direct form-based editing in the frontend
+# - template_editor.utils.render_template() for rendering
+
+class ElementSerializer(serializers.Serializer):
+    """DEPRECATED: Element model has been removed."""
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError(
+            "ElementSerializer is deprecated. "
+            "The new template system uses JSONField configuration instead of Element models."
+        )
 
 
-class ElementSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(required=False)
-
-    class Meta:
-        model = Element
-        fields = [
-            "id",
-            "type",
-            "content",
-            "x",
-            "y",
-            "font_size",
-            "color",
-        ]
-
-
-class TemplateSerializer(serializers.ModelSerializer):
-    elements = ElementSerializer(many=True, required=False)
-
-    class Meta:
-        model = Template
-        fields = ["id", "name", "background", "created_at", "elements"]
-        read_only_fields = ["id", "created_at"]
-
-    def update(self, instance, validated_data):
-        elements_data = validated_data.pop("elements", None)
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-
-        if elements_data is not None:
-            self._sync_elements(instance, elements_data)
-
-        return instance
-
-    @staticmethod
-    @transaction.atomic
-    def _sync_elements(template: Template, elements_data):
-        existing_elements = {element.id: element for element in template.elements.all()}
-        received_ids = set()
-
-        for element_data in elements_data:
-            element_id = element_data.pop("id", None)
-
-            if element_id and element_id in existing_elements:
-                element = existing_elements[element_id]
-                for attr, value in element_data.items():
-                    setattr(element, attr, value)
-                element.save()
-                received_ids.add(element_id)
-            else:
-                Element.objects.create(template=template, **element_data)
-
-        to_delete_ids = set(existing_elements.keys()) - received_ids
-        if to_delete_ids:
-            Element.objects.filter(id__in=to_delete_ids).delete()
-
+class TemplateSerializer(serializers.Serializer):
+    """DEPRECATED: Use Template model directly with config JSONField."""
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError(
+            "TemplateSerializer is deprecated. "
+            "The new template system uses direct model access with JSONField configuration."
+        )

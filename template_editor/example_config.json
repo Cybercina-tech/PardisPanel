@@ -1,0 +1,60 @@
+{
+  "fields": {
+    "english_date": {
+      "x": 40,
+      "y": 80,
+      "size": 32,
+      "color": "#000000",
+      "align": "left",
+      "font_weight": "normal"
+    },
+    "persian_date": {
+      "x": 10,
+      "y": 20,
+      "size": 28,
+      "color": "#333333",
+      "align": "right",
+      "font_weight": "bold"
+    },
+    "buy_price": {
+      "x": 100,
+      "y": 150,
+      "size": 48,
+      "color": "#00AA00",
+      "align": "center",
+      "max_width": 300,
+      "font_weight": "bold"
+    },
+    "sell_price": {
+      "x": 100,
+      "y": 220,
+      "size": 48,
+      "color": "#AA0000",
+      "align": "center",
+      "max_width": 300,
+      "font_weight": "bold"
+    },
+    "category_price_1": {
+      "x": 50,
+      "y": 300,
+      "size": 36,
+      "color": "#000000",
+      "align": "left"
+    },
+    "category_price_2": {
+      "x": 50,
+      "y": 350,
+      "size": 36,
+      "color": "#000000",
+      "align": "left"
+    },
+    "category_price_3": {
+      "x": 50,
+      "y": 400,
+      "size": 36,
+      "color": "#000000",
+      "align": "left"
+    }
+  }
+}
+
