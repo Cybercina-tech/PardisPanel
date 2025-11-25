@@ -22,27 +22,37 @@
 
             <div class="mb-4">
                 <h5 class="text-gold mb-3">Template Details:</h5>
-                <table class="table table-dark">
-                    <tr>
-                        <th>Name:</th>
-                        <td>{{ template.name }}</td>
-                    </tr>
-                    {% if template.category %}
-                    <tr>
-                        <th>Category:</th>
-                        <td>{{ template.category.name }}</td>
-                    </tr>
-                    {% elif template.special_price_type %}
-                    <tr>
-                        <th>Special Price Type:</th>
-                        <td>{{ template.special_price_type.name }}</td>
-                    </tr>
-                    {% endif %}
-                    <tr>
-                        <th>Created:</th>
-                        <td>{{ template.created_at|date:"M d, Y H:i" }}</td>
-                    </tr>
-                </table>
+                <div class="table-wrapper table-responsive table-scroll-wrapper">
+                    <table class="table table-mobile-collapse">
+                        <thead>
+                            <tr>
+                                <th scope="col">Field</th>
+                                <th scope="col">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="Field">Name</td>
+                                <td data-label="Value">{{ template.name }}</td>
+                            </tr>
+                            {% if template.category %}
+                            <tr>
+                                <td data-label="Field">Category</td>
+                                <td data-label="Value">{{ template.category.name }}</td>
+                            </tr>
+                            {% elif template.special_price_type %}
+                            <tr>
+                                <td data-label="Field">Special Price Type</td>
+                                <td data-label="Value">{{ template.special_price_type.name }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <td data-label="Field">Created</td>
+                                <td data-label="Value">{{ template.created_at|date:"M d, Y H:i" }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {% if template.image %}

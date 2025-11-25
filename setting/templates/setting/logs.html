@@ -2,13 +2,8 @@
 
 {% block title %}Logs - Sarafi Pardis Panel{% endblock %}
 
-{% block extra_head %}
-<!-- Font Awesome for icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-{% endblock %}
-
 {% block content %}
-<div class="py-4">
+<div class="py-4 logs-page">
     <!-- Page Header -->
     <div class="mb-4">
         <div class="d-flex justify-content-between align-items-center">
@@ -28,7 +23,7 @@
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-4 mb-3">
-            <div class="card shadow-lg border-0 rounded-4 theme-card-bg">
+            <div class="card shadow-lg border-0 rounded-4 theme-card-bg position-relative" style="z-index: 0;">
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -140,8 +135,8 @@
             </div>
             <div class="card-body p-0">
                 {% if logs %}
-                    <div class="table-responsive">
-                        <table class="table table-dark-custom table-hover align-middle mb-0">
+                    <div class="table-wrapper table-responsive table-scroll-wrapper">
+                        <table class="table table-hover align-middle mb-0 table-nowrap">
                             <thead>
                                 <tr>
                                     <th class="text-gold-light">Time</th>
@@ -187,84 +182,70 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <button type="button" class="btn btn-sm btn-outline-gold" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#logModal{{ log.id }}">
+                                        <button type="button" class="btn btn-sm btn-outline-gold log-collapse-toggle" 
+                                                data-log-id="{{ log.id }}">
                                             <i class="fas fa-eye"></i> View
                                         </button>
                                     </td>
                                 </tr>
-
-                                <!-- Log Detail Modal -->
-                                <div class="modal fade" id="logModal{{ log.id }}" tabindex="-1" 
-                                     aria-labelledby="logModalLabel{{ log.id }}" aria-hidden="true">
-                                    <div class="modal-dialog modal-lg">
-                                        <div class="modal-content theme-card-bg">
-                                            <div class="modal-header theme-header-bg border-bottom-gold">
-                                                <h5 class="modal-title text-gold" id="logModalLabel{{ log.id }}">
-                                                    <i class="fas fa-file-alt me-2"></i>Log Details
-                                                </h5>
-                                                <button type="button" class="btn-close btn-close-white" 
-                                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                                <tr class="log-collapse-row" id="logCollapse{{ log.id }}">
+                                    <td colspan="6">
+                                        <div class="log-collapse-card theme-card-bg border border-light rounded-4 p-4">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <strong class="text-gold">Level:</strong>
+                                                    <span class="ms-2">
+                                                        {% if log.level == 'ERROR' or log.level == 'CRITICAL' %}
+                                                            <span class="badge badge-danger">{{ log.level }}</span>
+                                                        {% elif log.level == 'WARNING' %}
+                                                            <span class="badge badge-warning">{{ log.level }}</span>
+                                                        {% elif log.level == 'INFO' %}
+                                                            <span class="badge badge-info">{{ log.level }}</span>
+                                                        {% elif log.level == 'DEBUG' %}
+                                                            <span class="badge badge-secondary">{{ log.level }}</span>
+                                                        {% else %}
+                                                            <span class="badge badge-active">{{ log.level }}</span>
+                                                        {% endif %}
+                                                    </span>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <strong class="text-gold">Source:</strong>
+                                                    <span class="ms-2 badge badge-secondary">{{ log.get_source_display }}</span>
+                                                </div>
                                             </div>
-                                            <div class="modal-body">
-                                                <div class="row mb-3">
-                                                    <div class="col-md-6">
-                                                        <strong class="text-gold">Level:</strong>
-                                                        <span class="ms-2">
-                                                            {% if log.level == 'ERROR' or log.level == 'CRITICAL' %}
-                                                                <span class="badge badge-danger">{{ log.level }}</span>
-                                                            {% elif log.level == 'WARNING' %}
-                                                                <span class="badge badge-warning">{{ log.level }}</span>
-                                                            {% elif log.level == 'INFO' %}
-                                                                <span class="badge badge-info">{{ log.level }}</span>
-                                                            {% else %}
-                                                                <span class="badge badge-secondary">{{ log.level }}</span>
-                                                            {% endif %}
-                                                        </span>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <strong class="text-gold">Source:</strong>
-                                                        <span class="ms-2 badge badge-secondary">{{ log.get_source_display }}</span>
-                                                    </div>
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <strong class="text-gold">Time:</strong>
+                                                    <span class="ms-2 text-white-50">{{ log.created_at|date:"Y-m-d H:i:s" }}</span>
                                                 </div>
-                                                <div class="row mb-3">
-                                                    <div class="col-md-6">
-                                                        <strong class="text-gold">Time:</strong>
-                                                        <span class="ms-2 text-white-50">{{ log.created_at|date:"Y-m-d H:i:s" }}</span>
-                                                    </div>
-                                                    <div class="col-md-6">
-                                                        <strong class="text-gold">User:</strong>
-                                                        <span class="ms-2 text-white-50">
-                                                            {% if log.user %}
-                                                                {{ log.user.get_full_name|default:log.user.username }}
-                                                            {% else %}
-                                                                System
-                                                            {% endif %}
-                                                        </span>
-                                                    </div>
+                                                <div class="col-md-6">
+                                                    <strong class="text-gold">User:</strong>
+                                                    <span class="ms-2 text-white-50">
+                                                        {% if log.user %}
+                                                            {{ log.user.get_full_name|default:log.user.username }}
+                                                        {% else %}
+                                                            System
+                                                        {% endif %}
+                                                    </span>
                                                 </div>
-                                                <div class="mb-3">
-                                                    <strong class="text-gold">Message:</strong>
-                                                    <div class="mt-2 p-3 bg-dark rounded text-white" style="word-wrap: break-word;">
-                                                        {{ log.message }}
-                                                    </div>
-                                                </div>
-                                                {% if log.details %}
-                                                <div class="mb-3">
-                                                    <strong class="text-gold">Details:</strong>
-                                                    <div class="mt-2 p-3 bg-dark rounded text-white-50" style="word-wrap: break-word; white-space: pre-wrap; font-family: monospace; font-size: 0.9em;">
-                                                        {{ log.details }}
-                                                    </div>
-                                                </div>
-                                                {% endif %}
                                             </div>
-                                            <div class="modal-footer theme-header-bg border-top-gold">
-                                                <button type="button" class="btn btn-gold" data-bs-dismiss="modal">Close</button>
+                                            <div class="mb-3">
+                                                <strong class="text-gold">Message:</strong>
+                                                <div class="mt-2 p-3 bg-dark rounded text-white">
+                                                    {{ log.message }}
+                                                </div>
                                             </div>
+                                            {% if log.details %}
+                                            <div class="mb-3">
+                                                <strong class="text-gold">Details:</strong>
+                                                <div class="mt-2 p-3 bg-dark rounded text-white-50" style="white-space: pre-wrap; font-family: monospace; font-size: 0.9em;">
+                                                    {{ log.details }}
+                                                </div>
+                                            </div>
+                                            {% endif %}
                                         </div>
-                                    </div>
-                                </div>
+                                    </td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -322,6 +303,178 @@
 </div>
 
 <style>
+.logs-page {
+    --logs-surface: radial-gradient(circle at top, rgba(58, 124, 235, 0.12), rgba(240, 243, 255, 0.95) 55%);
+    --logs-card-bg: #ffffff;
+    --logs-header-bg: #f3f5fa;
+    --logs-border: rgba(0, 0, 0, 0.08);
+    --logs-border-strong: rgba(0, 0, 0, 0.16);
+    --logs-text: #0d0f1c;
+    --logs-text-muted: rgba(17, 24, 39, 0.6);
+    --logs-table-bg: #ffffff;
+    --logs-table-row-alt: #f7f8fb;
+    --logs-table-hover: rgba(0, 0, 0, 0.04);
+    --logs-badge-bg: rgba(64, 87, 162, 0.08);
+    --logs-modal-bg: #ffffff;
+    --logs-input-bg: #ffffff;
+    --logs-input-border: rgba(64, 87, 162, 0.25);
+    --logs-pagination-bg: #ffffff;
+    --logs-pagination-text: #1f2937;
+    color: var(--logs-text);
+    background: var(--logs-surface);
+}
+
+html[data-theme="dark"] .logs-page {
+    --logs-surface: radial-gradient(circle at top, rgba(14, 15, 23, 0.35), rgba(4, 4, 10, 0.95) 55%);
+    --logs-card-bg: rgba(18, 20, 34, 0.95);
+    --logs-header-bg: rgba(26, 29, 49, 0.95);
+    --logs-border: rgba(255, 255, 255, 0.08);
+    --logs-border-strong: rgba(255, 255, 255, 0.2);
+    --logs-text: rgba(247, 249, 255, 0.95);
+    --logs-text-muted: rgba(247, 249, 255, 0.65);
+    --logs-table-bg: rgba(9, 10, 18, 0.9);
+    --logs-table-row-alt: rgba(255, 255, 255, 0.02);
+    --logs-table-hover: rgba(212, 175, 55, 0.15);
+    --logs-badge-bg: rgba(174, 182, 210, 0.15);
+    --logs-modal-bg: rgba(13, 15, 22, 0.95);
+    --logs-input-bg: rgba(20, 23, 37, 0.95);
+    --logs-input-border: rgba(255, 255, 255, 0.15);
+    --logs-pagination-bg: rgba(26, 29, 49, 0.9);
+    --logs-pagination-text: rgba(247, 249, 255, 0.85);
+    color: var(--logs-text);
+    background: var(--logs-surface);
+}
+
+.logs-page .text-white-50 {
+    color: var(--logs-text-muted) !important;
+}
+
+.logs-page .text-white {
+    color: var(--logs-text) !important;
+}
+
+.logs-page .theme-card-bg,
+.logs-page .modal-content {
+    background-color: var(--logs-card-bg) !important;
+    border-color: var(--logs-border) !important;
+    color: var(--logs-text);
+}
+
+.logs-page .theme-header-bg,
+.logs-page .modal-header,
+.logs-page .modal-footer {
+    background-color: var(--logs-header-bg) !important;
+    border-color: var(--logs-border-strong) !important;
+    color: var(--logs-text);
+}
+
+.logs-page .theme-input,
+.logs-page input.theme-input,
+.logs-page select.theme-input {
+    background-color: var(--logs-input-bg) !important;
+    border-color: var(--logs-input-border) !important;
+    color: var(--logs-text) !important;
+}
+
+.logs-page .theme-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25);
+}
+
+.logs-page .btn-outline-gold {
+    color: var(--logs-text);
+    border-color: var(--logs-border-strong);
+}
+
+.logs-page .btn-outline-gold:hover {
+    color: var(--black-primary);
+}
+
+.logs-page .table {
+    background-color: var(--logs-table-bg);
+    color: var(--logs-text);
+}
+
+.logs-page .table tbody tr {
+    background-color: transparent;
+    border-color: var(--logs-border);
+}
+
+.logs-page .table tbody tr:nth-of-type(even) {
+    background-color: var(--logs-table-row-alt);
+}
+
+.logs-page .table tbody tr:hover {
+    background-color: var(--logs-table-hover);
+}
+
+.logs-page .log-message {
+    color: var(--logs-text);
+}
+
+.logs-page .log-collapse-row {
+    display: none;
+}
+
+.logs-page .log-collapse-row.active {
+    display: table-row;
+}
+
+.logs-page .log-collapse-card {
+    transition: var(--transition-base);
+}
+
+.logs-page .badge {
+    background-color: var(--logs-badge-bg);
+    color: var(--logs-text);
+    border: 1px solid var(--logs-border);
+}
+
+.logs-page .badge-danger {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border-color: transparent;
+}
+
+.logs-page .badge-warning {
+    background-color: rgba(251, 191, 36, 0.25);
+    color: #b45309;
+    border-color: transparent;
+}
+
+.logs-page .badge-info {
+    background-color: rgba(14, 165, 233, 0.25);
+    color: #0369a1;
+    border-color: transparent;
+}
+
+.logs-page .badge-secondary {
+    background-color: var(--logs-badge-bg);
+    color: var(--logs-text);
+}
+
+.logs-page .modal-body .bg-dark {
+    background-color: var(--logs-modal-bg) !important;
+    color: var(--logs-text);
+    border: 1px solid var(--logs-border);
+}
+
+.logs-page .modal-body .bg-dark.text-white-50 {
+    color: var(--logs-text-muted) !important;
+}
+
+.logs-page .page-link.theme-pagination,
+.logs-page .theme-pagination-active {
+    background-color: var(--logs-pagination-bg);
+    color: var(--logs-pagination-text);
+    border-color: var(--logs-border);
+}
+
+.logs-page .theme-pagination-active {
+    background-color: var(--gold-primary);
+    border-color: var(--gold-primary);
+    color: #000;
+}
+
 .icon-circle {
     width: 50px;
     height: 50px;
@@ -350,22 +503,106 @@
 }
 
 .theme-pagination {
-    background-color: var(--card-bg);
-    border-color: var(--border-color);
-    color: var(--text-color);
+    background-color: var(--logs-pagination-bg);
+    border-color: var(--logs-border);
+    color: var(--logs-pagination-text);
 }
 
 .theme-pagination:hover {
-    background-color: var(--hover-bg);
-    border-color: var(--gold-color);
-    color: var(--gold-color);
+    border-color: var(--gold-primary);
+    color: var(--gold-primary);
 }
 
 .theme-pagination-active {
-    background-color: var(--gold-color);
-    border-color: var(--gold-color);
-    color: var(--dark-bg);
+    background-color: var(--gold-primary);
+    border-color: var(--gold-primary);
+    color: #000;
 }
 </style>
 {% endblock %}
 
+{% block extra_scripts %}
+<script src="https://unpkg.com/jalaali-js@1.1.0/jalaali.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let activeRow = null;
+    document.querySelectorAll('.log-collapse-toggle').forEach(function(btn) {
+        btn.addEventListener('click', function () {
+            const id = this.getAttribute('data-log-id');
+            const row = document.getElementById('logCollapse' + id);
+            if (!row) return;
+            if (activeRow && activeRow !== row) {
+                activeRow.classList.remove('active');
+            }
+            if (row.classList.contains('active')) {
+                row.classList.remove('active');
+                activeRow = null;
+            } else {
+                row.classList.add('active');
+                activeRow = row;
+                row.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+
+    function gregorianToJalali(gy, gm, gd) {
+        var g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        var jy = (gy <= 1600) ? 0 : 979;
+        gy -= (gy <= 1600) ? 621 : 1600;
+        var gy2 = (gm > 2) ? (gy + 1) : gy;
+        var days = (365 * gy) + (parseInt((gy2 + 3) / 4)) - (parseInt((gy2 + 99) / 100)) +
+                   (parseInt((gy2 + 399) / 400)) - 80 + gd + g_d_m[gm - 1];
+        jy += 33 * (parseInt(days / 12053));
+        days %= 12053;
+        jy += 4 * (parseInt(days / 1461));
+        days %= 1461;
+        if (days > 365) {
+            jy += parseInt((days - 1) / 365);
+            days = (days - 1) % 365;
+        }
+        var jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
+        var jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+        return {jy: jy, jm: jm, jd: jd};
+    }
+
+    function updateTime() {
+        try {
+            const now = new Date();
+            const timeString = now.toLocaleString('en-US', {
+                year: 'numeric', month: 'long', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            });
+            const englishElement = document.getElementById('current-time');
+            if (englishElement) englishElement.textContent = timeString;
+
+            const tehranOffset = 3.5 * 60 * 60 * 1000;
+            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+            const tehranTime = new Date(utcTime + tehranOffset);
+
+            const year = tehranTime.getFullYear();
+            const month = tehranTime.getMonth() + 1;
+            const day = tehranTime.getDate();
+
+            const jalali = (typeof jalaali !== 'undefined' && jalaali.toJalaali)
+                ? jalaali.toJalaali(year, month, day)
+                : gregorianToJalali(year, month, day);
+
+            const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            const monthName = persianMonths[jalali.jm - 1];
+            const hours = String(tehranTime.getHours()).padStart(2, '0');
+            const minutes = String(tehranTime.getMinutes()).padStart(2, '0');
+            const seconds = String(tehranTime.getSeconds()).padStart(2, '0');
+            const jalaliTime = `${jalali.jd} ${monthName} ${jalali.jy}، ${hours}:${minutes}:${seconds}`;
+
+            const jalaliElement = document.getElementById('current-time-jalali');
+            if (jalaliElement) jalaliElement.textContent = jalaliTime;
+        } catch (error) {
+            console.error('Error updating time:', error);
+        }
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
+});
+</script>
+{% endblock %}

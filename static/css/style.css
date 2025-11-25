@@ -672,11 +672,19 @@ html[data-theme="light"] main {
     transition: background-color var(--transition-base), color var(--transition-base), border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
 }
 
+html[data-theme="dark"] .btn {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+}
+
 .btn-primary {
     background-color: var(--color-accent) !important;
     border-color: var(--color-accent) !important;
     color: var(--btn-text-on-accent) !important;
     box-shadow: 0 10px 20px var(--color-accent-glow);
+}
+
+html[data-theme="dark"] .btn-primary {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 html[data-theme="light"] .btn-primary {
@@ -703,6 +711,10 @@ html[data-theme="light"] .btn-primary:hover {
     color: #fff !important;
     box-shadow: 0 10px 20px color-mix(in srgb, var(--cyan-primary) 22%, transparent);
 }
+
+html[data-theme="dark"] .btn-info {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
 .btn-info:hover { background-color: color-mix(in srgb, var(--cyan-primary) 85%, black) !important; }
 
 .btn-success {
@@ -711,6 +723,10 @@ html[data-theme="light"] .btn-primary:hover {
     color: #fff !important;
     box-shadow: 0 10px 20px color-mix(in srgb, var(--green-primary) 22%, transparent);
 }
+
+html[data-theme="dark"] .btn-success {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+}
 .btn-success:hover { background-color: color-mix(in srgb, var(--green-primary) 85%, black) !important; }
 
 .btn-orange, .btn-warning {
@@ -718,6 +734,11 @@ html[data-theme="light"] .btn-primary:hover {
     border-color: var(--orange-primary) !important;
     color: #6b3a1f !important;
     box-shadow: 0 10px 20px color-mix(in srgb, var(--orange-primary) 22%, transparent);
+}
+
+html[data-theme="dark"] .btn-orange,
+html[data-theme="dark"] .btn-warning {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
 }
 .btn-orange:hover, .btn-warning:hover { background-color: color-mix(in srgb, var(--orange-primary) 85%, black) !important; }
 
@@ -741,6 +762,11 @@ html[data-theme="light"] .btn-primary:hover {
     box-shadow: 0 16px 28px var(--color-shadow-glow);
 }
 
+html[data-theme="dark"] .btn-accent,
+html[data-theme="dark"] .btn-gold {
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+
 .btn-accent:hover,
 .btn-primary:hover,
 .btn-gold:hover {
@@ -758,11 +784,21 @@ html[data-theme="light"] .btn-primary:hover {
     box-shadow: inset 0 0 0 1px var(--color-border-accent);
 }
 
+html[data-theme="dark"] .btn-outline-gold,
+html[data-theme="dark"] .btn-outline-accent {
+    box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.3);
+}
+
 .btn-outline-gold:hover,
 .btn-outline-accent:hover {
     background-color: var(--color-accent) !important;
     color: var(--btn-text-on-accent) !important;
     box-shadow: 0 18px 30px var(--color-shadow-glow);
+}
+
+html[data-theme="dark"] .btn-outline-gold:hover,
+html[data-theme="dark"] .btn-outline-accent:hover {
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
 }
 
 .btn-secondary-gold,
@@ -772,6 +808,12 @@ html[data-theme="light"] .btn-primary:hover {
     border: 1px solid var(--color-secondary-btn-border) !important;
     color: var(--color-secondary-btn-text) !important;
     box-shadow: inset 0 0 0 1px var(--color-accent-soft) !important;
+}
+
+html[data-theme="dark"] .btn-secondary-gold,
+html[data-theme="dark"] .btn-muted,
+html[data-theme="dark"] .btn-secondary {
+    box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.18) !important;
 }
 
 html[data-theme="light"] .btn-secondary-gold,
@@ -1397,7 +1439,7 @@ html[data-theme="light"] .section-icon {
 }
 
 /* Tables */
-.table {
+:is(.table, table) {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border-soft);
     border-radius: var(--radius-md);
@@ -1407,14 +1449,15 @@ html[data-theme="light"] .section-icon {
     box-shadow: 0 16px 34px var(--shadow-color);
 }
 
-.table > :not(caption) > * > * {
+:is(.table, table) > :not(caption) > * > * {
     background-color: transparent;
     padding: 0.85rem 1.1rem;
     vertical-align: middle;
     border-bottom: 1px solid var(--color-border-soft);
+    text-align: center;
 }
 
-.table thead th {
+:is(.table, table) thead th {
     background: linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 22%, transparent) 0%, transparent 100%);
     border-bottom: 1px solid var(--color-border);
     color: var(--color-heading);
@@ -1423,174 +1466,203 @@ html[data-theme="light"] .section-icon {
     text-transform: uppercase;
 }
 
-html[data-theme="light"] .table thead th {
+html[data-theme="light"] :is(.table, table) thead th {
     background: linear-gradient(135deg, rgba(58, 124, 235, 0.15) 0%, rgba(90, 111, 174, 0.12) 50%, rgba(111, 66, 193, 0.1) 100%);
     border-bottom: 1px solid rgba(58, 124, 235, 0.25);
     color: var(--color-blue-strong);
 }
 
-.table tbody tr {
+html[data-theme="light"] :is(.table, table) {
+    background-color: #ffffff;
+    border-color: rgba(58, 124, 235, 0.12);
+    color: var(--color-text, #1a1a1a);
+    box-shadow: 0 16px 32px rgba(26, 61, 155, 0.08);
+}
+
+html[data-theme="dark"] :is(.table, table) {
+    background-color: #151515;
+    border-color: rgba(212, 175, 55, 0.25);
+    color: var(--color-text, #e8e8e8);
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.65);
+}
+
+html[data-theme="dark"] :is(.table, table) thead th {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.32) 0%, rgba(212, 175, 55, 0.12) 100%);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.35);
+    color: #f2e3b5;
+}
+
+:is(.table, table) tbody tr {
     background-color: transparent;
     transition: background-color var(--transition-base), box-shadow var(--transition-base);
 }
 
-.table tbody tr:nth-of-type(odd) {
+:is(.table, table) tbody tr:nth-of-type(odd) {
     background-color: var(--color-table-row-odd);
 }
 
-.table tbody tr:nth-of-type(even) {
+:is(.table, table) tbody tr:nth-of-type(even) {
     background-color: var(--color-table-row-even);
 }
 
-.table tbody tr:hover {
+:is(.table, table) tbody tr:hover {
     background-color: var(--color-table-row-hover);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 24%, transparent);
 }
 
-html[data-theme="light"] .table tbody tr:hover {
+html[data-theme="light"] :is(.table, table) tbody tr:nth-of-type(odd) {
+    background-color: #f7f9ff;
+}
+
+html[data-theme="light"] :is(.table, table) tbody tr:nth-of-type(even) {
+    background-color: #ffffff;
+}
+
+html[data-theme="dark"] :is(.table, table) tbody tr:nth-of-type(odd) {
+    background-color: rgba(212, 175, 55, 0.06);
+}
+
+html[data-theme="dark"] :is(.table, table) tbody tr:nth-of-type(even) {
+    background-color: rgba(8, 8, 8, 0.6);
+}
+
+html[data-theme="dark"] :is(.table, table) tbody tr:hover {
+    background-color: rgba(212, 175, 55, 0.15);
+    box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.3);
+}
+
+table td,
+table th {
+    text-align: center;
+    vertical-align: middle;
+}
+
+html[data-theme="light"] :is(.table, table) tbody tr:hover {
     background-color: rgba(58, 124, 235, 0.1);
     box-shadow: inset 0 0 0 1px rgba(58, 124, 235, 0.25);
 }
 
 /* Price Type Column - Light Theme: Black Text */
 /* Applies to first column (Price Type) in all tables for light theme */
-html[data-theme="light"] .table tbody td:first-child,
-html[data-theme="light"] .table-dark tbody td:first-child,
-html[data-theme="light"] .table-dark-custom tbody td:first-child,
-html[data-theme="light"] .table-sm tbody td:first-child,
-html[data-theme="light"] .table-striped tbody td:first-child,
-html[data-theme="light"] .table-hover tbody td:first-child {
+html[data-theme="light"] :is(.table, table) tbody td:first-child {
     color: #000000 !important;
     font-weight: 600;
 }
 
-/* Finalize Dashboard Table Styles - Applied to All Tables */
-/* Dark Theme Styles */
-.table-dark {
-    background-color: var(--color-surface-alt, #1a1a1a) !important;
-    color: var(--color-text, #e0e0e0) !important;
+html[data-theme="dark"] :is(.table, table) tbody td:first-child {
+    color: #f2e3b5 !important;
+    font-weight: 600;
 }
 
-[data-theme="dark"] .table-dark {
-    background-color: var(--color-surface-alt, #1a1a1a) !important;
-    color: var(--color-text, #e0e0e0) !important;
-}
-
-.table-dark thead th {
-    background: linear-gradient(135deg, var(--color-accent, #D4AF37) 0%, color-mix(in srgb, var(--color-accent) 35%, transparent) 100%) !important;
-    color: var(--color-heading, #dcca8b) !important;
-    border-bottom: 1px solid var(--color-border-strong, rgba(212, 175, 55, 0.34)) !important;
-}
-
-[data-theme="dark"] .table-dark thead th {
-    background: linear-gradient(135deg, #D4AF37 0%, color-mix(in srgb, #D4AF37 35%, transparent) 100%) !important;
-    color: #dcca8b !important;
-    border-bottom-color: rgba(212, 175, 55, 0.34) !important;
-}
-
-.table-dark tbody tr {
-    background-color: transparent !important;
-    border-color: var(--color-border, rgba(212, 175, 55, 0.22)) !important;
-}
-
-[data-theme="dark"] .table-dark tbody tr {
-    border-color: rgba(212, 175, 55, 0.22) !important;
-}
-
-.table-dark tbody tr:nth-of-type(odd) {
-    background-color: rgba(212, 175, 55, 0.05) !important;
-}
-
-[data-theme="dark"] .table-dark tbody tr:nth-of-type(odd) {
-    background-color: rgba(212, 175, 55, 0.05) !important;
-}
-
-.table-dark tbody tr:nth-of-type(even) {
-    background-color: transparent !important;
-}
-
-[data-theme="dark"] .table-dark tbody tr:nth-of-type(even) {
-    background-color: transparent !important;
-}
-
-.table-dark tbody tr:hover {
-    background-color: rgba(212, 175, 55, 0.14) !important;
-    box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.24) !important;
-}
-
-[data-theme="dark"] .table-dark tbody tr:hover {
-    background-color: rgba(212, 175, 55, 0.14) !important;
-    box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.24) !important;
-}
-
-.table-dark td,
-.table-dark th {
-    border-color: var(--color-border-soft, rgba(212, 175, 55, 0.22)) !important;
-    color: var(--color-text, #e0e0e0) !important;
-}
-
-[data-theme="dark"] .table-dark td,
-[data-theme="dark"] .table-dark th {
-    border-color: rgba(212, 175, 55, 0.22) !important;
-    color: #e0e0e0 !important;
-}
-
-/* Light Theme Styles for Tables */
-html[data-theme="light"] .table-dark {
-    background-color: var(--color-surface, #FFFFFF) !important;
-    color: var(--color-text, #444444) !important;
-    border-color: rgba(90, 111, 174, 0.15) !important;
-}
-
-html[data-theme="light"] .table-dark thead th {
-    background: linear-gradient(135deg, rgba(58, 124, 235, 0.12) 0%, rgba(90, 111, 174, 0.08) 50%, rgba(111, 66, 193, 0.06) 100%) !important;
-    color: var(--color-heading, #333333) !important;
-    border-bottom: 1px solid rgba(58, 124, 235, 0.2) !important;
-}
-
-html[data-theme="light"] .table-dark tbody tr {
-    background-color: transparent !important;
-    border-color: var(--color-border-soft, rgba(51, 51, 51, 0.12)) !important;
-}
-
-html[data-theme="light"] .table-dark tbody tr:nth-of-type(odd) {
-    background-color: #E8E9EA !important; /* Dark grey for odd rows in light theme */
-}
-
-html[data-theme="light"] .table-dark tbody tr:nth-of-type(even) {
-    background-color: #FFFFFF !important; /* White for even rows */
-}
-
-html[data-theme="light"] .table-dark tbody tr:hover {
-    background-color: var(--color-table-row-hover, rgba(90, 155, 213, 0.16)) !important;
-    box-shadow: inset 0 0 0 1px rgba(58, 124, 235, 0.2) !important;
-}
-
-html[data-theme="light"] .table-dark td,
-html[data-theme="light"] .table-dark th {
-    border-color: var(--color-border-soft, rgba(51, 51, 51, 0.12)) !important;
-    color: var(--color-text, #444444) !important;
-}
-
-html[data-theme="light"] .table-dark .text-gold,
-html[data-theme="light"] .table-dark .text-gold-light {
-    color: var(--color-accent, #5A6FAE) !important;
-}
-
-html[data-theme="light"] .table-dark .text-white-50 {
-    color: var(--color-text-muted, #6E6E6E) !important;
-}
-
-.table td,
-.table th {
-    border-color: var(--color-border-soft);
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
 }
 
 .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
     background-color: transparent;
     border-radius: var(--radius-lg);
     box-shadow: none;
-    overflow: hidden;
+}
+
+.table-scroll-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+}
+
+.table-scroll-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-scroll-wrapper::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-pill);
+}
+
+.table-scroll-wrapper::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.table-nowrap {
+    white-space: nowrap;
+}
+
+.table-wrap {
+    word-break: break-word;
+    white-space: normal;
+}
+
+.table-mobile-collapse {
+    width: 100%;
+}
+
+@media (max-width: 640px) {
+    .table-mobile-collapse thead,
+    .table-mobile-collapse tfoot {
+        display: none;
+    }
+
+    .table-mobile-collapse tbody tr {
+        display: block;
+        border: 1px solid var(--color-border-soft);
+        border-radius: var(--radius-md);
+        margin-bottom: 1rem;
+        background-color: rgba(0, 0, 0, 0.02);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    html[data-theme="dark"] .table-mobile-collapse tbody tr {
+        background-color: rgba(255, 255, 255, 0.03);
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .table-mobile-collapse tbody td {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        text-align: left;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .table-mobile-collapse tbody td:last-child {
+        border-bottom: none;
+    }
+
+    .table-mobile-collapse tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--color-heading);
+        text-transform: uppercase;
+        font-size: 0.8rem;
+    }
+}
+
+.table-flex {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+:is(.table, table) td,
+:is(.table, table) th {
+    border-color: var(--color-border-soft);
+    text-align: center !important;
+    direction: rtl;
+}
+
+:is(.table, table) td *,
+:is(.table, table) th * {
+    text-align: center !important;
 }
 
 /* Forms */
@@ -2058,46 +2130,6 @@ html[data-theme="light"] .price-list-item:hover::after {
     box-shadow: var(--color-shadow-soft) !important;
 }
 
-.table-dark-custom {
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--color-shadow-soft);
-    color: var(--color-text);
-    overflow: hidden;
-}
-
-.table-dark-custom thead tr {
-    background: linear-gradient(135deg, var(--color-accent) 0%, color-mix(in srgb, var(--color-accent) 35%, transparent) 100%);
-}
-
-.table-dark-custom th {
-    border-bottom: 1px solid var(--color-border-strong);
-    color: var(--color-heading);
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-}
-
-.table-dark-custom tbody tr {
-    background-color: transparent;
-    border-color: var(--color-border);
-    transition: background-color var(--transition-base), box-shadow var(--transition-base);
-}
-
-.table-dark-custom tbody tr:nth-of-type(odd) {
-    background-color: var(--color-table-row-odd);
-}
-
-.table-dark-custom tbody tr:nth-of-type(even) {
-    background-color: var(--color-table-row-even);
-}
-
-.table-dark-custom tbody tr:hover {
-    background-color: var(--color-table-row-hover);
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
-}
-
 /* Utilities */
 .text-accent { color: var(--color-accent) !important; }
 .bg-surface { background-color: var(--color-surface) !important; }
@@ -2534,7 +2566,7 @@ html[data-theme="light"] .dashboard .table-responsive {
 /* Override general .table styles to ensure finalize dashboard styles are applied */
 
 /* Override all general .table styles for dashboard tables */
-.dashboard .table-dark {
+.dashboard .table {
     background-color: var(--color-surface-alt, #1a1a1a) !important;
     color: var(--color-text, #e0e0e0) !important;
     border: none !important;
@@ -2545,19 +2577,19 @@ html[data-theme="light"] .dashboard .table-responsive {
 }
 
 /* Override general .table > :not(caption) > * > * styles */
-.dashboard .table-dark > :not(caption) > * > * {
+.dashboard .table > :not(caption) > * > * {
     background-color: transparent !important;
     padding: 0.85rem 1.1rem !important;
     vertical-align: middle !important;
     border-bottom: 1px solid var(--color-border-soft, rgba(212, 175, 55, 0.22)) !important;
 }
 
-[data-theme="dark"] .dashboard .table-dark {
+[data-theme="dark"] .dashboard .table {
     background-color: var(--color-surface-alt, #1a1a1a) !important;
     color: var(--color-text, #e0e0e0) !important;
 }
 
-.dashboard .table-dark thead th {
+.dashboard .table thead th {
     background: linear-gradient(135deg, var(--color-accent, #D4AF37) 0%, color-mix(in srgb, var(--color-accent) 35%, transparent) 100%) !important;
     color: var(--color-heading, #dcca8b) !important;
     border-bottom: 1px solid var(--color-border-strong, rgba(212, 175, 55, 0.34)) !important;
@@ -2566,108 +2598,108 @@ html[data-theme="light"] .dashboard .table-responsive {
     text-transform: uppercase !important;
 }
 
-[data-theme="dark"] .dashboard .table-dark thead th {
+[data-theme="dark"] .dashboard .table thead th {
     background: linear-gradient(135deg, #D4AF37 0%, color-mix(in srgb, #D4AF37 35%, transparent) 100%) !important;
     color: #dcca8b !important;
     border-bottom-color: rgba(212, 175, 55, 0.34) !important;
 }
 
 /* Override general .table tbody tr styles */
-.dashboard .table-dark tbody tr {
+.dashboard .table tbody tr {
     background-color: transparent !important;
     border-color: var(--color-border, rgba(212, 175, 55, 0.22)) !important;
     transition: background-color var(--transition-base), box-shadow var(--transition-base) !important;
 }
 
-[data-theme="dark"] .dashboard .table-dark tbody tr {
+[data-theme="dark"] .dashboard .table tbody tr {
     border-color: rgba(212, 175, 55, 0.22) !important;
 }
 
 /* Striped rows - override general .table styles */
-.dashboard .table-dark.table-striped tbody tr:nth-of-type(odd) {
+.dashboard .table.table-striped tbody tr:nth-of-type(odd) {
     background-color: rgba(212, 175, 55, 0.05) !important;
 }
 
-[data-theme="dark"] .dashboard .table-dark.table-striped tbody tr:nth-of-type(odd) {
+[data-theme="dark"] .dashboard .table.table-striped tbody tr:nth-of-type(odd) {
     background-color: rgba(212, 175, 55, 0.05) !important;
 }
 
-.dashboard .table-dark.table-striped tbody tr:nth-of-type(even) {
+.dashboard .table.table-striped tbody tr:nth-of-type(even) {
     background-color: transparent !important;
 }
 
-[data-theme="dark"] .dashboard .table-dark.table-striped tbody tr:nth-of-type(even) {
+[data-theme="dark"] .dashboard .table.table-striped tbody tr:nth-of-type(even) {
     background-color: transparent !important;
 }
 
 /* Hover effect - override general .table styles */
-.dashboard .table-dark.table-hover tbody tr:hover {
+.dashboard .table.table-hover tbody tr:hover {
     background-color: rgba(212, 175, 55, 0.14) !important;
     box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.24) !important;
 }
 
-[data-theme="dark"] .dashboard .table-dark.table-hover tbody tr:hover {
+[data-theme="dark"] .dashboard .table.table-hover tbody tr:hover {
     background-color: rgba(212, 175, 55, 0.14) !important;
     box-shadow: inset 0 0 0 1px rgba(212, 175, 55, 0.24) !important;
 }
 
-.dashboard .table-dark td,
-.dashboard .table-dark th {
+.dashboard .table td,
+.dashboard .table th {
     border-color: var(--color-border-soft, rgba(212, 175, 55, 0.22)) !important;
     color: var(--color-text, #e0e0e0) !important;
     padding: 0.85rem 1.1rem !important;
     vertical-align: middle !important;
 }
 
-[data-theme="dark"] .dashboard .table-dark td,
-[data-theme="dark"] .dashboard .table-dark th {
+[data-theme="dark"] .dashboard .table td,
+[data-theme="dark"] .dashboard .table th {
     border-color: rgba(212, 175, 55, 0.22) !important;
     color: #e0e0e0 !important;
 }
 
 /* Light Theme Styles for Dashboard Tables */
-html[data-theme="light"] .dashboard .table-dark {
+html[data-theme="light"] .dashboard .table {
     background-color: var(--color-surface, #FFFFFF) !important;
     color: var(--color-text, #444444) !important;
     border-color: rgba(90, 111, 174, 0.15) !important;
 }
 
-html[data-theme="light"] .dashboard .table-dark thead th {
+html[data-theme="light"] .dashboard .table thead th {
     background: linear-gradient(135deg, rgba(58, 124, 235, 0.15) 0%, rgba(90, 111, 174, 0.12) 50%, rgba(111, 66, 193, 0.1) 100%) !important;
     color: var(--color-blue-strong) !important;
     border-bottom: 1px solid rgba(58, 124, 235, 0.25) !important;
 }
 
-html[data-theme="light"] .dashboard .table-dark tbody tr {
+html[data-theme="light"] .dashboard .table tbody tr {
     background-color: transparent !important;
     border-color: var(--color-border-soft, rgba(51, 51, 51, 0.12)) !important;
 }
 
-html[data-theme="light"] .dashboard .table-dark.table-striped tbody tr:nth-of-type(odd) {
+html[data-theme="light"] .dashboard .table.table-striped tbody tr:nth-of-type(odd) {
     background-color: #E8E9EA !important; /* Dark grey for odd rows in light theme */
 }
 
-html[data-theme="light"] .dashboard .table-dark tbody tr:nth-of-type(even) {
+html[data-theme="light"] .dashboard .table tbody tr:nth-of-type(even) {
     background-color: #FFFFFF !important; /* White for even rows */
 }
 
-html[data-theme="light"] .dashboard .table-dark.table-hover tbody tr:hover {
+html[data-theme="light"] .dashboard .table.table-hover tbody tr:hover {
     background-color: var(--color-table-row-hover, rgba(90, 155, 213, 0.18)) !important;
     box-shadow: inset 0 0 0 1px rgba(58, 124, 235, 0.25) !important;
 }
 
-html[data-theme="light"] .dashboard .table-dark td,
-html[data-theme="light"] .dashboard .table-dark th {
+html[data-theme="light"] .dashboard .table td,
+html[data-theme="light"] .dashboard .table th {
     border-color: var(--color-border-soft, rgba(51, 51, 51, 0.12)) !important;
     color: var(--color-text, #444444) !important;
 }
 
-html[data-theme="light"] .dashboard .table-dark .text-gold,
-html[data-theme="light"] .dashboard .table-dark .text-gold-light {
+html[data-theme="light"] .dashboard .table .text-gold,
+html[data-theme="light"] .dashboard .table .text-gold-light {
     color: var(--color-accent, #5A6FAE) !important;
 }
 
-html[data-theme="light"] .dashboard .table-dark .text-white-50 {
+html[data-theme="light"] .dashboard .table .text-white-50 {
     color: var(--color-text-muted, #6E6E6E) !important;
 }
 

@@ -10,23 +10,68 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" integrity="sha384-0pCuwcZFgPDFoGCGuAycbzh144uvEca/0Vrz1IFXpgwY/ptvO52zJQA2Me5Bjq4U" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.min.js" integrity="sha384-2nMaasa7xwa3bPTsp9SWZuvLaYGu9o3z7C9Z1ONTpMtJJTnKCiw0j5djPwO1smim" crossorigin="anonymous"></script>
 <style>
+    .analysis-page {
+        --analysis-surface: rgba(18, 20, 34, 0.92);
+        --analysis-surface-alt: rgba(11, 13, 21, 0.88);
+        --analysis-border: rgba(148, 163, 184, 0.25);
+        --analysis-shadow: 0 18px 38px rgba(8, 10, 16, 0.55);
+        --analysis-text: rgba(247, 249, 255, 0.96);
+        --analysis-text-muted: rgba(186, 197, 219, 0.78);
+        --analysis-insight-bg: radial-gradient(circle at top, rgba(59, 130, 246, 0.18), rgba(91, 33, 182, 0.22));
+        --analysis-chip-up-bg: rgba(34, 197, 94, 0.15);
+        --analysis-chip-up-text: #4ade80;
+        --analysis-chip-down-bg: rgba(239, 68, 68, 0.15);
+        --analysis-chip-down-text: #f87171;
+        --analysis-chip-flat-bg: rgba(148, 163, 184, 0.18);
+        --analysis-chip-flat-text: #cbd5f5;
+    }
+
+    html[data-theme="light"] .analysis-page {
+        --analysis-surface: #ffffff;
+        --analysis-surface-alt: #f7f8fb;
+        --analysis-border: rgba(0, 23, 55, 0.1);
+        --analysis-shadow: 0 16px 34px rgba(13, 34, 79, 0.15);
+        --analysis-text: #0f172a;
+        --analysis-text-muted: rgba(15, 23, 42, 0.65);
+        --analysis-insight-bg: linear-gradient(145deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.18));
+        --analysis-chip-up-bg: rgba(34, 197, 94, 0.18);
+        --analysis-chip-up-text: #15803d;
+        --analysis-chip-down-bg: rgba(239, 68, 68, 0.18);
+        --analysis-chip-down-text: #b91c1c;
+        --analysis-chip-flat-bg: rgba(148, 163, 184, 0.18);
+        --analysis-chip-flat-text: #475569;
+    }
+
+    html[data-theme="dark"] .analysis-page {
+        --analysis-surface: rgba(12, 14, 22, 0.95);
+        --analysis-surface-alt: rgba(6, 7, 12, 0.92);
+        --analysis-border: rgba(212, 175, 55, 0.2);
+        --analysis-shadow: 0 22px 42px rgba(0, 0, 0, 0.75);
+        --analysis-text: rgba(247, 249, 255, 0.96);
+        --analysis-text-muted: rgba(198, 204, 226, 0.75);
+        --analysis-insight-bg: radial-gradient(circle at top, rgba(250, 204, 21, 0.12), rgba(234, 179, 8, 0.08));
+        --analysis-chip-flat-text: rgba(226, 232, 240, 0.78);
+    }
+
     .insight-card {
-        border: none;
+        border: 1px solid var(--analysis-border);
         border-radius: 16px;
-        background: linear-gradient(145deg, rgba(37, 99, 235, 0.08), rgba(99, 102, 241, 0.12));
-        color: var(--bs-body-color);
+        background: var(--analysis-insight-bg);
+        color: var(--analysis-text);
+        box-shadow: var(--analysis-shadow);
     }
 
     .stat-card {
         border-radius: 12px;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
-        background: var(--card-bg);
-        border: 1px solid var(--border-color);
+        background: var(--analysis-surface);
+        border: 1px solid var(--analysis-border);
+        box-shadow: var(--analysis-shadow);
     }
 
     .stat-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
     }
 
     .stat-icon {
@@ -40,15 +85,16 @@
     }
 
     .price-card {
-        border: 1px solid rgba(148, 163, 184, 0.2);
+        border: 1px solid var(--analysis-border);
         border-radius: 14px;
         transition: transform 0.25s ease, box-shadow 0.25s ease;
-        background-color: var(--bs-body-bg);
+        background-color: var(--analysis-surface-alt);
+        box-shadow: var(--analysis-shadow);
     }
 
     .price-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 16px 40px -24px rgba(15, 23, 42, 0.45);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
     }
 
     .price-card.special {
@@ -62,8 +108,9 @@
 
     .chart-card {
         border-radius: 18px;
-        border: 1px solid rgba(148, 163, 184, 0.16);
-        background-color: var(--bs-body-bg);
+        border: 1px solid var(--analysis-border);
+        background-color: var(--analysis-surface);
+        box-shadow: var(--analysis-shadow);
     }
 
     .trend-chip {
@@ -77,18 +124,18 @@
     }
 
     .trend-chip.up {
-        background: rgba(34, 197, 94, 0.12);
-        color: #16a34a;
+        background: var(--analysis-chip-up-bg);
+        color: var(--analysis-chip-up-text);
     }
 
     .trend-chip.down {
-        background: rgba(239, 68, 68, 0.12);
-        color: #dc2626;
+        background: var(--analysis-chip-down-bg);
+        color: var(--analysis-chip-down-text);
     }
 
     .trend-chip.flat {
-        background: rgba(148, 163, 184, 0.12);
-        color: #475569;
+        background: var(--analysis-chip-flat-bg);
+        color: var(--analysis-chip-flat-text);
     }
 
     .volatility-badge {
@@ -111,11 +158,19 @@
         background: rgba(239, 68, 68, 0.15);
         color: #dc2626;
     }
+
+    .analysis-page .text-white {
+        color: var(--analysis-text) !important;
+    }
+
+    .analysis-page .text-white-50 {
+        color: var(--analysis-text-muted) !important;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="py-4">
+<div class="py-4 analysis-page">
     <!-- Header Section -->
     <section class="mb-4">
         <div class="row g-4 align-items-end">

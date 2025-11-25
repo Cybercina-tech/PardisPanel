@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block breadcrumbs %}
+{% include "admin/widgets/breadcrumbs.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="module import-config-module">
+    <h1>{{ title }}</h1>
+    <p class="help">
+        {% blocktrans %}Upload a configuration JSON file and apply it to the selected templates.{% endblocktrans %}
+    </p>
+
+    <h3>{% trans "Selected templates" %}</h3>
+    <ul class="selected-template-list">
+        {% for template in selected_templates %}
+            <li>
+                <strong>{{ template.name }}</strong>
+                {% if template.category %}
+                    · {% trans "Category" %}: {{ template.category.name }}
+                {% elif template.special_price_type %}
+                    · {% trans "Special price" %}: {{ template.special_price_type.name }}
+                {% else %}
+                    · {% trans "Unassigned" %}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <form method="post" enctype="multipart/form-data" class="import-config-form">
+        {% csrf_token %}
+        <input type="hidden" name="ids" value="{{ ids }}">
+        {{ form.non_field_errors }}
+        <fieldset class="module aligned">
+            {% for field in form %}
+                <div class="form-row {% if field.errors %}errors{% endif %}">
+                    {{ field.errors }}
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="help">{{ field.help_text }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </fieldset>
+        <div class="submit-row">
+            <button type="submit" class="default">{% trans "Apply configuration" %}</button>
+            <a class="button" href="{% url 'admin:template_editor_template_changelist' %}">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+    {{ form.media }}
+</div>
+{% endblock %}
+
