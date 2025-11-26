@@ -285,6 +285,131 @@ Follow PEP 8 guidelines and Django best practices.
 
 ## 📝 API Endpoints
 
+### Pricing Data API
+
+The Pricing Data API exposes a **read-only JSON view of all pricing data**, suitable for dashboards, bots, and external systems.
+
+- **Base URL (including project routing)**: `GET /analysis/api/pricing/`
+- **Authentication**: Disabled by default for this endpoint (can be enabled via DRF settings).
+- **Methods**: `GET` only (fully read-only).
+
+#### Response Structure
+
+The endpoint returns a single JSON object:
+
+```json
+{
+  "generated_at": "2025-01-01T12:00:00Z",
+  "categories": [
+    {
+      "id": 1,
+      "name": "Cash",
+      "slug": "cash",
+      "description": "Cash exchange prices",
+      "items": [
+        {
+          "id": 10,
+          "name": "USD / IRR Buy",
+          "pair": "USD/IRR",
+          "trade_type": "Buy",
+          "latest_price": "123456.78",
+          "latest_price_timestamp": "2025-01-01T11:55:00Z"
+        }
+      ]
+    },
+    {
+      "id": null,
+      "name": "Special Prices",
+      "slug": "special-prices",
+      "description": "Special price types with updates in the last 6 hours.",
+      "items": [
+        {
+          "id": 5,
+          "name": "Special Pound",
+          "pair": "GBP/IRR",
+          "trade_type": "Sell",
+          "latest_special_price": "550000.00",
+          "latest_special_price_timestamp": "2025-01-01T11:40:00Z"
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### Semantics
+
+- **`generated_at`**  
+  ISO8601 timestamp when the payload was generated (server time, UTC).
+
+- **`categories`**  
+  List of **category objects** with the following structure:
+
+  - **`id`**  
+    Database ID of the `Category`.  
+    - For the synthetic *Special Prices* category, this value is **`null`**.
+
+  - **`name`**  
+    Human-readable category name (for example: `"Cash"`).
+
+  - **`slug`**  
+    URL-friendly slug string (for example: `"cash"`).  
+    May be reused in other parts of the system for routing or labels.
+
+  - **`description`** *(optional, nullable)*  
+    Free-text category description.  
+    - May be **`null`** if no description is provided.
+
+  - **`items`**  
+    List of pricing item objects for that category.  
+    - May be an empty list (`[]`) if the category has no current items.
+
+For **regular categories**, each item has:
+
+- **id**: ID of the `PriceType`.
+- **name**: Name of the `PriceType`.
+- **pair**: String representing the currency pair, e.g. `"USD/IRR"`.
+- **trade_type**: Human-readable trade direction, e.g. `"Buy"` or `"Sell"`.
+- **latest_price**: Latest numeric price for this type (stringified decimal).
+- **latest_price_timestamp**: Timestamp of the latest recorded price (`PriceHistory.created_at`).
+
+For the **synthetic "Special Prices" category**, items come from `SpecialPriceType` and `SpecialPriceHistory`:
+
+- **id**: ID of the `SpecialPriceType`.
+- **name**: Name of the special price type.
+- **pair**: Currency pair for the special price.
+- **trade_type**: Human-readable trade direction.
+- **latest_special_price**: Latest special price value (stringified decimal).
+- **latest_special_price_timestamp**: Timestamp of the latest *special price* (`SpecialPriceHistory.created_at`).
+
+#### Business Rules
+
+- **All categories are always included**:
+  - Every `Category` record is returned, even if it currently has no price items.
+  - In that case, `items` is an empty array (`[]`).
+- **Regular price items**:
+  - Each category’s `items` list is built from `PriceType` **with at least one `PriceHistory` entry**.
+  - Only the **latest** price per type is exposed.
+- **Special prices**:
+  - The *Special Prices* category aggregates `SpecialPriceType` entries.
+  - **Only items with a `SpecialPriceHistory` in the last 6 hours are included**.
+  - If no special prices have been updated in the last 6 hours, the *Special Prices* category is still present, but `items` is empty.
+
+#### DRF & Security Notes
+
+- Implemented using **Django REST Framework** (`analysis.views.PricingDataAPIView`).  
+- The view is **GET-only** and does not support POST/PUT/PATCH/DELETE.
+- `authentication_classes` and `permission_classes` are **empty by default** but can be configured:
+  - Example: `SessionAuthentication`, `TokenAuthentication`, `IsAuthenticated`, etc.
+- Throttling support can be enabled via DRF’s `AnonRateThrottle` / `UserRateThrottle` and `DEFAULT_THROTTLE_RATES`.
+- **CORS** is handled globally (e.g. via `django-cors-headers`); the view itself is CORS-agnostic.
+
+#### Typical Use Cases
+
+- Powering a **public JSON endpoint** for currency prices.
+- Feeding **frontend dashboards** or **mobile apps** that need current prices and special offers.
+- Providing a **machine-readable feed** for other services (e.g. partner sites, bots, or monitoring tools).
+
 ### Template Editor API
 
 - `GET /api/templates/`: List all templates

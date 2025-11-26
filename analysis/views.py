@@ -8,11 +8,18 @@ from django.db.models import OuterRef, Subquery, Count
 from django.utils import timezone
 from django.views.generic import TemplateView
 
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from category.models import PriceType, Category
 from change_price.models import PriceHistory
 from special_price.models import SpecialPriceType, SpecialPriceHistory
 from finalize.models import Finalization, SpecialPriceFinalization
 from telegram_app.models import TelegramChannel
+
+from .serializers import (
+    PricingResponseSerializer,
+)
 
 
 class AnalyticsDashboardView(TemplateView):
@@ -447,3 +454,221 @@ class AnalyticsDashboardView(TemplateView):
             "active_special_types": active_special_types,
             "active_channels": active_channels,
         }
+
+
+class PricingDataAPIView(APIView):
+    """
+    Read-only API endpoint that exposes pricing data as JSON.
+
+    Response structure (high level):
+    {
+        "generated_at": "<ISO8601 datetime>",
+        "categories": [
+            {
+                "id": 1,
+                "name": "Cash",
+                "slug": "cash",
+                "description": "...",
+                "items": [
+                    {
+                        "id": 10,
+                        "name": "USD / IRR Buy",
+                        "pair": "USD/IRR",
+                        "trade_type": "Buy",
+                        "latest_price": 123.45,
+                        "latest_price_timestamp": "..."
+                    },
+                    ...
+                ]
+            },
+            {
+                "id": null,
+                "name": "Special Prices",
+                "slug": "special-prices",
+                "description": "Special prices with updates in the last 6 hours.",
+                "items": [
+                    {
+                        "id": 5,
+                        "name": "Special Pound",
+                        "pair": "GBP/IRR",
+                        "trade_type": "Buy",
+                        "latest_special_price": 50000.0,
+                        "latest_special_price_timestamp": "..."
+                    },
+                    ...
+                ]
+            }
+        ]
+    }
+
+    Key behaviours:
+    - The endpoint is GET-only and read-only.
+    - All categories are always returned, even if they currently have no items.
+    - Items that come from special prices are only included if their
+      special_price has been updated in the last 6 hours.
+
+    Security:
+    - No authentication/permission classes are enforced here to keep the
+      endpoint simple and read-only.
+    - Project can enable authentication, permissions, and throttling below
+      according to deployment needs.
+    """
+
+    # Optional security placeholders — project can uncomment/configure as needed.
+    authentication_classes = []  # e.g. [SessionAuthentication, TokenAuthentication]
+    permission_classes = []  # e.g. [IsAuthenticated]
+
+    # Example throttling configuration (disabled by default):
+    # from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+    #
+    # class ReadOnlyAnonThrottle(AnonRateThrottle):
+    #     scope = "readonly_anon"
+    #
+    # class ReadOnlyUserThrottle(UserRateThrottle):
+    #     scope = "readonly_user"
+    #
+    # throttle_classes = [ReadOnlyAnonThrottle, ReadOnlyUserThrottle]
+
+    # Note: CORS should be configured globally via middleware/settings
+    # (e.g. django-cors-headers). This view is CORS-agnostic by design.
+
+    def get(self, request, *args, **kwargs):
+        """
+        Handle GET requests and return a JSON payload with categories and pricing.
+        """
+        now = timezone.now()
+        cutoff = now - timedelta(hours=6)
+
+        category_items = self._build_category_items()
+        special_items = self._build_special_price_items(cutoff=cutoff)
+
+        # Build list of all real categories
+        categories_payload = []
+        for category in Category.objects.all().order_by("name"):
+            categories_payload.append(
+                {
+                    "id": category.id,
+                    "name": category.name,
+                    "slug": category.slug,
+                    "description": category.description,
+                    "items": category_items.get(category.id, []),
+                }
+            )
+
+        # Add synthetic "Special Prices" category.
+        # This keeps the response consistent: all "items that have special_price"
+        # are surfaced together and filtered to the last 6 hours.
+        categories_payload.append(
+            {
+                "id": None,
+                "name": "Special Prices",
+                "slug": "special-prices",
+                "description": "Special price types with updates in the last 6 hours.",
+                "items": special_items,
+            }
+        )
+
+        payload = {
+            "generated_at": now,
+            "categories": categories_payload,
+        }
+
+        serializer = PricingResponseSerializer(payload)
+        return Response(serializer.data)
+
+    def _build_category_items(self):
+        """
+        Build a mapping of category_id -> list[price item dict].
+
+        - Uses `PriceType` and its latest `PriceHistory` to build
+          category items.
+        - Categories are *not* filtered by recency; consumers can do that
+          on the client if needed.
+        """
+        latest_history = (
+            PriceHistory.objects.filter(price_type=OuterRef("pk"))
+            .order_by("-created_at")
+        )
+
+        price_types = (
+            PriceType.objects.select_related(
+                "category", "source_currency", "target_currency"
+            )
+            .annotate(
+                latest_price=Subquery(latest_history.values("price")[:1]),
+                latest_timestamp=Subquery(latest_history.values("created_at")[:1]),
+            )
+            .order_by("category__name", "name")
+        )
+
+        items_by_category = defaultdict(list)
+
+        for pt in price_types:
+            # Skip types that have never had a price recorded.
+            if pt.latest_price is None:
+                continue
+
+            items_by_category[pt.category_id].append(
+                {
+                    "id": pt.id,
+                    "name": pt.name,
+                    "pair": f"{pt.source_currency.code}/{pt.target_currency.code}",
+                    "trade_type": pt.get_trade_type_display(),
+                    "latest_price": pt.latest_price,
+                    "latest_price_timestamp": pt.latest_timestamp,
+                }
+            )
+
+        return items_by_category
+
+    def _build_special_price_items(self, cutoff):
+        """
+        Build a list of special price items, filtered to the last 6 hours.
+
+        - Uses `SpecialPriceType` and `SpecialPriceHistory`.
+        - Only includes items where there is at least one SpecialPriceHistory
+          with `created_at >= cutoff`.
+
+        If your project later associates special prices directly with
+        categories or price types (e.g. via a ForeignKey), you can adapt
+        this function to group them differently while keeping the response
+        structure intact.
+        """
+        latest_special_history = (
+            SpecialPriceHistory.objects.filter(
+                special_price_type=OuterRef("pk"),
+                created_at__gte=cutoff,
+            )
+            .order_by("-created_at")
+        )
+
+        special_price_types = (
+            SpecialPriceType.objects.select_related(
+                "source_currency", "target_currency"
+            )
+            .annotate(
+                latest_price=Subquery(latest_special_history.values("price")[:1]),
+                latest_timestamp=Subquery(
+                    latest_special_history.values("created_at")[:1]
+                ),
+            )
+            # Only keep types that actually have a recent special_price
+            .filter(latest_price__isnull=False)
+            .order_by("name")
+        )
+
+        items = []
+        for spt in special_price_types:
+            items.append(
+                {
+                    "id": spt.id,
+                    "name": spt.name,
+                    "pair": f"{spt.source_currency.code}/{spt.target_currency.code}",
+                    "trade_type": spt.get_trade_type_display(),
+                    "latest_special_price": spt.latest_price,
+                    "latest_special_price_timestamp": spt.latest_timestamp,
+                }
+            )
+
+        return items
+
