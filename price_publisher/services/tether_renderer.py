@@ -22,7 +22,7 @@ BACKGROUND_RELATIVE_PATH = Path("offer") / "tether_buy_sell.png"
 OFFER_TEXT_POSITIONS = {
     "farsi_date": (1900, 250),
     "farsi_weekday": (1860, 420),
-    "english_date": (420, 250),
+    "english_date": (410, 250),  # Moved slightly to the left
     "english_weekday": (580, 420),
     "tether_buy_irr": (1800, 1125),
     "tether_sell_irr": (370, 1125),
@@ -34,9 +34,9 @@ FONT_FILES = {
     "farsi_date": ("Morabba.ttf", 115),
     "farsi_weekday": ("Morabba.ttf", 86),
     "english_date": ("YekanBakh.ttf", 100),
-    "english_weekday": ("YekanBakh.ttf", 95),
-    "english_number": ("montsrrat.otf", 115),
-    "tether_price": ("montsrrat.otf", 230),
+    "english_weekday": ("YekanBakh.ttf", 94),  # Reduced by 1 degree
+    "english_number": ("montsrrat.otf", 113),  # Reduced by 2 degrees (from 115)
+    "tether_price": ("KalamehWeb-Bold.woff", 230),
 }
 
 FARSI_WEEKDAYS = {
@@ -166,7 +166,21 @@ def _load_fonts():
     fonts = {}
     for key, (filename, size) in FONT_FILES.items():
         font_path = FONT_ROOT / filename
-        fonts[key] = ImageFont.truetype(str(font_path), size)
+        if not font_path.exists():
+            raise FileNotFoundError(
+                f"Font file not found: {font_path}. "
+                f"Please ensure the font file exists in the fonts directory."
+            )
+        try:
+            fonts[key] = ImageFont.truetype(str(font_path), size)
+        except OSError as e:
+            if filename.endswith('.woff'):
+                raise OSError(
+                    f"Failed to load font '{filename}': PIL/Pillow does not support .woff files. "
+                    f"Please provide a .ttf or .otf version of Kalameh font. "
+                    f"Original error: {e}"
+                ) from e
+            raise
     return fonts
 
 
@@ -312,12 +326,12 @@ def _format_history_value(price_history, key: str) -> str:
     try:
         decimal_value = Decimal(value)
     except (InvalidOperation, TypeError):
-        return _to_english_digits(str(value))
+        return _to_farsi_digits(str(value))
 
     integral = decimal_value == decimal_value.to_integral()
     quantized = decimal_value.quantize(Decimal("1")) if integral else decimal_value
     text = f"{quantized:,}"
-    return _to_english_digits(text)
+    return _to_farsi_digits(text)
 
 
 def _to_farsi_digits(value: str) -> str:

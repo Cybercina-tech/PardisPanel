@@ -240,7 +240,7 @@ def _get_rotating_background():
 
 
 def _load_fonts():
-    return {
+    fonts = {
         "farsi_big": ImageFont.truetype(
             str(FONT_ROOT / "YekanBakh.ttf"), 89
         ),  # weekday fa
@@ -253,9 +253,6 @@ def _load_fonts():
         "eng_small": ImageFont.truetype(
             str(FONT_ROOT / "YekanBakh.ttf"), 85
         ),  # weekday en
-        "price": ImageFont.truetype(
-            str(FONT_ROOT / "montsrrat.otf"), 135
-        ),  # price numbers
         "stop": ImageFont.truetype(
             str(FONT_ROOT / "Morabba.ttf"), 115
         ),  # توقف خرید/فروش
@@ -263,6 +260,26 @@ def _load_fonts():
             str(FONT_ROOT / "Morabba.ttf"), 100
         ),  # تماس بگیرید
     }
+    
+    # Load price font with error handling for .woff files
+    price_font_path = FONT_ROOT / "KalamehWeb-Bold.woff"
+    if not price_font_path.exists():
+        raise FileNotFoundError(
+            f"Font file not found: {price_font_path}. "
+            f"Please ensure the font file exists in the fonts directory."
+        )
+    try:
+        fonts["price"] = ImageFont.truetype(str(price_font_path), 135)
+    except OSError as e:
+        if price_font_path.suffix == '.woff':
+            raise OSError(
+                f"Failed to load font 'KalamehWeb-Bold.woff': PIL/Pillow does not support .woff files. "
+                f"Please provide a .ttf or .otf version of Kalameh font. "
+                f"Original error: {e}"
+            ) from e
+        raise
+    
+    return fonts
 
 
 def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
@@ -378,7 +395,7 @@ def _format_price_value(value) -> str:
     except Exception:
         integer_value = int(decimal_value)
     formatted = f"{integer_value:,}"
-    return formatted
+    return _to_farsi_digits(formatted)  # Convert to Farsi digits
 
 
 def _to_farsi_digits(value: str) -> str:

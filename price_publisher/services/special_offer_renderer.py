@@ -31,10 +31,10 @@ OFFER_TEXT_POSITIONS = {
 FONT_DEFINITIONS = {
     "farsi_date": ("Morabba.ttf", 115),
     "farsi_weekday": ("Morabba.ttf", 86),
-    "english_date": ("YekanBakh.ttf", 100),
-    "english_weekday": ("YekanBakh.ttf", 95),
-    "english_number": ("montsrrat.otf", 115),
-    "price": ("montsrrat.otf", 220),
+    "english_date": ("YekanBakh.ttf", 100),  # Persian font for English date
+    "english_weekday": ("YekanBakh.ttf", 95),  # Persian font for English weekday
+    "english_number": ("YekanBakh.ttf", 115),  # Changed to Persian font (YekanBakh)
+    "price": ("KalamehWeb-Bold.woff", 220),  # Using Kalameh font for prices
 }
 
 FARSI_WEEKDAYS = {
@@ -205,7 +205,21 @@ def _load_fonts():
     fonts = {}
     for key, (filename, size) in FONT_DEFINITIONS.items():
         font_path = FONT_ROOT / filename
-        fonts[key] = ImageFont.truetype(str(font_path), size)
+        if not font_path.exists():
+            raise FileNotFoundError(
+                f"Font file not found: {font_path}. "
+                f"Please ensure the font file exists in the fonts directory."
+            )
+        try:
+            fonts[key] = ImageFont.truetype(str(font_path), size)
+        except OSError as e:
+            if filename.endswith('.woff'):
+                raise OSError(
+                    f"Failed to load font '{filename}': PIL/Pillow does not support .woff files. "
+                    f"Please provide a .ttf or .otf version of Kalameh font. "
+                    f"Original error: {e}"
+                ) from e
+            raise
     return fonts
 
 
@@ -232,7 +246,7 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, timestamp):
     english_date = localized.strftime("%Y %b %d")
     draw_ctx.text(
         OFFER_TEXT_POSITIONS["english_date"],
-        _to_english_digits(english_date),
+        _to_farsi_digits(english_date),  # Convert English date numbers to Farsi
         font=fonts["english_number"],
         fill="white",
     )
@@ -262,13 +276,13 @@ def _format_price_value(price_history, *, special_price_type=None) -> str:
     try:
         decimal_value = Decimal(value)
     except (InvalidOperation, TypeError):
-        return _to_english_digits(str(value))
+        return _to_farsi_digits(str(value))  # Convert to Farsi digits
 
     if decimal_value == decimal_value.to_integral():
         decimal_value = decimal_value.quantize(Decimal("1"))
 
     text = f"{decimal_value:,}"
-    return _to_english_digits(text)
+    return _to_farsi_digits(text)  # Convert to Farsi digits
 
 
 def _extract_timestamp(price_history):
