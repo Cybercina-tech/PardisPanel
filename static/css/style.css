@@ -1,4 +1,29 @@
-/* Theme Variables - YekanBakh Font Family */
+/* Theme Variables - KalamehWeb Font Family */
+@font-face {
+    font-family: "KalamehWeb";
+    src: url("../fonts/KalamehWeb-Regular.woff") format("woff");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "KalamehWeb";
+    src: url("../fonts/KalamehWeb-Bold.woff") format("woff");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "KalamehWeb";
+    src: url("../fonts/KalamehWeb-Black.woff") format("woff");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Legacy YekanBakh for backward compatibility */
 @font-face {
     font-family: "YekanBakh";
     src: url("../fonts/YekanBakh-Regular.woff") format("woff");
@@ -30,8 +55,9 @@
     font-style: normal;
     font-display: swap;
 }
+
 :root {
-    --font-family-sans: "YekanBakh", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-family-sans: "KalamehWeb", "YekanBakh", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     --font-family-en: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     --font-family-icons: "bootstrap-icons", sans-serif;
     --font-size-root: 16px;
@@ -352,14 +378,14 @@ button [class*="fa-"],
     font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome", sans-serif !important;
 }
 
-/* STEP 2: YEKANBAKH TEXT FONT - Applies to ALL text elements */
-/* Body and base elements - Force YekanBakh for all text */
+/* STEP 2: KALAMEHWEB TEXT FONT - Applies to ALL text elements */
+/* Body and base elements - Force KalamehWeb for all text */
 body,
 html {
     font-family: var(--font-family-sans) !important;
 }
 
-/* All text content elements - Force YekanBakh */
+/* All text content elements - Force KalamehWeb */
 p,
 span,
 div,
@@ -411,7 +437,7 @@ select,
     font-family: var(--font-family-sans) !important;
 }
 
-/* Interactive elements - Force YekanBakh */
+/* Interactive elements - Force KalamehWeb */
 button,
 .btn,
 a,
@@ -443,7 +469,7 @@ option {
     font-family: var(--font-family-sans) !important;
 }
 
-/* Universal rule: All text elements use YekanBakh (icons are already excluded above) */
+/* Universal rule: All text elements use KalamehWeb (icons are already excluded above) */
 *:not([class*="bi-"]):not([class^="bi-"]):not([class*="fa-"]):not([class^="fa-"]):not(.bi):not(.fa):not(.fas):not(.far):not(.fab):not(.fa-solid):not(.fa-regular):not(.fa-brands) {
     font-family: var(--font-family-sans) !important;
 }
@@ -473,6 +499,33 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* Make KalamehWeb font appear bolder */
+    font-synthesis: weight;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Make KalamehWeb font appear bolder for Persian text */
+:lang(fa),
+:lang(fa-IR),
+[dir="rtl"],
+body,
+html {
+    font-family: var(--font-family-sans) !important;
+}
+
+/* Enhanced boldness for KalamehWeb - slightly bolder than original */
+body,
+:lang(fa),
+:lang(fa-IR),
+[dir="rtl"] {
+    font-weight: 550;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Subtle text stroke for bolder appearance */
+    -webkit-text-stroke: 0.01em transparent;
+    text-stroke: 0.01em transparent;
 }
 
 html[data-theme="light"] body {
@@ -1409,6 +1462,143 @@ html[data-theme="light"] .card:hover {
     transform: translateY(-4px);
 }
 
+/* Mobile styles for category dashboard - center align all elements */
+@media (max-width: 991.98px) {
+    /* Center align page header */
+    .container-fluid .d-flex.justify-content-between.align-items-center {
+        flex-direction: column;
+        align-items: center !important;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    /* Center align category card header */
+    .category-card .card-header {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .category-card .card-header .card-title {
+        text-align: center;
+        width: 100%;
+    }
+
+    /* Separate buttons in mobile - remove btn-group styling */
+    .category-card .card-header .btn-group {
+        display: flex !important;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .category-card .card-header .btn-group .btn {
+        width: 100%;
+        border-radius: var(--radius-md) !important;
+        margin: 0 !important;
+        border: 1px solid;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Center align card body content */
+    .category-card .card-body {
+        text-align: center;
+    }
+
+    .category-card .card-body .card-text {
+        text-align: center;
+    }
+
+    /* Center align price types section */
+    .category-card .card-body .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: center !important;
+        gap: 0.5rem;
+    }
+
+    /* Center align list items */
+    .category-card .list-group-item {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .category-card .list-group-item > div:first-child {
+        text-align: center;
+        width: 100%;
+    }
+
+    /* Separate buttons in list items - remove btn-group styling */
+    .category-card .list-group-item .btn-group {
+        display: flex !important;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .category-card .list-group-item .btn-group .btn {
+        width: 100%;
+        border-radius: var(--radius-md) !important;
+        margin: 0 !important;
+        border: 1px solid;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Center align card footer button */
+    .category-card .card-footer {
+        text-align: center;
+    }
+}
+
+@media (max-width: 575.98px) {
+    /* Additional mobile styles for smaller screens - ensure buttons are fully separated */
+    .category-card .card-header .btn-group {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .category-card .card-header .btn-group .btn {
+        width: 100%;
+        border-radius: var(--radius-md) !important;
+        margin: 0 !important;
+        padding: 0.5rem 1rem;
+        border: 1px solid;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        transition: all var(--transition-base);
+    }
+
+    .category-card .card-header .btn-group .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .category-card .list-group-item .btn-group {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+    }
+
+    .category-card .list-group-item .btn-group .btn {
+        width: 100%;
+        border-radius: var(--radius-md) !important;
+        margin: 0 !important;
+        padding: 0.5rem 1rem;
+        border: 1px solid;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        transition: all var(--transition-base);
+    }
+
+    .category-card .list-group-item .btn-group .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+}
+
 .metric-card .card-title {
     color: var(--color-heading);
     font-size: 1.65rem;
@@ -1912,7 +2102,34 @@ textarea.form-control {
 }
 
 .price-dashboard-grid {
-    row-gap: clamp(1.75rem, 3vw, 2.25rem);
+    row-gap: clamp(1.5rem, 3vw, 2.25rem);
+    column-gap: clamp(1rem, 2.5vw, 1.75rem);
+}
+
+/* Right align for Pound and Tether categories */
+.price-dashboard-grid .category-rtl {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+/* Desktop adjustments for price dashboard layout */
+@media (min-width: 992px) {
+    /* Let Bootstrap handle alignment instead of centering whole row */
+    .price-dashboard-grid.justify-content-center {
+        justify-content: flex-start !important;
+    }
+
+    /* Remove manual RTL shift on wide screens to keep grid even */
+    .price-dashboard-grid .category-rtl {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    /* Slightly tighten vertical spacing between category cards */
+    .price-dashboard-grid {
+        row-gap: 1.5rem;
+        column-gap: 1.5rem;
+    }
 }
 
 .price-dashboard-card {
@@ -1922,6 +2139,192 @@ textarea.form-control {
     border: 1px solid var(--color-border-soft);
     box-shadow: var(--color-shadow-soft);
     overflow: hidden;
+    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+/* Center align card header content */
+.price-dashboard-card .card-header {
+    text-align: center;
+}
+
+.price-dashboard-card .card-header > div {
+    width: 100%;
+}
+
+/* Mobile styles for special price dashboard */
+@media (max-width: 991.98px) {
+    /* Center align card header content in mobile */
+    .price-dashboard-card .card-header > div {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 1rem;
+    }
+
+    /* Center align title */
+    .price-dashboard-card .card-header .card-title {
+        text-align: center;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+    /* Keep buttons side by side below title */
+    .price-dashboard-card .card-header .d-flex.flex-wrap.gap-2 {
+        justify-content: center;
+        width: 100%;
+        flex-direction: row !important;
+    }
+
+    .price-dashboard-card .card-header .d-flex.flex-wrap.gap-2 .btn {
+        flex: 0 1 auto;
+        min-width: auto;
+    }
+}
+
+@media (max-width: 575.98px) {
+    /* For smaller mobile screens, ensure buttons stay side by side */
+    .price-dashboard-card .card-header .d-flex.flex-wrap.gap-2 {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .price-dashboard-card .card-header .d-flex.flex-wrap.gap-2 .btn {
+        flex: 1 1 auto;
+        min-width: 120px;
+    }
+}
+
+/* Color variations for category cards in light theme */
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+1) .price-dashboard-card {
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 249, 255, 0.95) 100%);
+    border-color: rgba(58, 124, 235, 0.28);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-blue) 12%, transparent);
+}
+
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+1) .price-dashboard-card .card-header {
+    background: linear-gradient(135deg, rgba(240, 249, 255, 0.98) 0%, rgba(224, 242, 255, 0.95) 100%);
+    border-bottom-color: rgba(58, 124, 235, 0.3);
+}
+
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+2) .price-dashboard-card {
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 253, 244, 0.95) 100%);
+    border-color: rgba(59, 191, 153, 0.28);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-green) 12%, transparent);
+}
+
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+2) .price-dashboard-card .card-header {
+    background: linear-gradient(135deg, rgba(240, 253, 244, 0.98) 0%, rgba(220, 252, 231, 0.95) 100%);
+    border-bottom-color: rgba(59, 191, 153, 0.3);
+}
+
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+3) .price-dashboard-card {
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 245, 232, 0.95) 100%);
+    border-color: rgba(242, 140, 107, 0.28);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-coral) 12%, transparent);
+}
+
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+3) .price-dashboard-card .card-header {
+    background: linear-gradient(135deg, rgba(255, 245, 232, 0.98) 0%, rgba(255, 239, 216, 0.95) 100%);
+    border-bottom-color: rgba(242, 140, 107, 0.3);
+}
+
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+4) .price-dashboard-card,
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n) .price-dashboard-card {
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 240, 255, 0.95) 100%);
+    border-color: rgba(111, 66, 193, 0.28);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--header-purple) 12%, transparent);
+}
+
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+4) .price-dashboard-card .card-header,
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n) .price-dashboard-card .card-header {
+    background: linear-gradient(135deg, rgba(245, 240, 255, 0.98) 0%, rgba(237, 233, 254, 0.95) 100%);
+    border-bottom-color: rgba(111, 66, 193, 0.3);
+}
+
+/* Category Icons */
+.category-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    flex-shrink: 0;
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.category-icon i {
+    color: white;
+}
+
+/* Pound icon with green background */
+.category-icon-pound {
+    background: linear-gradient(135deg, var(--color-green) 0%, var(--color-green-strong) 100%);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-green) 30%, transparent);
+}
+
+html[data-theme="light"] .category-icon-pound {
+    background: linear-gradient(135deg, var(--color-green) 0%, var(--color-green-strong) 100%);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-green) 25%, transparent);
+}
+
+.category-icon-pound:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--color-green) 35%, transparent);
+}
+
+/* Tether icon with blue background */
+.category-icon-tether {
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-blue-strong) 100%);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-blue) 30%, transparent);
+}
+
+html[data-theme="light"] .category-icon-tether {
+    background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-blue-strong) 100%);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-blue) 25%, transparent);
+}
+
+.category-icon-tether:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px color-mix(in srgb, var(--color-blue) 35%, transparent);
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .category-icon-pound {
+    background: linear-gradient(135deg, rgba(59, 191, 153, 0.9) 0%, rgba(46, 163, 127, 0.95) 100%);
+    box-shadow: 0 4px 12px rgba(59, 191, 153, 0.3);
+}
+
+[data-theme="dark"] .category-icon-tether {
+    background: linear-gradient(135deg, rgba(58, 124, 235, 0.9) 0%, rgba(31, 100, 224, 0.95) 100%);
+    box-shadow: 0 4px 12px rgba(58, 124, 235, 0.3);
+}
+
+/* Hover effects for category cards in light theme */
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+1) .price-dashboard-card:hover {
+    border-color: rgba(58, 124, 235, 0.4);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--color-blue) 18%, transparent);
+    transform: translateY(-2px);
+}
+
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+2) .price-dashboard-card:hover {
+    border-color: rgba(59, 191, 153, 0.4);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--color-green) 18%, transparent);
+    transform: translateY(-2px);
+}
+
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+3) .price-dashboard-card:hover {
+    border-color: rgba(242, 140, 107, 0.4);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--color-coral) 18%, transparent);
+    transform: translateY(-2px);
+}
+
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+4) .price-dashboard-card:hover,
+html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n) .price-dashboard-card:hover {
+    border-color: rgba(111, 66, 193, 0.4);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--header-purple) 18%, transparent);
+    transform: translateY(-2px);
 }
 
 .price-card-body {
@@ -1935,7 +2338,8 @@ textarea.form-control {
 .price-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg);
+    gap: clamp(1.5rem, 3vw, 2.25rem);
+    padding: clamp(1rem, 2vw, 1.5rem);
 }
 
 .price-list-item {
@@ -1943,13 +2347,105 @@ textarea.form-control {
     border: 1px solid var(--color-border-soft);
     border-radius: var(--radius-lg);
     box-shadow: 0 18px 32px var(--shadow-color);
-    padding: clamp(1.1rem, 2.4vw, 1.6rem);
+    padding: clamp(1.25rem, 2.6vw, 1.75rem);
     position: relative;
+    transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+    margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
 }
 
 html[data-theme="light"] .price-list-item {
     background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 249, 255, 0.94) 40%, rgba(255, 245, 232, 0.92) 80%, rgba(245, 240, 255, 0.95) 100%);
     border-color: var(--card-border-blue);
+}
+
+/* Color variations for price type items in light theme */
+html[data-theme="light"] .price-list-item:nth-child(4n+1) {
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 249, 255, 0.96) 100%);
+    border-color: rgba(58, 124, 235, 0.32);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--color-blue) 10%, transparent);
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+1)::after {
+    background: linear-gradient(135deg, rgba(58, 124, 235, 0.22) 0%, rgba(90, 111, 174, 0.15) 100%) border-box;
+    opacity: 0.6;
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+2) {
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 253, 244, 0.96) 100%);
+    border-color: rgba(59, 191, 153, 0.32);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--color-green) 10%, transparent);
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+2)::after {
+    background: linear-gradient(135deg, rgba(59, 191, 153, 0.22) 0%, rgba(46, 163, 127, 0.15) 100%) border-box;
+    opacity: 0.6;
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+3) {
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 245, 232, 0.96) 100%);
+    border-color: rgba(242, 140, 107, 0.32);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--color-coral) 10%, transparent);
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+3)::after {
+    background: linear-gradient(135deg, rgba(242, 140, 107, 0.22) 0%, rgba(234, 122, 85, 0.15) 100%) border-box;
+    opacity: 0.6;
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+4),
+html[data-theme="light"] .price-list-item:nth-child(4n) {
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(245, 240, 255, 0.96) 100%);
+    border-color: rgba(111, 66, 193, 0.32);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--header-purple) 10%, transparent);
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+4)::after,
+html[data-theme="light"] .price-list-item:nth-child(4n)::after {
+    background: linear-gradient(135deg, rgba(111, 66, 193, 0.22) 0%, rgba(90, 52, 160, 0.15) 100%) border-box;
+    opacity: 0.6;
+}
+
+/* Hover effects for price type items in light theme */
+html[data-theme="light"] .price-list-item:nth-child(4n+1):hover {
+    border-color: rgba(58, 124, 235, 0.45);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-blue) 15%, transparent);
+    transform: translateY(-1px);
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+1):hover::after {
+    opacity: 0.85;
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+2):hover {
+    border-color: rgba(59, 191, 153, 0.45);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-green) 15%, transparent);
+    transform: translateY(-1px);
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+2):hover::after {
+    opacity: 0.85;
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+3):hover {
+    border-color: rgba(242, 140, 107, 0.45);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--color-coral) 15%, transparent);
+    transform: translateY(-1px);
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+3):hover::after {
+    opacity: 0.85;
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+4):hover,
+html[data-theme="light"] .price-list-item:nth-child(4n):hover {
+    border-color: rgba(111, 66, 193, 0.45);
+    box-shadow: 0 10px 24px color-mix(in srgb, var(--header-purple) 15%, transparent);
+    transform: translateY(-1px);
+}
+
+html[data-theme="light"] .price-list-item:nth-child(4n+4):hover::after,
+html[data-theme="light"] .price-list-item:nth-child(4n):hover::after {
+    opacity: 0.85;
 }
 
 .price-list-item::after {
@@ -1989,7 +2485,7 @@ html[data-theme="light"] .price-list-item:hover::after {
     align-items: center;
     display: flex;
     flex-wrap: wrap;
-    gap: clamp(1rem, 2.6vw, 1.6rem);
+    gap: clamp(1.25rem, 2.8vw, 1.75rem);
     justify-content: space-between;
 }
 
@@ -1998,6 +2494,12 @@ html[data-theme="light"] .price-list-item:hover::after {
     min-width: 220px;
     display: grid;
     gap: var(--spacing-sm);
+    width: 100%;
+}
+
+.price-info h6 {
+    text-align: center;
+    margin-bottom: var(--spacing-sm);
 }
 
 .price-info .badge {
@@ -2123,6 +2625,51 @@ html[data-theme="light"] .price-list-item:hover::after {
 
     .price-actions .price-action-btn {
         min-width: 120px;
+    }
+
+    /* Enhanced color separation on mobile for category cards */
+    html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+1) .price-dashboard-card {
+        border-width: 2px;
+        box-shadow: 0 8px 20px color-mix(in srgb, var(--color-blue) 15%, transparent);
+    }
+
+    html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+2) .price-dashboard-card {
+        border-width: 2px;
+        box-shadow: 0 8px 20px color-mix(in srgb, var(--color-green) 15%, transparent);
+    }
+
+    html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+3) .price-dashboard-card {
+        border-width: 2px;
+        box-shadow: 0 8px 20px color-mix(in srgb, var(--color-coral) 15%, transparent);
+    }
+
+    html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n+4) .price-dashboard-card,
+    html[data-theme="light"] .price-dashboard-grid > [class*="col-"]:nth-child(4n) .price-dashboard-card {
+        border-width: 2px;
+        box-shadow: 0 8px 20px color-mix(in srgb, var(--header-purple) 15%, transparent);
+    }
+
+    /* Enhanced color separation on mobile for price type items */
+    html[data-theme="light"] .price-list-item {
+        border-width: 2px;
+        margin-bottom: var(--spacing-md);
+    }
+
+    html[data-theme="light"] .price-list-item:nth-child(4n+1) {
+        box-shadow: 0 6px 16px color-mix(in srgb, var(--color-blue) 12%, transparent);
+    }
+
+    html[data-theme="light"] .price-list-item:nth-child(4n+2) {
+        box-shadow: 0 6px 16px color-mix(in srgb, var(--color-green) 12%, transparent);
+    }
+
+    html[data-theme="light"] .price-list-item:nth-child(4n+3) {
+        box-shadow: 0 6px 16px color-mix(in srgb, var(--color-coral) 12%, transparent);
+    }
+
+    html[data-theme="light"] .price-list-item:nth-child(4n+4),
+    html[data-theme="light"] .price-list-item:nth-child(4n) {
+        box-shadow: 0 6px 16px color-mix(in srgb, var(--header-purple) 12%, transparent);
     }
 }
 
@@ -2523,6 +3070,14 @@ html[data-theme="dark"] .dashboard .card.bg-dark {
 
 .dashboard .card .card-title {
     color: var(--color-heading);
+}
+
+/* Main titles in dashboard (e.g. Tether, Pound, special prices names) */
+.dashboard .dashboard-main-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: -0.01em;
 }
 
 .dashboard .card .card-text,

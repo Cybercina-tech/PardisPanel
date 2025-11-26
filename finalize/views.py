@@ -103,7 +103,8 @@ def finalize_dashboard(request):
         'pending_by_category': pending_by_category,
         'has_pending': len(pending_by_category) > 0,
         'pending_special_prices': pending_special_prices,
-        'has_pending_special': len(pending_special_prices) > 0
+        'has_pending_special': len(pending_special_prices) > 0,
+        'special_price_types': special_price_types,
     }
     
     return render(request, 'finalize/finalize_dashboard.html', context)

@@ -217,9 +217,9 @@
                         {% for category in categories %}
                         <div class="col-md-6 col-lg-4 mb-3">
                             <div class="card bg-black-secondary border-light-gold h-100">
-                                <div class="card-body">
-                                    <h6 class="card-title text-gold mb-2">
-                                        <i class="fas fa-folder me-2"></i>{{ category.name }}
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-gold mb-2 dashboard-main-title">
+                                        {{ category.name }}
                                     </h6>
                                     <p class="card-text text-white-50 small mb-3">
                                         {{ category.price_types.count }} price type{{ category.price_types.count|pluralize }}
@@ -261,8 +261,8 @@
                         <div class="col-md-6 col-lg-4 mb-3">
                             <div class="card bg-black-secondary border-light-gold h-100">
                                 <div class="card-body text-center">
-                                    <h6 class="card-title text-gold mb-2">
-                                        <i class="fas fa-star me-2"></i>{{ special_price_type.name }}
+                                    <h6 class="card-title text-gold mb-2 dashboard-main-title">
+                                        {{ special_price_type.name }}
                                     </h6>
                                     <p class="card-text text-white-50 small mb-2">
                                         {{ special_price_type.source_currency.code }} / {{ special_price_type.target_currency.code }}

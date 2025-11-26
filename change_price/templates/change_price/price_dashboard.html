@@ -20,13 +20,24 @@
     </div>
 
     <!-- Categories Grid -->
-    <div class="row g-4 price-dashboard-grid">
+    <div class="row g-4 price-dashboard-grid justify-content-center">
         {% for category in categories %}
-        <div class="col-md-6">
+        <div class="col-md-6 col-lg-5 col-xl-4 {% if 'پوند' in category.name or 'pound' in category.name|lower or 'gbp' in category.name|lower or 'تتر' in category.name or 'tether' in category.name|lower or 'usdt' in category.name|lower %}category-rtl{% endif %}">
             <div class="card bg-dark border-gold h-100 price-dashboard-card">
                 <div class="card-header bg-black-secondary border-bottom-gold">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div class="d-flex flex-column align-items-center justify-content-center gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            {% if 'پوند' in category.name or 'pound' in category.name|lower or 'gbp' in category.name|lower %}
+                                <span class="category-icon category-icon-pound">
+                                    <i class="fas fa-pound-sign"></i>
+                                </span>
+                            {% elif 'تتر' in category.name or 'tether' in category.name|lower or 'usdt' in category.name|lower %}
+                                <span class="category-icon category-icon-tether">
+                                    <i class="fas fa-coins"></i>
+                                </span>
+                            {% endif %}
                         <h5 class="card-title mb-0 text-gold" dir="auto">{{ category.name }}</h5>
+                        </div>
                         <div>
                             <a href="{% url 'change_price:update_category_prices' category.id %}" 
                                class="btn btn-outline-light border-gold text-gold price-action-btn">
@@ -42,7 +53,7 @@
                         <div class="price-list-item border-light-gold">
                             <div class="price-item">
                                 <div class="price-info" dir="auto">
-                                    <h6 class="mb-1 text-gold">{{ price_type.name }}</h6>
+                                    <h6 class="mb-1 text-gold text-center">{{ price_type.name }}</h6>
                                     <div class="small d-flex flex-wrap align-items-center gap-2 text-wrap">
                                         <span class="text-gold-light">{{ price_type.source_currency.code }} / {{ price_type.target_currency.code }}</span>
                                         <span class="badge bg-light-gold text-dark">{{ price_type.get_trade_type_display }}</span>

@@ -21,6 +21,18 @@ def price_dashboard(request):
         )
     ).all()
     
+    # Sort categories: پوند first, then تتر, then others
+    def sort_key(category):
+        name = category.name.lower()
+        if 'پوند' in name or 'pound' in name or 'gbp' in name:
+            return (0, name)
+        elif 'تتر' in name or 'tether' in name or 'usdt' in name:
+            return (1, name)
+        else:
+            return (2, name)
+    
+    categories = sorted(categories, key=sort_key)
+    
     context = {
         'categories': categories
     }

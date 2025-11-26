@@ -32,8 +32,8 @@
                     {% for category, pending_list in pending_by_category.items %}
                     <div class="mb-4 {% if not forloop.last %}border-bottom border-secondary pb-4{% endif %}">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="text-gold mb-0">
-                                <i class="fas fa-folder me-2"></i>{{ category.name }}
+                            <h6 class="text-gold mb-0 text-center">
+                                {{ category.name }}
                             </h6>
                             <a href="{% url 'finalize:finalize_category' category.id %}" 
                                class="btn btn-sm btn-gold">
@@ -113,7 +113,7 @@
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th class="text-gold-light">Special Price Type</th>
+                                    <th class="text-gold-light text-center">Special Price Type</th>
                                     <th class="text-gold-light">Currency Pair</th>
                                     <th class="text-gold-light">Trade Type</th>
                                     <th class="text-gold-light">Price</th>
@@ -124,7 +124,7 @@
                             <tbody>
                                 {% for item in pending_special_prices %}
                                 <tr>
-                                    <td>{{ item.special_price_type.name }}</td>
+                                    <td class="text-center">{{ item.special_price_type.name }}</td>
                                     <td class="text-white-50">
                                         {{ item.special_price_type.source_currency.code }}/{{ item.special_price_type.target_currency.code }}
                                     </td>
@@ -160,7 +160,7 @@
     {% endif %}
 
     <!-- All Categories Section -->
-    <div class="row">
+    <div class="row mb-4">
         <div class="col-12">
             <div class="card bg-dark border-gold">
                 <div class="card-header bg-black-secondary border-bottom-gold">
@@ -174,9 +174,9 @@
                         {% for category in categories %}
                         <div class="col-md-6 col-lg-4 mb-3">
                             <div class="card bg-black-secondary border-light-gold h-100">
-                                <div class="card-body">
-                                    <h6 class="card-title text-gold mb-2">
-                                        <i class="fas fa-folder me-2"></i>{{ category.name }}
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-gold mb-2 text-center">
+                                        {{ category.name }}
                                     </h6>
                                     <p class="card-text text-white-50 small mb-3">
                                         {{ category.price_types.count }} price type{{ category.price_types.count|pluralize }}
@@ -210,6 +210,61 @@
             </div>
         </div>
     </div>
+
+    <!-- All Special Prices Section -->
+    {% if special_price_types %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-dark border-gold">
+                <div class="card-header bg-black-secondary border-bottom-gold">
+                    <h5 class="card-title mb-0 text-gold">
+                        <i class="fas fa-star me-2"></i>All Special Prices
+                    </h5>
+                    <small class="text-white-50">Quick access to update special prices</small>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for special_price_type in special_price_types %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card bg-black-secondary border-light-gold h-100">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-gold mb-2 text-center">
+                                        {{ special_price_type.name }}
+                                    </h6>
+                                    <p class="card-text text-white-50 small mb-2">
+                                        {{ special_price_type.source_currency.code }} / {{ special_price_type.target_currency.code }}
+                                    </p>
+                                    <p class="card-text text-white-50 small mb-3">
+                                        <span class="badge bg-light-gold text-dark">{{ special_price_type.get_trade_type_display }}</span>
+                                    </p>
+                                    {% with latest_price=special_price_type.special_price_histories.first %}
+                                    {% if latest_price %}
+                                    <p class="card-text mb-2">
+                                        <span class="text-gold fw-bold">{{ latest_price.price|floatformat:2 }}</span>
+                                    </p>
+                                    <p class="card-text text-white-50 small mb-3">
+                                        <small>Last update: {{ latest_price.updated_at|date:"M d, Y H:i" }}</small>
+                                    </p>
+                                    {% else %}
+                                    <p class="card-text text-white-50 small mb-3">No price history</p>
+                                    {% endif %}
+                                    {% endwith %}
+                                    <div class="btn-group w-100 justify-content-center" role="group">
+                                        <a href="{% url 'special_price:update_price' special_price_type.id %}" 
+                                           class="btn btn-sm btn-outline-gold">
+                                            <i class="fas fa-edit me-1"></i>Update Price
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 {% endblock %}

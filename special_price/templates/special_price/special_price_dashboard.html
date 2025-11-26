@@ -27,12 +27,12 @@
     <!-- Special Price Types Grid -->
     <div class="row g-4 price-dashboard-grid">
         {% for special_price_type in special_price_types %}
-        <div class="col-md-6">
+        <div class="col-md-4 col-lg-4">
             <div class="card bg-dark border-gold h-100 price-dashboard-card">
                 <div class="card-header bg-black-secondary border-bottom-gold">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                        <h5 class="card-title mb-0 text-gold" dir="auto">{{ special_price_type.name }}</h5>
-                        <div class="d-flex flex-wrap gap-2">
+                    <div class="d-flex flex-column align-items-center justify-content-center gap-3">
+                        <h5 class="card-title mb-0 text-gold text-center" dir="auto">{{ special_price_type.name }}</h5>
+                        <div class="d-flex flex-wrap gap-2 justify-content-center">
                             <a href="{% url 'special_price:edit_type' special_price_type.id %}" 
                                class="btn btn-outline-light border-gold text-gold price-action-btn" 
                                title="Edit Special Price Type">
