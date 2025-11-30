@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional
 
 from django.utils import timezone
+import jdatetime
 
 from PIL import Image
 
@@ -27,7 +28,10 @@ from price_publisher.services.tether_renderer import (
     supports_tether_category,
 )
 from price_publisher.services.special_offer_renderer import (
+    SPECIAL_GBP_TEMPLATES,
+    normalize_identifier,
     render_special_offer_board,
+    resolve_special_offer_template,
     supports_special_offer_type,
 )
 from telegram_app.services.telegram_client import TelegramService
@@ -36,6 +40,77 @@ from telegram_app.services.telegram_client import TelegramService
 class PricePublicationError(RuntimeError):
     """Raised when the price publishing pipeline fails."""
 
+
+# ----------------------------------------------------------------------
+# Constants for special GBP template detection
+# ----------------------------------------------------------------------
+SPECIAL_GBP_KEYWORDS = {
+    # Buy cash keywords
+    "خریدنقدیپوندویژه", "خریدویژهنقدیپوند", "خریدویژهنقدی",
+    "buycashpoundspecial", "specialbuycashgbp", "special_buy_cash_gbp",
+    "buycashgbpspecial", "buycashspecial", "specialcashpurchase",
+    # Buy account keywords
+    "خریدویژهازحساب",
+    "buyaccountspecial", "specialbuyaccountgbp", "special_buy_account_gbp", "buyaccountgbpspecial",
+    # Sell cash keywords
+    "فروشویژهنقدی",
+    "sellcashspecial", "specialselcashgbp", "special_sell_cash_gbp", "sellcashgbpspecial",
+    # Sell account keywords
+    "فروشویژهازحساب",
+    "sellaccountspecial", "specialselaccountgbp", "special_sell_account_gbp", "sellaccountgbpspecial",
+}
+
+BUY_ACCOUNT_KEYWORDS = {
+    "خریدویژهازحساب", "buyaccountspecial", "specialbuyaccountgbp",
+    "special_buy_account_gbp", "buyaccountgbpspecial",
+}
+
+SELL_CASH_KEYWORDS = {
+    "فروشویژهنقدی", "sellcashspecial", "specialselcashgbp",
+    "special_sell_cash_gbp", "sellcashgbpspecial",
+}
+
+SELL_ACCOUNT_KEYWORDS = {
+    "فروشویژهازحساب", "sellaccountspecial", "specialselaccountgbp",
+    "special_sell_account_gbp", "sellaccountgbpspecial",
+}
+
+# Template to type mapping
+TEMPLATE_TYPE_MAP = {
+    "special_buy_account_GBP.jpg": (True, False),   # (is_account, is_sell)
+    "special_sell_cash_GBP.jpg": (False, True),
+    "special_sell_account_GBP.jpg": (True, True),
+}
+
+# Persian date constants
+FARSI_MONTHS = [
+    "", "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+    "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
+]
+
+FARSI_WEEKDAYS = {
+    "Saturday": "شنبه",
+    "Sunday": "یکشنبه",
+    "Monday": "دوشنبه",
+    "Tuesday": "سه‌شنبه",
+    "Wednesday": "چهارشنبه",
+    "Thursday": "پنجشنبه",
+    "Friday": "جمعه",
+}
+
+PERSIAN_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
+
+# Contact information
+CONTACT_INFO = {
+    "Mr. Mahdi": "+447533544249",
+    "Ms. Kianian": "+989121894230",
+    "Manager": "+447399990340",
+}
+
+OFFICE_ADDRESS = """Office A
+708A High Road
+North Finchley
+N129QL"""
 
 # ----------------------------------------------------------------------
 # Legacy Telegram message metadata (copied from admin_finalize.py)
@@ -157,7 +232,14 @@ class PricePublisherService:
             template_assets=template_assets,
         )
 
-        caption = LEGACY_FINAL_MESSAGE
+        # Use professional caption for Tether and GBP categories
+        if supports_tether_category(category):
+            caption = self._build_tether_caption(latest_timestamp)
+        elif supports_category(category):
+            caption = self._build_gbp_category_caption()
+        else:
+            caption = LEGACY_FINAL_MESSAGE
+            
         return self._send_photo(
             channel=channel,
             image=image,
@@ -204,11 +286,13 @@ class PricePublisherService:
                 template_assets=template_assets,
             )
 
-        caption = f"Special price • {special_price_type.name}"
+        # Build caption for special GBP offers (inspired by Tether)
+        caption = self._build_special_price_caption(special_price_type, price_history, custom_offer)
+            
         return self._send_photo(
             channel=channel,
             image=image,
-            caption=LEGACY_FINAL_MESSAGE,
+            caption=caption,
             buttons=LEGACY_FINAL_BUTTONS,
         )
 
@@ -428,6 +512,150 @@ class PricePublisherService:
             return None
         except Exception as exc:  # pragma: no cover - defensive
             raise PricePublicationError(f"Failed to load template image: {exc}") from exc
+
+    def _build_special_price_caption(self, special_price_type, price_history, custom_offer: bool) -> str:
+        """Build caption for special price offers, detecting if it's a special GBP template."""
+        special_price_name = getattr(special_price_type, "name", "")
+        normalized_name = normalize_identifier(special_price_name)
+        
+        # Check if it's a special GBP template
+        template = resolve_special_offer_template(special_price_type) if custom_offer else None
+        is_special_gbp = (
+            template is not None 
+            and template.background in SPECIAL_GBP_TEMPLATES
+        ) or any(keyword in normalized_name for keyword in SPECIAL_GBP_KEYWORDS)
+        
+        if not is_special_gbp:
+            return LEGACY_FINAL_MESSAGE
+        
+        # Determine template type (account/sell flags)
+        is_account, is_sell = self._detect_template_type(template, normalized_name)
+        
+        timestamp = self._get_history_timestamp(price_history)
+        return self._build_special_pound_caption(timestamp, is_account=is_account, is_sell=is_sell)
+    
+    def _detect_template_type(self, template, normalized_name: str) -> tuple[bool, bool]:
+        """Detect if template is account-based and/or sell type. Returns (is_account, is_sell)."""
+        # First check template background
+        if template and template.background in TEMPLATE_TYPE_MAP:
+            return TEMPLATE_TYPE_MAP[template.background]
+        
+        # Fallback to keyword matching
+        if any(keyword in normalized_name for keyword in SELL_ACCOUNT_KEYWORDS):
+            return (True, True)  # Sell account
+        if any(keyword in normalized_name for keyword in BUY_ACCOUNT_KEYWORDS):
+            return (True, False)  # Buy account
+        if any(keyword in normalized_name for keyword in SELL_CASH_KEYWORDS):
+            return (False, True)  # Sell cash
+        
+        return (False, False)  # Default: Buy cash
+    
+    @staticmethod
+    def _format_dates(timestamp) -> tuple[str, str, str, str]:
+        """Format Persian and English dates from timestamp. Returns (farsi_date, farsi_weekday, english_date, english_weekday)."""
+        now = timezone.localtime(timestamp) if timestamp else timezone.localtime()
+        jalali = jdatetime.datetime.fromgregorian(datetime=now)
+        
+        farsi_date = f"{jalali.day} {FARSI_MONTHS[jalali.month]} {jalali.year}"
+        farsi_weekday = FARSI_WEEKDAYS.get(now.strftime("%A"), "")
+        english_date = now.strftime("%B %d, %Y")
+        english_weekday = now.strftime("%A")
+        
+        # Convert English digits to Persian
+        farsi_date = farsi_date.translate(PERSIAN_DIGITS)
+        
+        return farsi_date, farsi_weekday, english_date, english_weekday
+    
+    @staticmethod
+    def _build_contact_section() -> str:
+        """Build the contact information section of the caption."""
+        contacts = "\n\n".join(
+            f"<b>{name}</b>\n📱 {phone}"
+            for name, phone in CONTACT_INFO.items()
+        )
+        return f"📞 <b>تماس با ما:</b>\n\n{contacts}"
+    
+    @staticmethod
+    def _build_tether_caption(timestamp) -> str:
+        """Build a professional and attractive caption for Tether prices with dates."""
+        farsi_date, farsi_weekday, english_date, english_weekday = PricePublisherService._format_dates(timestamp)
+        contact_section = PricePublisherService._build_contact_section()
+        
+        caption = (
+            f"📅 <b>تاریخ:</b>\n"
+            f"🇮🇷 {farsi_weekday} {farsi_date}\n"
+            f"🇬🇧 {english_weekday}, {english_date}\n\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n\n"
+            f"💷 <b>خرید و فروش تتر (USDT)</b>\n"
+            f"💰 <b>نقدی و حسابی</b>\n\n"
+            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"{contact_section}\n\n"
+            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"📍 <b>آدرس دفتر:</b>\n"
+            f"<u>{OFFICE_ADDRESS}</u>\n\n"
+            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"ℹ️ مبالغ زیر ۱۰۰۰ پوند شامل ۱۰ پوند کارمزد می‌باشد\n\n"
+            f"⚠️ <b>لطفا بدون هماهنگی هیچ مبلغی به هیچ حسابی واریز نکنید</b> ⚠️"
+        )
+        
+        return caption
+    
+    @staticmethod
+    def _build_gbp_category_caption() -> str:
+        """Build a professional and attractive caption for GBP category prices (without date)."""
+        contact_section = PricePublisherService._build_contact_section()
+        
+        caption = (
+            f"💷 <b>خرید و فروش پوند (GBP)</b>\n"
+            f"💰 <b>نقدی و حسابی</b>\n\n"
+            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"{contact_section}\n\n"
+            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"📍 <b>آدرس دفتر:</b>\n"
+            f"<u>{OFFICE_ADDRESS}</u>\n\n"
+            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"ℹ️ مبالغ زیر ۱۰۰۰ پوند شامل ۱۰ پوند کارمزد می‌باشد\n\n"
+            f"⚠️ <b>لطفا بدون هماهنگی هیچ مبلغی به هیچ حسابی واریز نکنید</b> ⚠️"
+        )
+        
+        return caption
+
+    @staticmethod
+    def _get_special_pound_title(is_account: bool, is_sell: bool) -> str:
+        """Get the title for special pound caption based on type."""
+        if is_sell and is_account:
+            return "💷 <b>فروش ویژه از حساب پوند</b>"
+        elif is_sell:
+            return "💷 <b>فروش ویژه نقدی پوند</b>"
+        elif is_account:
+            return "💷 <b>خرید ویژه از حساب پوند</b>"
+        else:
+            return "💷 <b>خرید ویژه نقدی پوند</b>"
+    
+    @staticmethod
+    def _build_special_pound_caption(timestamp, is_account: bool = False, is_sell: bool = False) -> str:
+        """Build a professional and attractive caption for Special Pound prices (inspired by Tether)."""
+        farsi_date, farsi_weekday, english_date, english_weekday = PricePublisherService._format_dates(timestamp)
+        title = PricePublisherService._get_special_pound_title(is_account, is_sell)
+        contact_section = PricePublisherService._build_contact_section()
+        
+        caption = (
+            f"📅 <b>تاریخ:</b>\n"
+            f"🇮🇷 {farsi_weekday} {farsi_date}\n"
+            f"🇬🇧 {english_weekday}, {english_date}\n\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n\n"
+            f"{title}\n"
+            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"{contact_section}\n\n"
+            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"📍 <b>آدرس دفتر:</b>\n"
+            f"<u>{OFFICE_ADDRESS}</u>\n\n"
+            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"ℹ️ مبالغ زیر ۱۰۰۰ پوند شامل ۱۰ پوند کارمزد می‌باشد\n\n"
+            f"⚠️ <b>لطفا بدون هماهنگی هیچ مبلغی به هیچ حسابی واریز نکنید</b> ⚠️"
+        )
+        
+        return caption
 
 
 

@@ -15,28 +15,33 @@ from price_publisher.services.image_renderer import RenderedPriceImage
 STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
 IMAGE_ROOT = STATIC_ROOT_DIR / "img"
 FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", STATIC_ROOT_DIR / "fonts"))
+MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 
-BACKGROUND_RELATIVE_PATH = Path("offer") / "tether_buy_sell.png"
+# Changed to use USDT.jpg from media/templates/
+BACKGROUND_RELATIVE_PATH = Path("templates") / "USDT.jpg"
 
 
 OFFER_TEXT_POSITIONS = {
-    "farsi_date": (1900, 250),
-    "farsi_weekday": (1860, 420),
-    "english_date": (410, 250),  # Moved slightly to the left
-    "english_weekday": (580, 420),
-    "tether_buy_irr": (1800, 1125),
-    "tether_sell_irr": (370, 1125),
-    "tether_buy_gbp": (1980, 2070),
-    "tether_sell_gbp": (480, 2070),
+    # Date fields commented out as requested
+    # "farsi_date": (1900, 250),
+    # "farsi_weekday": (1860, 420),
+    # "english_date": (410, 250),  # Moved slightly to the left
+    # "english_weekday": (580, 420),
+    # Updated coordinates for new banner
+    "tether_sell_irr": (280, 570),  # فروش تتر به تومن
+    "tether_buy_irr": (900, 570),    # خرید تتر به تومن
+    "tether_sell_gbp": (350, 950),   # فروش تتر به پوند
+    "tether_buy_gbp": (930, 950),    # خرید تتر به پوند
 }
 
 FONT_FILES = {
-    "farsi_date": ("Morabba.ttf", 115),
-    "farsi_weekday": ("Morabba.ttf", 86),
-    "english_date": ("YekanBakh.ttf", 100),
-    "english_weekday": ("YekanBakh.ttf", 94),  # Reduced by 1 degree
+    # Date fonts commented out as requested
+    # "farsi_date": ("Morabba.ttf", 115),
+    # "farsi_weekday": ("Morabba.ttf", 86),
+    # "english_date": ("YekanBakh.ttf", 100),
+    # "english_weekday": ("YekanBakh.ttf", 94),  # Reduced by 1 degree
     "english_number": ("montsrrat.otf", 113),  # Reduced by 2 degrees (from 115)
-    "tether_price": ("KalamehWeb-Bold.woff", 230),
+    "tether_price": ("Vazirmatn-Black.woff2", 100),  # Changed to Persian font (YekanBakh.ttf) with size 100
 }
 
 FARSI_WEEKDAYS = {
@@ -129,18 +134,20 @@ def render_tether_board(
     price_items: Iterable[Tuple],
     timestamp,
 ) -> RenderedPriceImage:
-    background_path = IMAGE_ROOT / BACKGROUND_RELATIVE_PATH
+    # Changed to use media/templates/USDT.jpg
+    background_path = MEDIA_ROOT / BACKGROUND_RELATIVE_PATH
     if not background_path.exists():
         raise FileNotFoundError(
-            "Tether offer background missing at static/img/offer/tether_buy_sell.png."
+            f"Tether offer background missing at {background_path}."
         )
 
     image = Image.open(background_path).convert("RGBA")
     draw_ctx = ImageDraw.Draw(image)
     fonts = _load_fonts()
 
-    now = timezone.localtime(timestamp) if timestamp else timezone.localtime()
-    _draw_dates(draw_ctx, fonts, now)
+    # Date drawing commented out as requested
+    # now = timezone.localtime(timestamp) if timestamp else timezone.localtime()
+    # _draw_dates(draw_ctx, fonts, now)
 
     price_map = _build_price_map(price_items)
     for key in TETHER_LAYOUT_ORDER:
@@ -152,7 +159,7 @@ def render_tether_board(
             OFFER_TEXT_POSITIONS[key],
             entry,
             font=fonts["tether_price"],
-            fill=(0, 0, 0),
+            fill=(0, 0, 0),  # Completely black color
         )
 
     buffer = io.BytesIO()

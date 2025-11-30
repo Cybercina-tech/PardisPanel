@@ -16,8 +16,19 @@ from price_publisher.services.image_renderer import RenderedPriceImage
 STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
 IMAGE_ROOT = STATIC_ROOT_DIR / "img"
 OFFER_ROOT = IMAGE_ROOT / "offer"
+MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 FONT_ROOT = Path(
     getattr(settings, "PRICE_RENDERER_FONT_ROOT", STATIC_ROOT_DIR / "fonts")
+)
+
+# Constants for special GBP templates
+SPECIAL_GBP_TEMPLATE_POSITION = (520, 1030)
+SPECIAL_GBP_TEMPLATE_FONT = ("Vazirmatn-Black.woff2", 130)
+SPECIAL_GBP_TEMPLATES = (
+    "special_buy_cash_GBP.jpg",
+    "special_buy_account_GBP.jpg",
+    "special_sell_cash_GBP.jpg",
+    "special_sell_account_GBP.jpg",
 )
 
 OFFER_TEXT_POSITIONS = {
@@ -26,15 +37,25 @@ OFFER_TEXT_POSITIONS = {
     "english_date": (420, 250),
     "english_weekday": (580, 420),
     "price": (360, 2100),
+    # Special positions for GBP templates (all use same position)
+    "special_buy_cash_gbp_price": SPECIAL_GBP_TEMPLATE_POSITION,
+    "special_buy_account_gbp_price": SPECIAL_GBP_TEMPLATE_POSITION,
+    "special_sell_cash_gbp_price": SPECIAL_GBP_TEMPLATE_POSITION,
+    "special_sell_account_gbp_price": SPECIAL_GBP_TEMPLATE_POSITION,
 }
 
 FONT_DEFINITIONS = {
     "farsi_date": ("Morabba.ttf", 115),
     "farsi_weekday": ("Morabba.ttf", 86),
-    "english_date": ("YekanBakh.ttf", 100),  # Persian font for English date
-    "english_weekday": ("YekanBakh.ttf", 95),  # Persian font for English weekday
-    "english_number": ("YekanBakh.ttf", 115),  # Changed to Persian font (YekanBakh)
-    "price": ("KalamehWeb-Bold.woff", 220),  # Using Kalameh font for prices
+    "english_date": ("YekanBakh.ttf", 100),
+    "english_weekday": ("YekanBakh.ttf", 95),
+    "english_number": ("YekanBakh.ttf", 115),
+    "price": ("KalamehWeb-Bold.woff", 220),
+    # Special fonts for GBP templates (all use same font as Tether)
+    "special_buy_cash_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
+    "special_buy_account_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
+    "special_sell_cash_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
+    "special_sell_account_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
 }
 
 FARSI_WEEKDAYS = {
@@ -51,7 +72,8 @@ FARSI_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
 EN_DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
 
 
-def _normalize(value: str) -> str:
+def normalize_identifier(value: str) -> str:
+    """Normalize a string identifier by removing spaces, dashes, underscores and converting to lowercase."""
     return (
         (value or "")
         .strip()
@@ -63,6 +85,10 @@ def _normalize(value: str) -> str:
     )
 
 
+# Backward compatibility alias
+_normalize = normalize_identifier
+
+
 @dataclass(frozen=True)
 class SpecialOfferTemplate:
     background: str
@@ -71,20 +97,40 @@ class SpecialOfferTemplate:
 
 _SPECIAL_TEMPLATE_DEFINITIONS: Sequence[tuple[str, Iterable[str]]] = (
     (
+        "special_buy_cash_GBP.jpg",  # Changed to use media/templates/special_buy_cash_GBP.jpg
+        (
+            "خرید نقدی پوند ویژه",
+            "خریدنقدیپوندویژه",
+            "خرید ویژه نقدی",  # Added: خرید ویژه نقدی
+            "خریدویژهنقدی",
+            "buycashpoundspecial",
+            "specialbuycashgbp",
+            "special_buy_cash_gbp",
+            "buycashgbpspecial",
+            "buycashspecial",  # Added: buycashspecial for "خرید ویژه نقدی"
+            "specialcashpurchase",
+        ),
+    ),
+    (
         "offer1.png",
         (
-            "خرید ویژه نقدی",
-            "خریدویژهنقدی",
-            "buycashspecial",
             "offer1",
+        ),
+    ),
+    (
+        "special_buy_account_GBP.jpg",  # Changed to use media/templates/special_buy_account_GBP.jpg
+        (
+            "خرید ویژه از حساب",
+            "خریدویژهازحساب",
+            "buyaccountspecial",
+            "specialbuyaccountgbp",
+            "special_buy_account_gbp",
+            "buyaccountgbpspecial",
         ),
     ),
     (
         "offer2.png",
         (
-            "خرید ویژه از حساب",
-            "خریدویژهازحساب",
-            "buyaccountspecial",
             "offer2",
         ),
     ),
@@ -98,20 +144,36 @@ _SPECIAL_TEMPLATE_DEFINITIONS: Sequence[tuple[str, Iterable[str]]] = (
         ),
     ),
     (
-        "offer4.png",
+        "special_sell_cash_GBP.jpg",  # Changed to use media/templates/special_sell_cash_GBP.jpg
         (
             "فروش ویژه نقدی",
             "فروشویژهنقدی",
             "sellcashspecial",
+            "specialselcashgbp",
+            "special_sell_cash_gbp",
+            "sellcashgbpspecial",
+        ),
+    ),
+    (
+        "offer4.png",
+        (
             "offer4",
+        ),
+    ),
+    (
+        "special_sell_account_GBP.jpg",  # Changed to use media/templates/special_sell_account_GBP.jpg
+        (
+            "فروش ویژه از حساب",
+            "فروشویژهازحساب",
+            "sellaccountspecial",
+            "specialselaccountgbp",
+            "special_sell_account_gbp",
+            "sellaccountgbpspecial",
         ),
     ),
     (
         "offer5.png",
         (
-            "فروش ویژه از حساب",
-            "فروشویژهازحساب",
-            "sellaccountspecial",
             "offer5",
         ),
     ),
@@ -129,15 +191,20 @@ _SPECIAL_TEMPLATE_DEFINITIONS: Sequence[tuple[str, Iterable[str]]] = (
 SPECIAL_OFFER_TEMPLATES: tuple[SpecialOfferTemplate, ...] = tuple(
     SpecialOfferTemplate(
         background=background,
-        aliases={_normalize(alias) for alias in aliases},
+        aliases={normalize_identifier(alias) for alias in aliases},
     )
     for background, aliases in _SPECIAL_TEMPLATE_DEFINITIONS
 )
 
 
+def resolve_special_offer_template(special_price_type) -> Optional[SpecialOfferTemplate]:
+    """Resolve the special offer template for a given special price type."""
+    return _resolve_template(special_price_type)
+
+
 def supports_special_offer_type(special_price_type) -> bool:
     """Return True if the given special price type has a bespoke offer template."""
-    return _resolve_template(special_price_type) is not None
+    return resolve_special_offer_template(special_price_type) is not None
 
 
 def render_special_offer_board(
@@ -150,7 +217,9 @@ def render_special_offer_board(
     if not template:
         raise ValueError("No offer template configured for this special price type.")
 
-    background_path = OFFER_ROOT / template.background
+    # Determine background path (media/templates for special GBP, static/offer for others)
+    background_path = _get_template_background_path(template.background)
+    
     if not background_path.exists():
         raise FileNotFoundError(
             f"Offer background missing at {background_path.relative_to(settings.BASE_DIR)}."
@@ -161,16 +230,22 @@ def render_special_offer_board(
     fonts = _load_fonts()
 
     timestamp = _extract_timestamp(price_history)
-    _draw_dates(draw_ctx, fonts, timestamp)
+    # Only draw dates for non-special GBP templates
+    if not _is_special_gbp_template(template.background):
+        _draw_dates(draw_ctx, fonts, timestamp)
 
     price_text = _format_price_value(
         price_history, special_price_type=special_price_type
     )
+    
+    # Get position and font for this template
+    price_position, price_font = _get_price_rendering_config(template.background, fonts)
+    
     draw_ctx.text(
-        OFFER_TEXT_POSITIONS["price"],
+        price_position,
         price_text,
-        font=fonts["price"],
-        fill=(0, 0, 0),
+        font=price_font,
+        fill=(0, 0, 0),  # Completely black color
     )
 
     buffer = io.BytesIO()
@@ -185,7 +260,7 @@ def _resolve_template(special_price_type) -> Optional[SpecialOfferTemplate]:
     if not identifiers:
         return None
 
-    normalized = {_normalize(identifier) for identifier in identifiers}
+    normalized = {normalize_identifier(identifier) for identifier in identifiers}
     for template in SPECIAL_OFFER_TEMPLATES:
         if normalized & template.aliases:
             return template
@@ -318,6 +393,36 @@ def _farsi_month(index: int) -> str:
     if 0 <= index < len(months):
         return months[index]
     return ""
+
+
+def _is_special_gbp_template(background: str) -> bool:
+    """Check if template is a special GBP template that uses media/templates path."""
+    return background in SPECIAL_GBP_TEMPLATES
+
+
+def _get_template_background_path(background: str) -> Path:
+    """Get the full path to template background image."""
+    if _is_special_gbp_template(background):
+        return MEDIA_ROOT / "templates" / background
+    return OFFER_ROOT / background
+
+
+def _get_price_rendering_config(background: str, fonts: dict) -> tuple[tuple[int, int], ImageFont.FreeTypeFont]:
+    """Get position and font configuration for price rendering based on template background."""
+    if background in SPECIAL_GBP_TEMPLATES:
+        # Map template name to font key
+        template_to_font_key = {
+            "special_buy_cash_GBP.jpg": "special_buy_cash_gbp_price",
+            "special_buy_account_GBP.jpg": "special_buy_account_gbp_price",
+            "special_sell_cash_GBP.jpg": "special_sell_cash_gbp_price",
+            "special_sell_account_GBP.jpg": "special_sell_account_gbp_price",
+        }
+        font_key = template_to_font_key.get(background)
+        if font_key:
+            return OFFER_TEXT_POSITIONS[font_key], fonts[font_key]
+    
+    # Default configuration for regular templates
+    return OFFER_TEXT_POSITIONS["price"], fonts["price"]
 
 
 

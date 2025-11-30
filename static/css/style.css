@@ -3352,3 +3352,593 @@ html[data-theme="light"] .finalize-submit-btn .spinner-border-sm {
     border-right-color: var(--color-accent, #5A6FAE);
 }
 
+/* ============================================
+   TEMPLATE FORM STYLES
+   ============================================ */
+
+/* Template Form Title and Subtitle */
+.template-form-title {
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    color: var(--color-heading);
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.template-form-subtitle {
+    color: var(--color-text-muted);
+    font-size: 1.05rem;
+    text-align: center;
+}
+
+/* Theme-specific title colors */
+html[data-theme="light"] .template-form-title {
+    color: var(--color-heading, #333333);
+}
+
+[data-theme="dark"] .template-form-title {
+    color: var(--color-heading, #dcca8b);
+}
+
+html[data-theme="light"] .template-form-subtitle {
+    color: var(--color-text-muted, #6E6E6E);
+}
+
+[data-theme="dark"] .template-form-subtitle {
+    color: var(--color-text-muted, rgba(224, 224, 224, 0.65));
+}
+
+/* Template Form Card */
+.template-form-card {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.template-form-header-title {
+    font-size: 1.5rem;
+    color: var(--color-heading);
+}
+
+html[data-theme="light"] .template-form-header-title {
+    color: var(--color-heading, #333333);
+}
+
+[data-theme="dark"] .template-form-header-title {
+    color: var(--color-heading, #dcca8b);
+}
+
+/* Template Form Labels */
+.template-form-label {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-heading);
+    display: block;
+}
+
+html[data-theme="light"] .template-form-label {
+    color: var(--color-heading, #333333);
+}
+
+[data-theme="dark"] .template-form-label {
+    color: var(--color-heading, #dcca8b);
+}
+
+/* Template Image Upload */
+.template-image-upload-wrapper {
+    margin-top: 0.5rem;
+}
+
+.template-image-upload-wrapper .form-control[type="file"] {
+    padding: 0.75rem;
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    background-color: var(--color-surface-alt);
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.template-image-upload-wrapper .form-control[type="file"]:hover {
+    border-color: var(--color-accent);
+    background-color: var(--color-accent-soft);
+}
+
+html[data-theme="light"] .template-image-upload-wrapper .form-control[type="file"] {
+    border-color: var(--color-border, rgba(51, 51, 51, 0.12));
+    background-color: var(--color-surface-alt, #F0F4FF);
+}
+
+html[data-theme="light"] .template-image-upload-wrapper .form-control[type="file"]:hover {
+    border-color: var(--color-accent, #5A6FAE);
+    background-color: var(--color-accent-soft, rgba(90, 111, 174, 0.18));
+}
+
+[data-theme="dark"] .template-image-upload-wrapper .form-control[type="file"] {
+    border-color: var(--color-border, rgba(212, 175, 55, 0.22));
+    background-color: var(--color-surface-alt, #1a1a1a);
+}
+
+[data-theme="dark"] .template-image-upload-wrapper .form-control[type="file"]:hover {
+    border-color: var(--color-accent, #d4af37);
+    background-color: var(--color-accent-soft, rgba(212, 175, 55, 0.2));
+}
+
+/* Template Image Preview */
+.template-image-preview,
+.template-image-preview-new {
+    margin-top: 1rem;
+}
+
+.template-image-container {
+    display: inline-block;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.5rem;
+    background-color: var(--color-surface);
+    box-shadow: var(--color-shadow-soft);
+    max-width: 100%;
+    overflow: hidden;
+}
+
+html[data-theme="light"] .template-image-container {
+    border-color: var(--color-border, rgba(51, 51, 51, 0.12));
+    background-color: var(--color-surface, #FFFFFF);
+}
+
+[data-theme="dark"] .template-image-container {
+    border-color: var(--color-border, rgba(212, 175, 55, 0.22));
+    background-color: var(--color-surface, #141414);
+}
+
+.template-preview-image {
+    max-width: 100%;
+    max-height: 300px;
+    height: auto;
+    border-radius: var(--radius-sm);
+    display: block;
+    object-fit: contain;
+}
+
+/* Template Form Inputs - Theme Specific */
+.template-form-card .form-control,
+.template-form-card .form-select {
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+}
+
+html[data-theme="light"] .template-form-card .form-control,
+html[data-theme="light"] .template-form-card .form-select {
+    background-color: var(--input-bg, rgba(255, 255, 255, 0.96));
+    border-color: var(--input-border, rgba(51, 51, 51, 0.12));
+    color: var(--color-text, #444444);
+}
+
+[data-theme="dark"] .template-form-card .form-control,
+[data-theme="dark"] .template-form-card .form-select {
+    background-color: var(--input-bg, rgba(18, 18, 18, 0.96));
+    border-color: var(--input-border, rgba(212, 175, 55, 0.26));
+    color: var(--color-text, #e0e0e0);
+}
+
+html[data-theme="light"] .template-form-card .form-control:focus,
+html[data-theme="light"] .template-form-card .form-select:focus {
+    border-color: var(--color-accent, #5A6FAE);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent, #5A6FAE) 25%, transparent);
+    background-color: var(--input-bg, rgba(255, 255, 255, 0.96));
+    color: var(--color-text, #444444);
+}
+
+[data-theme="dark"] .template-form-card .form-control:focus,
+[data-theme="dark"] .template-form-card .form-select:focus {
+    border-color: var(--color-accent, #d4af37);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent, #d4af37) 25%, transparent);
+    background-color: var(--input-bg, rgba(18, 18, 18, 0.96));
+    color: var(--color-text, #e0e0e0);
+}
+
+/* Template Form Alert */
+.template-form-card .alert-info {
+    background-color: var(--color-surface-alt);
+    border-color: var(--color-border);
+    color: var(--color-text);
+}
+
+html[data-theme="light"] .template-form-card .alert-info {
+    background-color: var(--color-surface-alt, #F0F4FF);
+    border-color: var(--color-border, rgba(51, 51, 51, 0.12));
+    color: var(--color-text, #444444);
+}
+
+[data-theme="dark"] .template-form-card .alert-info {
+    background-color: var(--color-surface-alt, #1a1a1a);
+    border-color: var(--color-border, rgba(212, 175, 55, 0.22));
+    color: var(--color-text, #e0e0e0);
+}
+
+/* Template Form Buttons */
+.template-form-card .btn-outline-secondary {
+    border-color: var(--color-border);
+    color: var(--color-text);
+}
+
+html[data-theme="light"] .template-form-card .btn-outline-secondary {
+    border-color: var(--color-border, rgba(51, 51, 51, 0.12));
+    color: var(--color-text, #444444);
+}
+
+html[data-theme="light"] .template-form-card .btn-outline-secondary:hover {
+    background-color: var(--color-surface-alt, #F0F4FF);
+    border-color: var(--color-border-strong, rgba(51, 51, 51, 0.18));
+    color: var(--color-text, #444444);
+}
+
+[data-theme="dark"] .template-form-card .btn-outline-secondary {
+    border-color: var(--color-border, rgba(212, 175, 55, 0.22));
+    color: var(--color-text, #e0e0e0);
+}
+
+[data-theme="dark"] .template-form-card .btn-outline-secondary:hover {
+    background-color: var(--color-surface-alt, #1a1a1a);
+    border-color: var(--color-border-strong, rgba(212, 175, 55, 0.34));
+    color: var(--color-text, #e0e0e0);
+}
+
+/* ============================================
+   TEMPLATE EDITOR STYLES
+   ============================================ */
+
+/* Template Editor Container */
+.editor-container {
+    display: flex;
+    gap: 1.5rem;
+    min-height: 600px;
+    flex-wrap: wrap;
+}
+
+.editor-left {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.editor-right {
+    width: 100%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 992px) {
+    .editor-right {
+        width: 450px;
+    }
+}
+
+/* Template Editor Title */
+.template-editor-title {
+    font-size: clamp(1.75rem, 4vw, 2.25rem);
+    color: var(--color-heading);
+    margin-bottom: 0.5rem;
+}
+
+.template-editor-subtitle {
+    color: var(--color-text-muted);
+    font-size: 1.05rem;
+}
+
+html[data-theme="light"] .template-editor-title {
+    color: var(--color-heading, #333333);
+}
+
+[data-theme="dark"] .template-editor-title {
+    color: var(--color-heading, #dcca8b);
+}
+
+html[data-theme="light"] .template-editor-subtitle {
+    color: var(--color-text-muted, #6E6E6E);
+}
+
+[data-theme="dark"] .template-editor-subtitle {
+    color: var(--color-text-muted, rgba(224, 224, 224, 0.65));
+}
+
+/* Template Editor Section Titles */
+.template-editor-section-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--color-heading);
+    margin-bottom: 1.25rem;
+}
+
+html[data-theme="light"] .template-editor-section-title {
+    color: var(--color-heading, #333333);
+}
+
+[data-theme="dark"] .template-editor-section-title {
+    color: var(--color-heading, #dcca8b);
+}
+
+/* Add Field Form */
+.add-field-form {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    box-shadow: var(--color-shadow-soft);
+}
+
+html[data-theme="light"] .add-field-form {
+    background-color: var(--color-surface, #FFFFFF);
+    border-color: var(--color-border, rgba(51, 51, 51, 0.12));
+}
+
+[data-theme="dark"] .add-field-form {
+    background-color: var(--color-surface, #141414);
+    border-color: var(--color-border, rgba(212, 175, 55, 0.22));
+}
+
+/* Template Editor Form Groups */
+.template-editor-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.template-editor-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-heading);
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+html[data-theme="light"] .template-editor-label {
+    color: var(--color-heading, #333333);
+}
+
+[data-theme="dark"] .template-editor-label {
+    color: var(--color-heading, #dcca8b);
+}
+
+/* Color Input */
+.template-color-input {
+    height: 45px;
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+/* Field List */
+.field-list {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    max-height: 500px;
+    overflow-y: auto;
+    box-shadow: var(--color-shadow-soft);
+}
+
+html[data-theme="light"] .field-list {
+    background-color: var(--color-surface, #FFFFFF);
+    border-color: var(--color-border, rgba(51, 51, 51, 0.12));
+}
+
+[data-theme="dark"] .field-list {
+    background-color: var(--color-surface, #141414);
+    border-color: var(--color-border, rgba(212, 175, 55, 0.22));
+}
+
+/* Field Item */
+.field-item {
+    background-color: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: all var(--transition-base);
+}
+
+.field-item:hover {
+    border-color: var(--color-border-strong);
+    box-shadow: var(--color-shadow-soft);
+}
+
+html[data-theme="light"] .field-item {
+    background-color: var(--color-surface-alt, #F0F4FF);
+    border-color: var(--color-border, rgba(51, 51, 51, 0.12));
+}
+
+html[data-theme="light"] .field-item:hover {
+    border-color: var(--color-border-strong, rgba(51, 51, 51, 0.18));
+}
+
+[data-theme="dark"] .field-item {
+    background-color: var(--color-surface-alt, #1a1a1a);
+    border-color: var(--color-border, rgba(212, 175, 55, 0.22));
+}
+
+[data-theme="dark"] .field-item:hover {
+    border-color: var(--color-border-strong, rgba(212, 175, 55, 0.34));
+}
+
+.field-item h6 {
+    color: var(--color-heading);
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+html[data-theme="light"] .field-item h6 {
+    color: var(--color-heading, #333333);
+}
+
+[data-theme="dark"] .field-item h6 {
+    color: var(--color-heading, #dcca8b);
+}
+
+.field-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+@media (max-width: 576px) {
+    .field-controls {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Preview Panel */
+.preview-panel {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    position: sticky;
+    top: 1.25rem;
+    box-shadow: var(--color-shadow-soft);
+}
+
+html[data-theme="light"] .preview-panel {
+    background-color: var(--color-surface, #FFFFFF);
+    border-color: var(--color-border, rgba(51, 51, 51, 0.12));
+}
+
+[data-theme="dark"] .preview-panel {
+    background-color: var(--color-surface, #141414);
+    border-color: var(--color-border, rgba(212, 175, 55, 0.22));
+}
+
+/* Preview Image Container */
+.template-preview-container {
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.5rem;
+    background-color: var(--color-surface-alt);
+    overflow: hidden;
+}
+
+html[data-theme="light"] .template-preview-container {
+    border-color: var(--color-border, rgba(51, 51, 51, 0.12));
+    background-color: var(--color-surface-alt, #F0F4FF);
+}
+
+[data-theme="dark"] .template-preview-container {
+    border-color: var(--color-border, rgba(212, 175, 55, 0.22));
+    background-color: var(--color-surface-alt, #1a1a1a);
+}
+
+.preview-image {
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-sm);
+    display: block;
+    background-color: var(--color-surface);
+}
+
+html[data-theme="light"] .preview-image {
+    background-color: var(--color-surface, #FFFFFF);
+}
+
+[data-theme="dark"] .preview-image {
+    background-color: var(--color-surface, #141414);
+}
+
+/* Empty Message */
+.template-editor-empty-message {
+    color: var(--color-text-muted);
+    padding: 2rem 1rem;
+    font-size: 1rem;
+}
+
+html[data-theme="light"] .template-editor-empty-message {
+    color: var(--color-text-muted, #6E6E6E);
+}
+
+[data-theme="dark"] .template-editor-empty-message {
+    color: var(--color-text-muted, rgba(224, 224, 224, 0.65));
+}
+
+/* Template Editor Inputs */
+.add-field-form .form-control,
+.add-field-form .form-select,
+.field-item .form-control,
+.field-item .form-select {
+    font-size: 0.95rem;
+    padding: 0.65rem 0.85rem;
+}
+
+html[data-theme="light"] .add-field-form .form-control,
+html[data-theme="light"] .add-field-form .form-select,
+html[data-theme="light"] .field-item .form-control,
+html[data-theme="light"] .field-item .form-select {
+    background-color: var(--input-bg, rgba(255, 255, 255, 0.96));
+    border-color: var(--input-border, rgba(51, 51, 51, 0.12));
+    color: var(--color-text, #444444);
+}
+
+[data-theme="dark"] .add-field-form .form-control,
+[data-theme="dark"] .add-field-form .form-select,
+[data-theme="dark"] .field-item .form-control,
+[data-theme="dark"] .field-item .form-select {
+    background-color: var(--input-bg, rgba(18, 18, 18, 0.96));
+    border-color: var(--input-border, rgba(212, 175, 55, 0.26));
+    color: var(--color-text, #e0e0e0);
+}
+
+html[data-theme="light"] .add-field-form .form-control:focus,
+html[data-theme="light"] .add-field-form .form-select:focus,
+html[data-theme="light"] .field-item .form-control:focus,
+html[data-theme="light"] .field-item .form-select:focus {
+    border-color: var(--color-accent, #5A6FAE);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent, #5A6FAE) 25%, transparent);
+    background-color: var(--input-bg, rgba(255, 255, 255, 0.96));
+    color: var(--color-text, #444444);
+}
+
+[data-theme="dark"] .add-field-form .form-control:focus,
+[data-theme="dark"] .add-field-form .form-select:focus,
+[data-theme="dark"] .field-item .form-control:focus,
+[data-theme="dark"] .field-item .form-select:focus {
+    border-color: var(--color-accent, #d4af37);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--color-accent, #d4af37) 25%, transparent);
+    background-color: var(--input-bg, rgba(18, 18, 18, 0.96));
+    color: var(--color-text, #e0e0e0);
+}
+
+/* Remove Field Button */
+.btn-remove-field {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991.98px) {
+    .editor-container {
+        flex-direction: column;
+    }
+    
+    .editor-right {
+        max-width: 100%;
+    }
+    
+    .preview-panel {
+        position: relative;
+        top: 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .template-editor-title {
+        font-size: 1.5rem;
+    }
+    
+    .add-field-form,
+    .field-list,
+    .preview-panel {
+        padding: 1.25rem;
+    }
+    
+    .template-editor-section-title {
+        font-size: 1.2rem;
+    }
+}
+

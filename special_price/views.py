@@ -47,7 +47,7 @@ def update_special_price(request, special_price_type_id):
             )
             
             messages.success(request, f'Special price updated successfully for {special_price_type.name}')
-            return redirect('special_price:dashboard')
+            return redirect('finalize:dashboard')
     else:
         initial_data = {}
         if latest_price:

@@ -63,7 +63,7 @@ def update_price(request, price_type_id):
             )
             
             messages.success(request, f'Price updated successfully for {price_type.name}')
-            return redirect('dashboard:home')
+            return redirect('finalize:dashboard')
     else:
         initial_data = {}
         if latest_price:
@@ -140,7 +140,7 @@ def update_category_prices(request, category_id):
             )
             
             messages.success(request, f'All prices updated successfully for category {category.name}')
-            return redirect('dashboard:home')
+            return redirect('finalize:dashboard')
     else:
         initial_data = {}
         # Pre-fill form with latest prices
