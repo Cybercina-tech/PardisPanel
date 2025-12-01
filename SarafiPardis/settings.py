@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'price_publisher',
     'template_editor',
     'analysis',
+    'landing',
     # third-party apps
     'rest_framework',
 

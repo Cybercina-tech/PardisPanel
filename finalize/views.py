@@ -1,3 +1,4 @@
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -14,7 +15,10 @@ from price_publisher.services.publisher import (
     PricePublisherService,
 )
 from .models import Finalization, FinalizedPriceHistory, SpecialPriceFinalization
+from .services import ExternalAPIService
 from setting.utils import log_finalize_event, log_telegram_event
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -220,6 +224,22 @@ def finalize_category(request, category_id):
                     price_history=item['price_history']
                 )
         
+        # Send finalized prices to external API (GBP and USDT only)
+        try:
+            api_results = ExternalAPIService.send_finalized_prices(price_items)
+            if api_results["sent"]:
+                logger.info(
+                    f"Successfully sent {len(api_results['sent'])} price(s) to external API "
+                    f"for category: {category.name}"
+                )
+            if api_results["failed"]:
+                logger.warning(
+                    f"Failed to send {len(api_results['failed'])} price(s) to external API "
+                    f"for category: {category.name}"
+                )
+        except Exception as exc:
+            logger.error(f"Error sending prices to external API for category {category.name}: {exc}")
+        
         # Log the finalization
         log_level = 'INFO' if message_sent else 'WARNING'
         log_finalize_event(
@@ -372,6 +392,22 @@ def finalize_special_price(request, special_price_history_id):
             telegram_response=publication_response or None,
             notes=notes
         )
+
+        # Send finalized special price to external API (GBP and USDT only)
+        try:
+            api_results = ExternalAPIService.send_finalized_special_prices([
+                (special_price_type, special_price_history)
+            ])
+            if api_results["sent"]:
+                logger.info(
+                    f"Successfully sent special price to external API: {special_price_type.name}"
+                )
+            if api_results["failed"]:
+                logger.warning(
+                    f"Failed to send special price to external API: {special_price_type.name}"
+                )
+        except Exception as exc:
+            logger.error(f"Error sending special price to external API {special_price_type.name}: {exc}")
 
         # Log the finalization
         log_level = 'INFO' if message_sent else 'WARNING'

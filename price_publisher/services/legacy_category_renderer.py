@@ -248,11 +248,11 @@ def _load_fonts():
             str(FONT_ROOT / "YekanBakh.ttf"), 100
         ),  # date fa
         "eng_big": ImageFont.truetype(
-            str(FONT_ROOT / "YekanBakh.ttf"), 100
-        ),  # date en
+            str(FONT_ROOT / "montsrrat.otf"), 100
+        ),  # date en - Changed to English font
         "eng_small": ImageFont.truetype(
-            str(FONT_ROOT / "YekanBakh.ttf"), 85
-        ),  # weekday en
+            str(FONT_ROOT / "montsrrat.otf"), 85
+        ),  # weekday en - Changed to English font
         "stop": ImageFont.truetype(
             str(FONT_ROOT / "Morabba.ttf"), 115
         ),  # توقف خرید/فروش
@@ -261,8 +261,8 @@ def _load_fonts():
         ),  # تماس بگیرید
     }
     
-    # Load price font with error handling for .woff files
-    price_font_path = FONT_ROOT / "KalamehWeb-Bold.woff"
+    # Load price font - Changed to English font for GBP/USDT prices
+    price_font_path = FONT_ROOT / "montsrrat.otf"
     if not price_font_path.exists():
         raise FileNotFoundError(
             f"Font file not found: {price_font_path}. "
@@ -271,13 +271,9 @@ def _load_fonts():
     try:
         fonts["price"] = ImageFont.truetype(str(price_font_path), 135)
     except OSError as e:
-        if price_font_path.suffix == '.woff':
-            raise OSError(
-                f"Failed to load font 'KalamehWeb-Bold.woff': PIL/Pillow does not support .woff files. "
-                f"Please provide a .ttf or .otf version of Kalameh font. "
-                f"Original error: {e}"
-            ) from e
-        raise
+        raise OSError(
+            f"Failed to load font 'montsrrat.otf': {e}"
+        ) from e
     
     return fonts
 
@@ -395,7 +391,7 @@ def _format_price_value(value) -> str:
     except Exception:
         integer_value = int(decimal_value)
     formatted = f"{integer_value:,}"
-    return _to_farsi_digits(formatted)  # Convert to Farsi digits
+    return _to_english_digits(formatted)  # Convert to English digits for GBP/USDT prices
 
 
 def _to_farsi_digits(value: str) -> str:

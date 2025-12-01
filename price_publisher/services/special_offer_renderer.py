@@ -23,7 +23,7 @@ FONT_ROOT = Path(
 
 # Constants for special GBP templates
 SPECIAL_GBP_TEMPLATE_POSITION = (520, 1030)
-SPECIAL_GBP_TEMPLATE_FONT = ("Vazirmatn-Black.woff2", 130)
+SPECIAL_GBP_TEMPLATE_FONT = ("montsrrat.otf", 130)
 SPECIAL_GBP_TEMPLATES = (
     "special_buy_cash_GBP.jpg",
     "special_buy_account_GBP.jpg",
@@ -47,10 +47,10 @@ OFFER_TEXT_POSITIONS = {
 FONT_DEFINITIONS = {
     "farsi_date": ("Morabba.ttf", 115),
     "farsi_weekday": ("Morabba.ttf", 86),
-    "english_date": ("YekanBakh.ttf", 100),
-    "english_weekday": ("YekanBakh.ttf", 95),
-    "english_number": ("YekanBakh.ttf", 115),
-    "price": ("KalamehWeb-Bold.woff", 220),
+    "english_date": ("montsrrat.otf", 100),  # Changed to English font
+    "english_weekday": ("montsrrat.otf", 95),  # Changed to English font
+    "english_number": ("montsrrat.otf", 115),  # Changed to English font
+    "price": ("montsrrat.otf", 220),
     # Special fonts for GBP templates (all use same font as Tether)
     "special_buy_cash_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
     "special_buy_account_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
@@ -321,7 +321,7 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, timestamp):
     english_date = localized.strftime("%Y %b %d")
     draw_ctx.text(
         OFFER_TEXT_POSITIONS["english_date"],
-        _to_farsi_digits(english_date),  # Convert English date numbers to Farsi
+        english_date,  # Keep English digits for GBP/USDT prices
         font=fonts["english_number"],
         fill="white",
     )
@@ -351,13 +351,14 @@ def _format_price_value(price_history, *, special_price_type=None) -> str:
     try:
         decimal_value = Decimal(value)
     except (InvalidOperation, TypeError):
-        return _to_farsi_digits(str(value))  # Convert to Farsi digits
+        return str(value)  # Keep English digits for GBP/USDT prices
 
     if decimal_value == decimal_value.to_integral():
         decimal_value = decimal_value.quantize(Decimal("1"))
 
     text = f"{decimal_value:,}"
-    return _to_farsi_digits(text)  # Convert to Farsi digits
+    # Keep English digits for GBP, USDT and special prices
+    return text
 
 
 def _extract_timestamp(price_history):

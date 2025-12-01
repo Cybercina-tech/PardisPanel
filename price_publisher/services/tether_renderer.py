@@ -41,7 +41,7 @@ FONT_FILES = {
     # "english_date": ("YekanBakh.ttf", 100),
     # "english_weekday": ("YekanBakh.ttf", 94),  # Reduced by 1 degree
     "english_number": ("montsrrat.otf", 113),  # Reduced by 2 degrees (from 115)
-    "tether_price": ("Vazirmatn-Black.woff2", 100),  # Changed to Persian font (YekanBakh.ttf) with size 100
+    "tether_price": ("montsrrat.otf", 100),  # English font for Tether prices
 }
 
 FARSI_WEEKDAYS = {
@@ -333,12 +333,12 @@ def _format_history_value(price_history, key: str) -> str:
     try:
         decimal_value = Decimal(value)
     except (InvalidOperation, TypeError):
-        return _to_farsi_digits(str(value))
+        return str(value)  # Keep English digits for Tether prices
 
     integral = decimal_value == decimal_value.to_integral()
     quantized = decimal_value.quantize(Decimal("1")) if integral else decimal_value
     text = f"{quantized:,}"
-    return _to_farsi_digits(text)
+    return text  # Keep English digits for Tether prices
 
 
 def _to_farsi_digits(value: str) -> str:
