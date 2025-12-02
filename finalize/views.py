@@ -227,20 +227,44 @@ def finalize_category(request, category_id):
         # Send finalized prices to external API (GBP and USDT only)
         try:
             api_results = ExternalAPIService.send_finalized_prices(price_items)
-            if api_results["sent"]:
+            sent_count = len(api_results.get("sent", []))
+            failed_count = len(api_results.get("failed", []))
+            skipped_count = len(api_results.get("skipped", []))
+
+            if sent_count:
                 logger.info(
-                    f"Successfully sent {len(api_results['sent'])} price(s) to external API "
+                    f"Successfully sent {sent_count} external rate request(s) "
                     f"for category: {category.name}"
                 )
-            if api_results["failed"]:
+            if failed_count:
                 logger.warning(
-                    f"Failed to send {len(api_results['failed'])} price(s) to external API "
+                    f"Failed to send {failed_count} external rate request(s) "
                     f"for category: {category.name}"
                 )
+
+            # Structured log into system log table
+            external_log_level = "INFO" if failed_count == 0 else "WARNING"
+            log_finalize_event(
+                level=external_log_level,
+                message=f"External rates sync for category: {category.name}",
+                details=(
+                    f"Sent: {sent_count}, Failed: {failed_count}, Skipped: {skipped_count}. "
+                    f"Payload keys: {list((api_results.get('sent') or []) and api_results.get('sent')[0].get('payload', {}).keys() if api_results.get('sent') else [])}"
+                ),
+                user=request.user,
+            )
         except Exception as exc:
-            logger.error(f"Error sending prices to external API for category {category.name}: {exc}")
+            logger.error(
+                f"Error sending prices to external API for category {category.name}: {exc}"
+            )
+            log_finalize_event(
+                level="ERROR",
+                message=f"External rates sync failed for category: {category.name}",
+                details=str(exc),
+                user=request.user,
+            )
         
-        # Log the finalization
+        # Log the finalization (Telegram + DB)
         log_level = 'INFO' if message_sent else 'WARNING'
         log_finalize_event(
             level=log_level,
@@ -398,18 +422,45 @@ def finalize_special_price(request, special_price_history_id):
             api_results = ExternalAPIService.send_finalized_special_prices([
                 (special_price_type, special_price_history)
             ])
-            if api_results["sent"]:
-                logger.info(
-                    f"Successfully sent special price to external API: {special_price_type.name}"
-                )
-            if api_results["failed"]:
-                logger.warning(
-                    f"Failed to send special price to external API: {special_price_type.name}"
-                )
-        except Exception as exc:
-            logger.error(f"Error sending special price to external API {special_price_type.name}: {exc}")
+            sent_count = len(api_results.get("sent", []))
+            failed_count = len(api_results.get("failed", []))
+            skipped_count = len(api_results.get("skipped", []))
 
-        # Log the finalization
+            if sent_count:
+                logger.info(
+                    f"Successfully sent {sent_count} external rate request(s) "
+                    f"for special price: {special_price_type.name}"
+                )
+            if failed_count:
+                logger.warning(
+                    f"Failed to send {failed_count} external rate request(s) "
+                    f"for special price: {special_price_type.name}"
+                )
+
+            external_log_level = "INFO" if failed_count == 0 else "WARNING"
+            log_finalize_event(
+                level=external_log_level,
+                message=f"External rates sync for special price: {special_price_type.name}",
+                details=(
+                    f"Sent: {sent_count}, Failed: {failed_count}, Skipped: {skipped_count}. "
+                    f"Price: {special_price_history.price}"
+                ),
+                user=request.user,
+            )
+        except Exception as exc:
+            logger.error(
+                f"Error sending special price to external API {special_price_type.name}: {exc}"
+            )
+            log_finalize_event(
+                level="ERROR",
+                message=(
+                    f"External rates sync failed for special price: {special_price_type.name}"
+                ),
+                details=str(exc),
+                user=request.user,
+            )
+
+        # Log the finalization (Telegram + DB)
         log_level = 'INFO' if message_sent else 'WARNING'
         log_finalize_event(
             level=log_level,
