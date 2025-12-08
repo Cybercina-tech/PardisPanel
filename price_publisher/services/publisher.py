@@ -152,12 +152,11 @@ LEGACY_FINAL_BUTTONS = [
         {"text": "وب سایت", "url": "https://sarafipardis.co.uk/"},
         {
             "text": "اینستاگرام",
-            "url": "https://www.instagram.com/sarafiipardis",
+            "url": "https://www.instagram.com/Sarafipardis",
         },
     ],
     [
         {"text": "کانال تلگرام ما", "url": "https://t.me/sarafipardis"},
-        {"text": "بات تلگرامی ما", "url": "https://t.me/PardisSarafiBot"},
     ],
 ]
 
@@ -236,7 +235,7 @@ class PricePublisherService:
         if supports_tether_category(category):
             caption = self._build_tether_caption(latest_timestamp)
         elif supports_category(category):
-            caption = self._build_gbp_category_caption()
+            caption = self._build_gbp_category_caption(latest_timestamp)
         else:
             caption = LEGACY_FINAL_MESSAGE
             
@@ -558,6 +557,7 @@ class PricePublisherService:
         
         farsi_date = f"{jalali.day} {FARSI_MONTHS[jalali.month]} {jalali.year}"
         farsi_weekday = FARSI_WEEKDAYS.get(now.strftime("%A"), "")
+        # Format English date with zero-padded day: "December 04, 2025"
         english_date = now.strftime("%B %d, %Y")
         english_weekday = now.strftime("%A")
         
@@ -569,53 +569,52 @@ class PricePublisherService:
     @staticmethod
     def _build_contact_section() -> str:
         """Build the contact information section of the caption."""
-        contacts = "\n\n".join(
-            f"<b>{name}</b>\n📱 {phone}"
-            for name, phone in CONTACT_INFO.items()
-        )
-        return f"📞 <b>تماس با ما:</b>\n\n{contacts}"
+        mahdi_phone = "+447533544249"
+        whatsapp_link = f"https://wa.me/{mahdi_phone.replace('+', '')}"
+        return f"📱 <a href=\"{whatsapp_link}\">{mahdi_phone}</a>"
     
     @staticmethod
     def _build_tether_caption(timestamp) -> str:
         """Build a professional and attractive caption for Tether prices with dates."""
         farsi_date, farsi_weekday, english_date, english_weekday = PricePublisherService._format_dates(timestamp)
         contact_section = PricePublisherService._build_contact_section()
+        office_map_url = "https://maps.app.goo.gl/d3sorvbK9VRFvSBaA"
         
         caption = (
-            f"📅 <b>تاریخ:</b>\n"
-            f"🇮🇷 {farsi_weekday} {farsi_date}\n"
+            f"📅 <b>تاریخ:</b>\n\n"
+            f"🇮🇷 {farsi_weekday} {farsi_date}\n\n"
             f"🇬🇧 {english_weekday}, {english_date}\n\n"
-            f"━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"💷 <b>خرید و فروش تتر (USDT)</b>\n"
-            f"💰 <b>نقدی و حسابی</b>\n\n"
-            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"━━━━━━━━━━\n\n"
+            f"💷 <b>خرید فروش تتر</b>\n\n"
             f"{contact_section}\n\n"
-            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
             f"📍 <b>آدرس دفتر:</b>\n"
-            f"<u>{OFFICE_ADDRESS}</u>\n\n"
-            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
-            f"ℹ️ مبالغ زیر ۱۰۰۰ پوند شامل ۱۰ پوند کارمزد می‌باشد\n\n"
-            f"⚠️ <b>لطفا بدون هماهنگی هیچ مبلغی به هیچ حسابی واریز نکنید</b> ⚠️"
+            f"<a href=\"{office_map_url}\">{OFFICE_ADDRESS}</a>\n\n"
+            f"🕐 <b>Working Hours:</b>\n"
+            f"Monday - Saturday: 9:30 AM - 5:00 PM\n"
+            f"Sunday: Closed"
         )
         
         return caption
     
     @staticmethod
-    def _build_gbp_category_caption() -> str:
-        """Build a professional and attractive caption for GBP category prices (without date)."""
+    def _build_gbp_category_caption(timestamp) -> str:
+        """Build a professional and attractive caption for GBP category prices with dates."""
+        farsi_date, farsi_weekday, english_date, english_weekday = PricePublisherService._format_dates(timestamp)
         contact_section = PricePublisherService._build_contact_section()
+        office_map_url = "https://maps.app.goo.gl/d3sorvbK9VRFvSBaA"
         
         caption = (
-            f"💷 <b>خرید و فروش پوند (GBP)</b>\n"
-            f"💰 <b>نقدی و حسابی</b>\n\n"
-            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"📅 <b>تاریخ:</b>\n\n"
+            f"🇮🇷 {farsi_weekday} {farsi_date}\n\n"
+            f"🇬🇧 {english_weekday}, {english_date}\n\n"
+            f"━━━━━━━━━━\n\n"
+            f"💷 <b>خرید فروش پوند</b>\n\n"
             f"{contact_section}\n\n"
-            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
             f"📍 <b>آدرس دفتر:</b>\n"
-            f"<u>{OFFICE_ADDRESS}</u>\n\n"
-            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
-            f"ℹ️ مبالغ زیر ۱۰۰۰ پوند شامل ۱۰ پوند کارمزد می‌باشد\n\n"
-            f"⚠️ <b>لطفا بدون هماهنگی هیچ مبلغی به هیچ حسابی واریز نکنید</b> ⚠️"
+            f"<a href=\"{office_map_url}\">{OFFICE_ADDRESS}</a>\n\n"
+            f"🕐 <b>Working Hours:</b>\n"
+            f"Monday - Saturday: 9:30 AM - 5:00 PM\n"
+            f"Sunday: Closed"
         )
         
         return caption
@@ -638,21 +637,20 @@ class PricePublisherService:
         farsi_date, farsi_weekday, english_date, english_weekday = PricePublisherService._format_dates(timestamp)
         title = PricePublisherService._get_special_pound_title(is_account, is_sell)
         contact_section = PricePublisherService._build_contact_section()
+        office_map_url = "https://maps.app.goo.gl/d3sorvbK9VRFvSBaA"
         
         caption = (
-            f"📅 <b>تاریخ:</b>\n"
-            f"🇮🇷 {farsi_weekday} {farsi_date}\n"
+            f"📅 <b>تاریخ:</b>\n\n"
+            f"🇮🇷 {farsi_weekday} {farsi_date}\n\n"
             f"🇬🇧 {english_weekday}, {english_date}\n\n"
-            f"━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"{title}\n"
-            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
+            f"━━━━━━━━━━\n\n"
+            f"{title}\n\n"
             f"{contact_section}\n\n"
-            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
             f"📍 <b>آدرس دفتر:</b>\n"
-            f"<u>{OFFICE_ADDRESS}</u>\n\n"
-            f"🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
-            f"ℹ️ مبالغ زیر ۱۰۰۰ پوند شامل ۱۰ پوند کارمزد می‌باشد\n\n"
-            f"⚠️ <b>لطفا بدون هماهنگی هیچ مبلغی به هیچ حسابی واریز نکنید</b> ⚠️"
+            f"<a href=\"{office_map_url}\">{OFFICE_ADDRESS}</a>\n\n"
+            f"🕐 <b>Working Hours:</b>\n"
+            f"Monday - Saturday: 9:30 AM - 5:00 PM\n"
+            f"Sunday: Closed"
         )
         
         return caption

@@ -143,31 +143,55 @@ def finalize_category(request, category_id):
             finalized_history_ids = set(
                 latest_finalization.finalized_prices.values_list('price_history_id', flat=True)
             )
+            # Build a mapping of price_type_id -> finalized price_history for this finalization
+            finalized_price_map = {
+                fph.price_history.price_type_id: fph.price_history
+                for fph in latest_finalization.finalized_prices.select_related('price_history__price_type')
+            }
         else:
             finalized_history_ids = set()
+            finalized_price_map = {}
         
         # Get all price types for this category
         price_types = PriceType.objects.filter(category=category).select_related(
             'source_currency', 'target_currency'
         )
         
-        # Get latest price histories that are not finalized
+        # Build price_items: include ALL price types in the category
+        # For each price_type:
+        # - If it has a pending (new) price, use that
+        # - Otherwise, use the last finalized price from the latest finalization
+        # - If no finalized price exists, use the latest price (fallback)
+        price_items = []
         pending_prices = []
+        
         for price_type in price_types:
             latest_price = price_type.price_histories.first()
-            if latest_price and latest_price.id not in finalized_history_ids:
+            
+            if not latest_price:
+                # Skip price types with no history
+                continue
+            
+            # Check if this price is pending (not finalized)
+            if latest_price.id not in finalized_history_ids:
+                # Use the new pending price
+                price_items.append((price_type, latest_price))
                 pending_prices.append({
                     'price_type': price_type,
                     'price_history': latest_price
                 })
+            else:
+                # Price is already finalized, use the last finalized price from latest finalization
+                if price_type.id in finalized_price_map:
+                    finalized_price = finalized_price_map[price_type.id]
+                    price_items.append((price_type, finalized_price))
+                else:
+                    # Fallback: use latest price if no finalized price found
+                    price_items.append((price_type, latest_price))
         
-        if not pending_prices:
-            messages.warning(request, f'No pending prices to finalize for category "{category.name}".')
+        if not price_items:
+            messages.warning(request, f'No prices found for category "{category.name}".')
             return redirect('finalize:dashboard')
-        
-        price_items = [
-            (item['price_type'], item['price_history']) for item in pending_prices
-        ]
 
         notes_text = notes.strip() if notes else None
 
@@ -266,10 +290,12 @@ def finalize_category(request, category_id):
         
         # Log the finalization (Telegram + DB)
         log_level = 'INFO' if message_sent else 'WARNING'
+        total_prices_count = len(price_items)
+        new_prices_count = len(pending_prices)
         log_finalize_event(
             level=log_level,
             message=f'Category finalized: {category.name}',
-            details=f'Finalized {len(pending_prices)} price(s). Channel: {channel.name if channel else "None"}. Telegram sent: {message_sent}. Response: {publication_response or "N/A"}',
+            details=f'Total prices in image: {total_prices_count}, New finalized: {new_prices_count}. Channel: {channel.name if channel else "None"}. Telegram sent: {message_sent}. Response: {publication_response or "N/A"}',
             user=request.user
         )
         
@@ -278,13 +304,19 @@ def finalize_category(request, category_id):
             log_telegram_event(
                 level='INFO',
                 message=f'Category prices published to Telegram',
-                details=f'Category: {category.name}, Channel: {channel.name}, Prices count: {len(pending_prices)}',
+                details=f'Category: {category.name}, Channel: {channel.name}, Total prices: {total_prices_count}, New prices: {new_prices_count}',
                 user=request.user
             )
-            messages.success(
-                request,
-                f'Successfully finalized and published {len(pending_prices)} prices for category "{category.name}" as an image on Telegram.'
-            )
+            if new_prices_count > 0:
+                messages.success(
+                    request,
+                    f'Successfully finalized and published {total_prices_count} prices ({new_prices_count} new) for category "{category.name}" as an image on Telegram.'
+                )
+            else:
+                messages.success(
+                    request,
+                    f'Successfully published {total_prices_count} prices for category "{category.name}" as an image on Telegram. (All prices were already finalized)'
+                )
         else:
             # Log Telegram failure
             log_telegram_event(
@@ -293,10 +325,16 @@ def finalize_category(request, category_id):
                 details=f'Category: {category.name}, Channel: {channel.name if channel else "None"}, Error: {publication_response}',
                 user=request.user
             )
-            messages.success(
-                request,
-                f'Successfully finalized {len(pending_prices)} prices for category "{category.name}". Telegram image publication failed.'
-            )
+            if new_prices_count > 0:
+                messages.success(
+                    request,
+                    f'Successfully finalized {new_prices_count} prices for category "{category.name}". Telegram image publication failed.'
+                )
+            else:
+                messages.warning(
+                    request,
+                    f'Failed to publish prices for category "{category.name}" to Telegram. Error: {publication_response}'
+                )
         
         return redirect('finalize:dashboard')
     
@@ -313,7 +351,7 @@ def finalize_category(request, category_id):
     else:
         finalized_history_ids = set()
     
-    # Get pending prices
+    # Get all price types and their pending prices
     price_types = PriceType.objects.filter(category=category).select_related(
         'source_currency', 'target_currency'
     )
@@ -327,7 +365,7 @@ def finalize_category(request, category_id):
             })
     
     if not pending_prices:
-        messages.info(request, f'No pending prices to finalize for category "{category.name}".')
+        messages.info(request, f'No pending prices to finalize for category "{category.name}". All prices are up to date.')
         return redirect('finalize:dashboard')
     
     context = {
