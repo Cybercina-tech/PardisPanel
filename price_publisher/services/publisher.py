@@ -116,20 +116,16 @@ N129QL"""
 # Legacy Telegram message metadata (copied from admin_finalize.py)
 # ----------------------------------------------------------------------
 LEGACY_FINAL_MESSAGE = (
-    "💷 خرید فروش تتر و پوند نقدی و حسابی\n"
-    "🔺🔺🔺🔺🔺🔺🔺🔺🔺\n"
-    "Mr. Mahdi    📞  +447533544249\n\n"
-    "Ms. Kianian    📞  +989121894230\n\n"
-    "Manager  📞  +447399990340\n"
-    "🔺🔺🔺🔺🔺🔺🔺🔺🔺\n"
-    "📌آدرس دفتر :\n"
-    "<u>Office A\n"
+    "💷 <b>خرید فروش تتر و پوند نقدی و حسابی</b>\n\n"
+    "📱 <a href=\"https://wa.me/447533544249\">+447533544249</a>\n\n"
+    "📍 <b>آدرس دفتر:</b>\n"
+    "<a href=\"https://maps.app.goo.gl/d3sorvbK9VRFvSBaA\">Office A\n"
     "708A High Road\n"
     "North Finchley\n"
-    "N129QL</u>\n\n"
-    "🔺🔺🔺🔺🔺🔺🔺🔺🔺\n\n"
-    "مبالغ زیر ۱۰۰۰ پوند شامل ۱۰ پوند کارمزد می‌باشد\n\n"
-    "⛔ لطفا بدون هماهنگی هیچ مبلغی به هیچ حسابی واریز نکنید ⛔"
+    "N129QL</a>\n\n"
+    "🕐 <b>ساعات کاری:</b>\n"
+    "دوشنبه تا شنبه: ۹:۳۰ صبح تا ۵:۰۰ عصر\n"
+    "یکشنبه: تعطیل"
 )
 
 LEGACY_FINAL_BUTTONS = [
@@ -574,50 +570,53 @@ class PricePublisherService:
         return f"📱 <a href=\"{whatsapp_link}\">{mahdi_phone}</a>"
     
     @staticmethod
+    def _build_common_description(title: str) -> str:
+        """Build common description section in Tether style (without dates)."""
+        contact_section = PricePublisherService._build_contact_section()
+        office_map_url = "https://maps.app.goo.gl/d3sorvbK9VRFvSBaA"
+        
+        if title:
+            caption = (
+                f"💷 <b>{title}</b>\n\n"
+                f"{contact_section}\n\n"
+                f"📍 <b>آدرس دفتر:</b>\n"
+                f"<a href=\"{office_map_url}\">{OFFICE_ADDRESS}</a>\n\n"
+                f"🕐 <b>ساعات کاری:</b>\n"
+                f"دوشنبه تا شنبه: ۹:۳۰ صبح تا ۵:۰۰ عصر\n"
+                f"یکشنبه: تعطیل"
+            )
+        else:
+            # Return only description part without title
+            caption = (
+                f"{contact_section}\n\n"
+                f"📍 <b>آدرس دفتر:</b>\n"
+                f"<a href=\"{office_map_url}\">{OFFICE_ADDRESS}</a>\n\n"
+                f"🕐 <b>ساعات کاری:</b>\n"
+                f"دوشنبه تا شنبه: ۹:۳۰ صبح تا ۵:۰۰ عصر\n"
+                f"یکشنبه: تعطیل"
+            )
+        
+        return caption
+    
+    @staticmethod
     def _build_tether_caption(timestamp) -> str:
         """Build a professional and attractive caption for Tether prices with dates."""
         farsi_date, farsi_weekday, english_date, english_weekday = PricePublisherService._format_dates(timestamp)
-        contact_section = PricePublisherService._build_contact_section()
-        office_map_url = "https://maps.app.goo.gl/d3sorvbK9VRFvSBaA"
         
         caption = (
             f"📅 <b>تاریخ:</b>\n\n"
             f"🇮🇷 {farsi_weekday} {farsi_date}\n\n"
             f"🇬🇧 {english_weekday}, {english_date}\n\n"
-            f"━━━━━━━━━━\n\n"
-            f"💷 <b>خرید فروش تتر</b>\n\n"
-            f"{contact_section}\n\n"
-            f"📍 <b>آدرس دفتر:</b>\n"
-            f"<a href=\"{office_map_url}\">{OFFICE_ADDRESS}</a>\n\n"
-            f"🕐 <b>Working Hours:</b>\n"
-            f"Monday - Saturday: 9:30 AM - 5:00 PM\n"
-            f"Sunday: Closed"
+            f"━━━━━━\n\n"
+            f"{PricePublisherService._build_common_description('خرید فروش تتر')}"
         )
         
         return caption
     
     @staticmethod
     def _build_gbp_category_caption(timestamp) -> str:
-        """Build a professional and attractive caption for GBP category prices with dates."""
-        farsi_date, farsi_weekday, english_date, english_weekday = PricePublisherService._format_dates(timestamp)
-        contact_section = PricePublisherService._build_contact_section()
-        office_map_url = "https://maps.app.goo.gl/d3sorvbK9VRFvSBaA"
-        
-        caption = (
-            f"📅 <b>تاریخ:</b>\n\n"
-            f"🇮🇷 {farsi_weekday} {farsi_date}\n\n"
-            f"🇬🇧 {english_weekday}, {english_date}\n\n"
-            f"━━━━━━━━━━\n\n"
-            f"💷 <b>خرید فروش پوند</b>\n\n"
-            f"{contact_section}\n\n"
-            f"📍 <b>آدرس دفتر:</b>\n"
-            f"<a href=\"{office_map_url}\">{OFFICE_ADDRESS}</a>\n\n"
-            f"🕐 <b>Working Hours:</b>\n"
-            f"Monday - Saturday: 9:30 AM - 5:00 PM\n"
-            f"Sunday: Closed"
-        )
-        
-        return caption
+        """Build a professional and attractive caption for GBP category prices without dates."""
+        return PricePublisherService._build_common_description('خرید فروش پوند')
 
     @staticmethod
     def _get_special_pound_title(is_account: bool, is_sell: bool) -> str:
@@ -633,24 +632,15 @@ class PricePublisherService:
     
     @staticmethod
     def _build_special_pound_caption(timestamp, is_account: bool = False, is_sell: bool = False) -> str:
-        """Build a professional and attractive caption for Special Pound prices (inspired by Tether)."""
-        farsi_date, farsi_weekday, english_date, english_weekday = PricePublisherService._format_dates(timestamp)
+        """Build a professional and attractive caption for Special Pound prices without dates."""
         title = PricePublisherService._get_special_pound_title(is_account, is_sell)
-        contact_section = PricePublisherService._build_contact_section()
-        office_map_url = "https://maps.app.goo.gl/d3sorvbK9VRFvSBaA"
+        
+        # Get description without title
+        description = PricePublisherService._build_common_description('')
         
         caption = (
-            f"📅 <b>تاریخ:</b>\n\n"
-            f"🇮🇷 {farsi_weekday} {farsi_date}\n\n"
-            f"🇬🇧 {english_weekday}, {english_date}\n\n"
-            f"━━━━━━━━━━\n\n"
             f"{title}\n\n"
-            f"{contact_section}\n\n"
-            f"📍 <b>آدرس دفتر:</b>\n"
-            f"<a href=\"{office_map_url}\">{OFFICE_ADDRESS}</a>\n\n"
-            f"🕐 <b>Working Hours:</b>\n"
-            f"Monday - Saturday: 9:30 AM - 5:00 PM\n"
-            f"Sunday: Closed"
+            f"{description}"
         )
         
         return caption

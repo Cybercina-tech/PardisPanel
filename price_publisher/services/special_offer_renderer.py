@@ -37,6 +37,7 @@ OFFER_TEXT_POSITIONS = {
     "english_date": (420, 250),
     "english_weekday": (580, 420),
     "price": (360, 2100),
+    "working_hours": (1200, 2200),  # ساعات کاری
     # Special positions for GBP templates (all use same position)
     "special_buy_cash_gbp_price": SPECIAL_GBP_TEMPLATE_POSITION,
     "special_buy_account_gbp_price": SPECIAL_GBP_TEMPLATE_POSITION,
@@ -51,6 +52,7 @@ FONT_DEFINITIONS = {
     "english_weekday": ("montsrrat.otf", 95),  # Changed to English font
     "english_number": ("montsrrat.otf", 115),  # Changed to English font
     "price": ("montsrrat.otf", 220),
+    "working_hours": ("Morabba.ttf", 50),  # ساعات کاری
     # Special fonts for GBP templates (all use same font as Tether)
     "special_buy_cash_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
     "special_buy_account_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
@@ -247,6 +249,20 @@ def render_special_offer_board(
         font=price_font,
         fill=(0, 0, 0),  # Completely black color
     )
+    
+    # اضافه کردن ساعات کاری
+    working_hours_text = "ساعات کاری:\nدوشنبه تا شنبه: ۹:۳۰ صبح تا ۵:۰۰ عصر\nیکشنبه: تعطیل"
+    working_hours_lines = working_hours_text.split('\n')
+    working_hours_y = OFFER_TEXT_POSITIONS["working_hours"][1]
+    working_hours_font = fonts.get("working_hours")
+    if working_hours_font:
+        for i, line in enumerate(working_hours_lines):
+            draw_ctx.text(
+                (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
+                line,
+                font=working_hours_font,
+                fill=(255, 255, 255)
+            )
 
     buffer = io.BytesIO()
     buffer.name = template.background

@@ -53,6 +53,10 @@ def get_weekday_en(now):
     """نام روز هفته به انگلیسی"""
     return now.strftime('%A')
 
+def get_working_hours_fa():
+    """متن ساعات کاری به فارسی"""
+    return "ساعات کاری:\nدوشنبه تا شنبه: ۹:۳۰ صبح تا ۵:۰۰ عصر\nیکشنبه: تعطیل"
+
 # ======================= Main Functions =======================
 
 # پوزیشن‌های دقیق هر متن روی بنر آفر
@@ -66,6 +70,7 @@ OFFER_TEXT_POSITIONS = {
     "tether_sell_irr": (370, 1125),    # قیمت فروش تتر (ریال)
     "tether_buy_gbp": (1980, 2070),    # قیمت خرید تتر (پوند)
     "tether_sell_gbp": (480, 2070),    # قیمت فروش تتر (پوند)
+    "working_hours": (1200, 2200),     # ساعات کاری
 }
 
 OFFER_FONT_SIZES = {
@@ -75,7 +80,8 @@ OFFER_FONT_SIZES = {
     "english_weekday": 95,
     "english_number": 115,
     "price": 220,
-    "tether_price": 230
+    "tether_price": 230,
+    "working_hours": 50
 }
 
 def load_offer_fonts():
@@ -86,7 +92,8 @@ def load_offer_fonts():
         "english_weekday": ImageFont.truetype("./assets/fonts/YekanBakh.ttf", OFFER_FONT_SIZES["english_weekday"]),
         "english_number": ImageFont.truetype("./assets/fonts/montsrrat.otf", OFFER_FONT_SIZES["english_number"]),
         "price": ImageFont.truetype("./assets/fonts/montsrrat.otf", OFFER_FONT_SIZES["price"]),
-        "tether_price": ImageFont.truetype("./assets/fonts/montsrrat.otf", OFFER_FONT_SIZES["tether_price"])
+        "tether_price": ImageFont.truetype("./assets/fonts/montsrrat.otf", OFFER_FONT_SIZES["tether_price"]),
+        "working_hours": ImageFont.truetype("./assets/fonts/Morabba.ttf", OFFER_FONT_SIZES["working_hours"])
     }
 
 def add_date_to_news(news_text=None):
@@ -117,6 +124,19 @@ def add_date_to_news(news_text=None):
     colors = [(255, 255, 255)] * 4
 
     draw_text(draw, positions, texts, font_list, colors)
+    
+    # اضافه کردن ساعات کاری
+    working_hours_text = get_working_hours_fa()
+    working_hours_font = ImageFont.truetype("./assets/fonts/Morabba.ttf", 50)
+    working_hours_lines = working_hours_text.split('\n')
+    working_hours_y = 2200
+    for i, line in enumerate(working_hours_lines):
+        draw.text(
+            (1200, working_hours_y + i * 60),
+            line,
+            font=working_hours_font,
+            fill=(255, 255, 255)
+        )
     
     # اضافه کردن متن خبر به تصویر
     if news_text:
@@ -209,6 +229,18 @@ def offer_draw(state):
     colors = [(255, 255, 255)] * 4
 
     draw_text(draw, positions, texts, font_list, colors)
+    
+    # اضافه کردن ساعات کاری
+    working_hours_text = get_working_hours_fa()
+    working_hours_lines = working_hours_text.split('\n')
+    working_hours_y = 2200
+    for i, line in enumerate(working_hours_lines):
+        draw.text(
+            (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
+            line,
+            font=fonts["working_hours"],
+            fill=(255, 255, 255)
+        )
 
     offers = [
         ("خرید ویژه نقدی", "offer1.png"),
@@ -261,6 +293,18 @@ def create_image_for_tether_offer():
     colors = [(255, 255, 255)] * 4
 
     draw_text(draw, positions, texts, font_list, colors)
+    
+    # اضافه کردن ساعات کاری
+    working_hours_text = get_working_hours_fa()
+    working_hours_lines = working_hours_text.split('\n')
+    working_hours_y = 2200
+    for i, line in enumerate(working_hours_lines):
+        draw.text(
+            (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
+            line,
+            font=fonts["working_hours"],
+            fill=(255, 255, 255)
+        )
 
     # پوزیشن‌های قیمت تتر به صورت واضح
     tether_price_positions = [
@@ -342,6 +386,18 @@ if __name__ == "__main__":
             colors = [(255, 255, 255)] * 4
 
             draw_text(draw, positions, texts, font_list, colors)
+            
+            # اضافه کردن ساعات کاری
+            working_hours_text = get_working_hours_fa()
+            working_hours_lines = working_hours_text.split('\n')
+            working_hours_y = 2200
+            for i, line in enumerate(working_hours_lines):
+                draw.text(
+                    (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
+                    line,
+                    font=fonts["working_hours"],
+                    fill=(255, 255, 255)
+                )
 
             draw.text(
                 price_position,
@@ -376,6 +432,18 @@ if __name__ == "__main__":
         colors = [(255, 255, 255)] * 4
 
         draw_text(draw, positions, texts, font_list, colors)
+        
+        # اضافه کردن ساعات کاری
+        working_hours_text = get_working_hours_fa()
+        working_hours_lines = working_hours_text.split('\n')
+        working_hours_y = 2200
+        for i, line in enumerate(working_hours_lines):
+            draw.text(
+                (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
+                line,
+                font=fonts["working_hours"],
+                fill=(255, 255, 255)
+            )
 
         for i, offer in enumerate(tether_offer_keys):
             if i < len(tether_price_positions):

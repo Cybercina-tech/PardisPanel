@@ -182,6 +182,15 @@ def _resolve_background_for_category(category) -> Path:
     slug = (category.slug or "").lower()
     name = category.name.lower()
 
+    # Check if this is a pound/GBP category - use rotating backgrounds
+    is_pound = any(keyword in slug or keyword in name for keyword in ["pound", "gbp", "پوند"])
+    
+    if is_pound:
+        # Use rotating background for pound categories
+        rotating = _get_rotating_background()
+        if rotating is not None:
+            return rotating
+
     def candidate(keys):
         for key in keys:
             if key in LEGACY_BACKGROUNDS:
@@ -192,8 +201,6 @@ def _resolve_background_for_category(category) -> Path:
         [
             slug,
             name,
-            "pound",
-            "gbp",
             "price_theme_default",
         ]
     )
@@ -213,10 +220,14 @@ def _resolve_background_for_category(category) -> Path:
 
 
 def _get_rotating_background():
+    """
+    Get the next rotating background from price_theme folder.
+    Cycles through all PNG files (1.png, 2.png, 3.png, etc.) in order.
+    """
     price_theme_dir = IMAGE_ROOT / "price_theme"
     files = sorted(
         price_theme_dir.glob("*.png"),
-        key=lambda path: path.stem.zfill(4),
+        key=lambda path: int(path.stem) if path.stem.isdigit() else float('inf'),
     )
     if not files:
         return None
@@ -230,13 +241,15 @@ def _get_rotating_background():
                 key="price_theme",
                 defaults={"last_index": 0},
             )
-            next_index = (state.last_index % len(files)) + 1
+            # Use current index, then increment for next time
+            current_index = state.last_index % len(files)
+            next_index = (state.last_index + 1) % len(files)
             state.last_index = next_index
             state.save(update_fields=["last_index", "updated_at"])
     except Exception:
         return files[0]
 
-    return files[next_index - 1]
+    return files[current_index]
 
 
 def _load_fonts():

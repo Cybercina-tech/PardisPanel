@@ -32,6 +32,7 @@ OFFER_TEXT_POSITIONS = {
     "tether_buy_irr": (900, 570),    # خرید تتر به تومن
     "tether_sell_gbp": (350, 950),   # فروش تتر به پوند
     "tether_buy_gbp": (930, 950),    # خرید تتر به پوند
+    "working_hours": (1200, 2200),   # ساعات کاری
 }
 
 FONT_FILES = {
@@ -42,6 +43,7 @@ FONT_FILES = {
     # "english_weekday": ("YekanBakh.ttf", 94),  # Reduced by 1 degree
     "english_number": ("montsrrat.otf", 113),  # Reduced by 2 degrees (from 115)
     "tether_price": ("montsrrat.otf", 100),  # English font for Tether prices
+    "working_hours": ("Morabba.ttf", 50),  # ساعات کاری
 }
 
 FARSI_WEEKDAYS = {
@@ -161,6 +163,20 @@ def render_tether_board(
             font=fonts["tether_price"],
             fill=(0, 0, 0),  # Completely black color
         )
+    
+    # اضافه کردن ساعات کاری
+    working_hours_text = "ساعات کاری:\nدوشنبه تا شنبه: ۹:۳۰ صبح تا ۵:۰۰ عصر\nیکشنبه: تعطیل"
+    working_hours_lines = working_hours_text.split('\n')
+    working_hours_y = OFFER_TEXT_POSITIONS["working_hours"][1]
+    working_hours_font = fonts.get("working_hours")
+    if working_hours_font:
+        for i, line in enumerate(working_hours_lines):
+            draw_ctx.text(
+                (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
+                line,
+                font=working_hours_font,
+                fill=(255, 255, 255)
+            )
 
     buffer = io.BytesIO()
     buffer.name = "tether_prices.png"
