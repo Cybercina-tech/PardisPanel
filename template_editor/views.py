@@ -15,13 +15,6 @@ from django.conf import settings
 from .forms import TemplateForm
 from .models import Template
 
-# Import reshape function for Persian text
-try:
-    from price_publisher.services.legacy_category_renderer import _reshape_farsi_text
-except ImportError:
-    # Fallback if import fails
-    def _reshape_farsi_text(text: str) -> str:
-        return text
 
 
 class TemplateListView(LoginRequiredMixin, ListView):
@@ -169,27 +162,14 @@ class PreviewView(LoginRequiredMixin, View):
                     if not sample_text:
                         continue
                 
-                # Check if text is RTL (Persian/Arabic)
-                try:
-                    is_rtl = self._is_rtl(str(sample_text))
-                    direction = "rtl" if is_rtl else None
-                    
-                    # Reshape Persian text for proper RTL display
-                    text_to_draw = str(sample_text)
-                    if is_rtl and text_to_draw.strip():
-                        try:
-                            reshaped = _reshape_farsi_text(text_to_draw)
-                            # Only use reshaped text if it's not empty and different from original
-                            if reshaped and reshaped.strip() and len(reshaped.strip()) > 0:
-                                text_to_draw = reshaped
-                        except Exception as reshape_error:
-                            # If reshape fails, use original text
-                            logger = logging.getLogger(__name__)
-                            logger.debug(f"Reshape failed for '{text_to_draw}': {reshape_error}")
-                            pass
-                except Exception:
-                    text_to_draw = str(sample_text)
-                    direction = None
+                    # Check if text is RTL (Persian/Arabic)
+                    try:
+                        is_rtl = self._is_rtl(str(sample_text))
+                        direction = "rtl" if is_rtl else None
+                        text_to_draw = str(sample_text)
+                    except Exception:
+                        text_to_draw = str(sample_text)
+                        direction = None
                 
                 # Load font - try Persian fonts first
                 font = None

@@ -12,14 +12,6 @@ from django.db import transaction
 from django.utils import timezone
 from PIL import Image, ImageDraw, ImageFont
 
-try:
-    import arabic_reshaper
-    from bidi.algorithm import get_display
-    RTL_SUPPORT = True
-except ImportError:
-    RTL_SUPPORT = False
-    arabic_reshaper = None
-    get_display = None
 
 try:
     from setting.models import PriceThemeState
@@ -314,8 +306,6 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     farsi_date_str = _to_farsi_digits(
         f"{jalali.day}{_farsi_month(jalali.month)}{jalali.year}"
     )
-    # Reshape Farsi date for proper RTL display
-    farsi_date_str = _reshape_farsi_text(farsi_date_str)
     draw_ctx.text(
         (1900, 255),
         farsi_date_str,
@@ -324,8 +314,6 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     )
 
     farsi_weekday = FARSI_WEEKDAYS.get(today_en, "")
-    # Reshape Farsi weekday for proper RTL display
-    farsi_weekday = _reshape_farsi_text(farsi_weekday)
     # Use size 100 font for Tuesday, otherwise use default size 80
     weekday_font = fonts.get("farsi_big_tuesday", fonts["farsi_big"]) if today_en == "Tuesday" else fonts["farsi_big"]
     draw_ctx.text(
@@ -407,12 +395,10 @@ def _resolve_display_value(
 
     note = (history.notes or "").strip().lower()
     if any(token in note for token in ("call", "تماس")):
-        text = _reshape_farsi_text("تماس بگیرید")
-        return (text, "call", call_position)
+        return ("تماس بگیرید", "call", call_position)
 
     if any(token in note for token in ("stop", "توقف")):
         text = "توقف خرید" if index < 2 else "توقف فروش"
-        text = _reshape_farsi_text(text)
         return (text, "stop", stop_position)
 
     value = _format_price_value(history.price)
@@ -427,41 +413,6 @@ def _format_price_value(value) -> str:
         integer_value = int(decimal_value)
     formatted = f"{integer_value:,}"
     return _to_english_digits(formatted)  # Convert to English digits for GBP/USDT prices
-
-
-def _reshape_farsi_text(text: str) -> str:
-    """
-    Reshape Persian/Farsi text for proper RTL display in images.
-    Works correctly on all operating systems (Windows, Linux, macOS).
-    
-    Uses reshaping + bidi algorithm on all systems for consistent rendering.
-    """
-    if not text:
-        return text
-    
-    if RTL_SUPPORT and get_display:
-        try:
-            # Use full reshaping + bidi on all systems for consistent rendering
-            if arabic_reshaper:
-                # Reshape Arabic/Persian characters
-                reshaped_text = arabic_reshaper.reshape(text)
-                # Apply bidirectional algorithm for proper display
-                bidi_text = get_display(reshaped_text)
-                return bidi_text
-            else:
-                # Fallback to bidi only if arabic_reshaper not available
-                return get_display(text)
-        except Exception as e:
-            # Log the error for debugging but don't fail
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.warning(f"Failed to process Farsi text: {e}. Using original text.")
-            # Fallback to original text if processing fails
-            return text
-    
-    # If RTL support is not available, return text as-is
-    # This should work fine on systems with proper font support
-    return text
 
 
 def _to_farsi_digits(value: str) -> str:

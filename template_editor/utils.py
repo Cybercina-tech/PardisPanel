@@ -9,14 +9,6 @@ from django.conf import settings
 from django.utils.text import slugify
 import os
 
-# Import reshape function for Persian text
-try:
-    from price_publisher.services.legacy_category_renderer import _reshape_farsi_text
-except ImportError:
-    # Fallback if import fails
-    def _reshape_farsi_text(text: str) -> str:
-        return text
-
 logger = logging.getLogger(__name__)
 
 # Default font candidates - prioritize Persian fonts
@@ -180,18 +172,8 @@ def render_template(template_obj, dynamic_data_dict: Dict[str, Any]) -> Image.Im
         is_rtl = _is_rtl(str(text_value))
         direction = "rtl" if is_rtl else None
         
-        # Reshape Persian text for proper RTL display
+        # Use text as-is without reshaping
         text_to_draw = str(text_value)
-        if is_rtl:
-            try:
-                reshaped = _reshape_farsi_text(text_to_draw)
-                # Only use reshaped text if it's not empty
-                if reshaped and reshaped.strip():
-                    text_to_draw = reshaped
-            except Exception as e:
-                # If reshape fails, use original text
-                logger.warning(f"Failed to reshape Farsi text: {e}. Using original text.")
-                pass
         
         # Draw text with wrapping if max_width is specified
         if max_width:
