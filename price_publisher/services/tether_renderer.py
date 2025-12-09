@@ -10,15 +10,6 @@ from django.conf import settings
 from django.utils import timezone
 from PIL import Image, ImageDraw, ImageFont
 
-try:
-    import arabic_reshaper
-    from bidi.algorithm import get_display
-    RTL_SUPPORT = True
-except ImportError:
-    RTL_SUPPORT = False
-    arabic_reshaper = None
-    get_display = None
-
 from price_publisher.services.image_renderer import RenderedPriceImage
 
 STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
@@ -180,11 +171,9 @@ def render_tether_board(
     working_hours_font = fonts.get("working_hours")
     if working_hours_font:
         for i, line in enumerate(working_hours_lines):
-            # Reshape Persian text for proper RTL display
-            reshaped_line = _reshape_farsi_text(line)
             draw_ctx.text(
                 (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
-                reshaped_line,
+                line,
                 font=working_hours_font,
                 fill=(255, 255, 255)
             )
@@ -366,27 +355,6 @@ def _format_history_value(price_history, key: str) -> str:
     quantized = decimal_value.quantize(Decimal("1")) if integral else decimal_value
     text = f"{quantized:,}"
     return text  # Keep English digits for Tether prices
-
-
-def _reshape_farsi_text(text: str) -> str:
-    """
-    Reshape Persian/Farsi text for proper RTL display in images.
-    Works correctly on all operating systems (Windows, Linux, macOS).
-    """
-    if not text:
-        return text
-    
-    if RTL_SUPPORT and arabic_reshaper and get_display:
-        try:
-            # Reshape Arabic/Persian characters
-            reshaped_text = arabic_reshaper.reshape(text)
-            # Apply bidirectional algorithm for proper display
-            bidi_text = get_display(reshaped_text)
-            return bidi_text
-        except Exception:
-            # Fallback to original text if reshaping fails
-            return text
-    return text
 
 
 def _to_farsi_digits(value: str) -> str:

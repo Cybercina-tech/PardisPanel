@@ -3,16 +3,6 @@ import datetime
 import jdatetime
 from .data import *
 
-# RTL support for Persian/Farsi text
-try:
-    import arabic_reshaper
-    from bidi.algorithm import get_display
-    RTL_SUPPORT = True
-except ImportError:
-    RTL_SUPPORT = False
-    arabic_reshaper = None
-    get_display = None
-
 # ======================= Helper Functions =======================
 
 def get_current_times():
@@ -40,32 +30,9 @@ def load_fonts(font_sizes=None):
         "price": ImageFont.truetype("./assets/fonts/montsrrat.otf", font_sizes["price"])
     }
 
-def _reshape_farsi_text(text: str) -> str:
-    """
-    Reshape Persian/Farsi text for proper RTL display in images.
-    Works correctly on all operating systems (Windows, Linux, macOS).
-    """
-    if not text:
-        return text
-    
-    if RTL_SUPPORT and arabic_reshaper and get_display:
-        try:
-            # Reshape Arabic/Persian characters
-            reshaped_text = arabic_reshaper.reshape(text)
-            # Apply bidirectional algorithm for proper display
-            bidi_text = get_display(reshaped_text)
-            return bidi_text
-        except Exception:
-            # Fallback to original text if reshaping fails
-            return text
-    return text
-
 def draw_text(draw_obj, positions, texts, fonts, colors):
     """رسم چند متن با فونت و رنگ‌های مختلف"""
     for pos, text, font, color in zip(positions, texts, fonts, colors):
-        # Reshape Persian text for proper RTL display
-        if isinstance(text, str) and any('\u0600' <= char <= '\u06FF' for char in text):
-            text = _reshape_farsi_text(text)
         draw_obj.text(pos, text, font=font, fill=color)
 
 def get_farsi_date_str():
@@ -164,11 +131,9 @@ def add_date_to_news(news_text=None):
     working_hours_lines = working_hours_text.split('\n')
     working_hours_y = 2200
     for i, line in enumerate(working_hours_lines):
-        # Reshape Persian text for proper RTL display
-        reshaped_line = _reshape_farsi_text(line)
         draw.text(
             (1200, working_hours_y + i * 60),
-            reshaped_line,
+            line,
             font=working_hours_font,
             fill=(255, 255, 255)
         )
@@ -224,9 +189,7 @@ def add_date_to_news(news_text=None):
         
         for i, line in enumerate(lines):
             y_pos = start_y + i * line_height
-            # Reshape Persian text for proper RTL display
-            reshaped_line = _reshape_farsi_text(line)
-            draw.text((text_position[0], y_pos), reshaped_line, font=news_font, fill=(255, 255, 255), anchor="mm")
+            draw.text((text_position[0], y_pos), line, font=news_font, fill=(255, 255, 255), anchor="mm")
     
     img.save("./assets/news_date.png")
 
@@ -272,11 +235,9 @@ def offer_draw(state):
     working_hours_lines = working_hours_text.split('\n')
     working_hours_y = 2200
     for i, line in enumerate(working_hours_lines):
-        # Reshape Persian text for proper RTL display
-        reshaped_line = _reshape_farsi_text(line)
         draw.text(
             (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
-            reshaped_line,
+            line,
             font=fonts["working_hours"],
             fill=(255, 255, 255)
         )
@@ -338,11 +299,9 @@ def create_image_for_tether_offer():
     working_hours_lines = working_hours_text.split('\n')
     working_hours_y = 2200
     for i, line in enumerate(working_hours_lines):
-        # Reshape Persian text for proper RTL display
-        reshaped_line = _reshape_farsi_text(line)
         draw.text(
             (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
-            reshaped_line,
+            line,
             font=fonts["working_hours"],
             fill=(255, 255, 255)
         )

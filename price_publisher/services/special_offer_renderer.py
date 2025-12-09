@@ -11,15 +11,6 @@ from django.conf import settings
 from django.utils import timezone
 from PIL import Image, ImageDraw, ImageFont
 
-try:
-    import arabic_reshaper
-    from bidi.algorithm import get_display
-    RTL_SUPPORT = True
-except ImportError:
-    RTL_SUPPORT = False
-    arabic_reshaper = None
-    get_display = None
-
 from price_publisher.services.image_renderer import RenderedPriceImage
 
 STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
@@ -266,14 +257,12 @@ def render_special_offer_board(
     working_hours_font = fonts.get("working_hours")
     if working_hours_font:
         for i, line in enumerate(working_hours_lines):
-            # Reshape Persian text for proper RTL display
-            reshaped_line = _reshape_farsi_text(line)
             draw_ctx.text(
                 (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
-                reshaped_line,
+                line,
                 font=working_hours_font,
                 fill=(255, 255, 255)
-            )
+    )
 
     buffer = io.BytesIO()
     buffer.name = template.background
@@ -332,20 +321,15 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, timestamp):
         f"{jalali.day} {_farsi_month(jalali.month)} {jalali.year}"
     )
 
-    # Reshape Farsi date for proper RTL display
-    farsi_date = _reshape_farsi_text(farsi_date)
     draw_ctx.text(
         OFFER_TEXT_POSITIONS["farsi_date"],
         farsi_date,
         font=fonts["farsi_date"],
         fill="white",
     )
-    farsi_weekday = FARSI_WEEKDAYS.get(localized.strftime("%A"), "")
-    # Reshape Farsi weekday for proper RTL display
-    farsi_weekday = _reshape_farsi_text(farsi_weekday)
     draw_ctx.text(
         OFFER_TEXT_POSITIONS["farsi_weekday"],
-        farsi_weekday,
+        FARSI_WEEKDAYS.get(localized.strftime("%A"), ""),
         font=fonts["farsi_weekday"],
         fill="white",
     )
@@ -397,27 +381,6 @@ def _extract_timestamp(price_history):
     return getattr(price_history, "updated_at", None) or getattr(
         price_history, "created_at", None
     )
-
-
-def _reshape_farsi_text(text: str) -> str:
-    """
-    Reshape Persian/Farsi text for proper RTL display in images.
-    Works correctly on all operating systems (Windows, Linux, macOS).
-    """
-    if not text:
-        return text
-    
-    if RTL_SUPPORT and arabic_reshaper and get_display:
-        try:
-            # Reshape Arabic/Persian characters
-            reshaped_text = arabic_reshaper.reshape(text)
-            # Apply bidirectional algorithm for proper display
-            bidi_text = get_display(reshaped_text)
-            return bidi_text
-        except Exception:
-            # Fallback to original text if reshaping fails
-            return text
-    return text
 
 
 def _to_farsi_digits(value: str) -> str:

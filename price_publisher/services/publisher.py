@@ -587,14 +587,14 @@ class PricePublisherService:
             )
         else:
             # Return only description part without title
-            caption = (
-                f"{contact_section}\n\n"
-                f"📍 <b>آدرس دفتر:</b>\n"
-                f"<a href=\"{office_map_url}\">{OFFICE_ADDRESS}</a>\n\n"
+        caption = (
+            f"{contact_section}\n\n"
+            f"📍 <b>آدرس دفتر:</b>\n"
+            f"<a href=\"{office_map_url}\">{OFFICE_ADDRESS}</a>\n\n"
                 f"🕐 <b>ساعات کاری:</b>\n"
                 f"دوشنبه تا شنبه: ۹:۳۰ صبح تا ۵:۰۰ عصر\n"
                 f"یکشنبه: تعطیل"
-            )
+        )
         
         return caption
     
