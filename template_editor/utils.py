@@ -9,11 +9,24 @@ from django.conf import settings
 from django.utils.text import slugify
 import os
 
+# Import reshape function for Persian text
+try:
+    from price_publisher.services.legacy_category_renderer import _reshape_farsi_text
+except ImportError:
+    # Fallback if import fails
+    def _reshape_farsi_text(text: str) -> str:
+        return text
+
 logger = logging.getLogger(__name__)
 
-# Default font candidates
+# Default font candidates - prioritize Persian fonts
+STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
+FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", STATIC_ROOT_DIR / "fonts"))
+
 DEFAULT_FONT_CANDIDATES = (
     getattr(settings, "TEMPLATE_EDITOR_DEFAULT_FONT", None),
+    str(FONT_ROOT / "YekanBakh.ttf"),  # Persian font
+    str(FONT_ROOT / "Morabba.ttf"),    # Persian font
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
     "arial.ttf",
@@ -26,13 +39,17 @@ def _get_font(size: int, weight: str = 'normal') -> ImageFont.ImageFont:
         if not path:
             continue
         try:
+            # Check if path exists
+            if not Path(path).exists():
+                continue
             font = ImageFont.truetype(path, size=size)
             # Note: PIL doesn't directly support font weight, but we can use different font files
             # For now, we'll use the same font regardless of weight
             return font
-        except (OSError, IOError):
+        except (OSError, IOError) as e:
+            logger.debug(f"Failed to load font '{path}': {e}")
             continue
-    logger.debug("Falling back to default bitmap font.")
+    logger.warning("Falling back to default bitmap font. Persian text may not display correctly.")
     return ImageFont.load_default()
 
 
@@ -160,11 +177,25 @@ def render_template(template_obj, dynamic_data_dict: Dict[str, Any]) -> Image.Im
                 x = x + max_width - text_width
         
         # Check if text is RTL
-        direction = "rtl" if _is_rtl(str(text_value)) else None
+        is_rtl = _is_rtl(str(text_value))
+        direction = "rtl" if is_rtl else None
+        
+        # Reshape Persian text for proper RTL display
+        text_to_draw = str(text_value)
+        if is_rtl:
+            try:
+                reshaped = _reshape_farsi_text(text_to_draw)
+                # Only use reshaped text if it's not empty
+                if reshaped and reshaped.strip():
+                    text_to_draw = reshaped
+            except Exception as e:
+                # If reshape fails, use original text
+                logger.warning(f"Failed to reshape Farsi text: {e}. Using original text.")
+                pass
         
         # Draw text with wrapping if max_width is specified
         if max_width:
-            lines = _wrap_text(str(text_value), font, max_width, draw)
+            lines = _wrap_text(text_to_draw, font, max_width, draw)
             try:
                 line_height = font.getbbox("Ay")[3]
             except AttributeError:  # Pillow < 8.0 fallback
@@ -201,7 +232,7 @@ def render_template(template_obj, dynamic_data_dict: Dict[str, Any]) -> Image.Im
             shadow_pos = (x + shadow_offset, y + shadow_offset)
             draw.text(
                 shadow_pos,
-                str(text_value),
+                text_to_draw,
                 font=font,
                 fill=(0, 0, 0, 192),
                 direction=direction,
@@ -210,7 +241,7 @@ def render_template(template_obj, dynamic_data_dict: Dict[str, Any]) -> Image.Im
             stroke_width = max(size // 14, 1)
             draw.text(
                 (x, y),
-                str(text_value),
+                text_to_draw,
                 font=font,
                 fill=color_rgb,
                 stroke_width=stroke_width,

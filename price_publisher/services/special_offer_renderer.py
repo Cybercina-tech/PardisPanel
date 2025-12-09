@@ -12,6 +12,7 @@ from django.utils import timezone
 from PIL import Image, ImageDraw, ImageFont
 
 from price_publisher.services.image_renderer import RenderedPriceImage
+from price_publisher.services.legacy_category_renderer import _reshape_farsi_text
 
 STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
 IMAGE_ROOT = STATIC_ROOT_DIR / "img"
@@ -257,12 +258,14 @@ def render_special_offer_board(
     working_hours_font = fonts.get("working_hours")
     if working_hours_font:
         for i, line in enumerate(working_hours_lines):
+            # Reshape Persian text for proper RTL display
+            reshaped_line = _reshape_farsi_text(line)
             draw_ctx.text(
                 (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
-                line,
+                reshaped_line,
                 font=working_hours_font,
                 fill=(255, 255, 255)
-    )
+            )
 
     buffer = io.BytesIO()
     buffer.name = template.background
@@ -320,6 +323,8 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, timestamp):
     farsi_date = _to_farsi_digits(
         f"{jalali.day} {_farsi_month(jalali.month)} {jalali.year}"
     )
+    # Reshape Persian date for proper RTL display
+    farsi_date = _reshape_farsi_text(farsi_date)
 
     draw_ctx.text(
         OFFER_TEXT_POSITIONS["farsi_date"],
@@ -327,9 +332,13 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, timestamp):
         font=fonts["farsi_date"],
         fill="white",
     )
+    
+    farsi_weekday = FARSI_WEEKDAYS.get(localized.strftime("%A"), "")
+    # Reshape Persian weekday for proper RTL display
+    farsi_weekday = _reshape_farsi_text(farsi_weekday)
     draw_ctx.text(
         OFFER_TEXT_POSITIONS["farsi_weekday"],
-        FARSI_WEEKDAYS.get(localized.strftime("%A"), ""),
+        farsi_weekday,
         font=fonts["farsi_weekday"],
         fill="white",
     )
@@ -352,13 +361,14 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, timestamp):
 def _format_price_value(price_history, *, special_price_type=None) -> str:
     notes = (getattr(price_history, "notes", "") or "").strip().lower()
     if any(token in notes for token in ("call", "تماس")):
-        return "تماس بگیرید"
+        return _reshape_farsi_text("تماس بگیرید")
     if any(token in notes for token in ("stop", "توقف")):
         trade_owner = special_price_type or getattr(
             price_history, "special_price_type", None
         )
         trade = getattr(trade_owner, "trade_type", "") or ""
-        return "توقف خرید" if trade.lower() == "buy" else "توقف فروش"
+        text = "توقف خرید" if trade.lower() == "buy" else "توقف فروش"
+        return _reshape_farsi_text(text)
 
     value = getattr(price_history, "price", None)
     if value is None:

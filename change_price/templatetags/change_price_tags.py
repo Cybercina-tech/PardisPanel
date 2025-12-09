@@ -59,7 +59,7 @@ def to_jalali(value, format_string="%Y/%m/%d %H:%M"):
             value_tehran = utc_tz.localize(value).astimezone(tehran_tz)
         
         # Convert to Jalali
-        jalali_date = jdatetime.datetime.fromgregorian(datetime=value_tehran)
+        jalali_date = jdatetime.datetime.fromgregorian(value_tehran)
         
         # Format the Jalali date
         # Persian month names

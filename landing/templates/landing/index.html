@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="mr. sarafi - Automated price-posting and Telegram management system for cryptocurrency exchanges. Premium exchange automation solution.">
+    <meta name="keywords" content="cryptocurrency exchange, price automation, telegram bot, exchange management, automated trading, price posting, آقای صرافی">
+    <meta name="author" content="mr. sarafi">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="mr. sarafi - Premium Exchange Management System">
+    <meta property="og:description" content="Automate your cryptocurrency exchange operations with real-time price updates and Telegram integration.">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="mr. sarafi - Premium Exchange Management System">
+    <meta property="twitter:description" content="Automate your cryptocurrency exchange operations with real-time price updates and Telegram integration.">
+    
+    <title>mr. sarafi | آقای صرافی - Premium Exchange Automation</title>
+    
+    <!-- Stylesheet -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'landing/css/style.css' %}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="logo">
+                    <a href="#home" class="logo-link">
+                        <span class="logo-english">mr. sarafi</span>
+                        <span class="logo-persian">آقای صرافی</span>
+                    </a>
+                </div>
+                <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="nav-menu" id="navMenu">
+                    <li><a href="#features" class="nav-link" data-en="Features" data-fa="ویژگی‌ها">Features</a></li>
+                    <li><a href="#pricing" class="nav-link" data-en="Pricing" data-fa="قیمت‌گذاری">Pricing</a></li>
+                    <li><a href="#faq" class="nav-link" data-en="FAQ" data-fa="سوالات متداول">FAQ</a></li>
+                    <li><a href="#contact" class="nav-link" data-en="Contact" data-fa="تماس">Contact</a></li>
+                    <li>
+                        <button class="language-toggle" id="languageToggle" aria-label="Switch language">
+                            <span class="lang-text" data-en="EN" data-fa="FA">EN</span>
+                        </button>
+                    </li>
+                    <li><a href="#contact" class="nav-link btn-primary" data-en="Get Started" data-fa="شروع کنید">Get Started</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="lang-en">Automate Your Exchange Operations</span>
+                    <span class="lang-fa">عملیات صرافی خود را خودکار کنید</span>
+                </h1>
+                <p class="hero-subtitle">
+                    <span class="lang-en">Real-time price updates, automated Telegram posts, and error-free management. Save hours every day with our premium exchange management system.</span>
+                    <span class="lang-fa">به‌روزرسانی قیمت در زمان واقعی، ارسال خودکار به تلگرام و مدیریت بدون خطا. هر روز ساعت‌ها صرفه‌جویی کنید با سیستم مدیریت صرافی ما.</span>
+                </p>
+                <div class="hero-cta">
+                    <a href="#contact" class="btn btn-primary btn-large" data-en="Start Free Trial" data-fa="شروع آزمایشی رایگان">Start Free Trial</a>
+                    <a href="#demo" class="btn btn-secondary btn-large" data-en="Watch Demo" data-fa="مشاهده دمو">Watch Demo</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label" data-en="Automation" data-fa="خودکارسازی">Automation</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">99.9%</div>
+                        <div class="stat-label" data-en="Uptime" data-fa="در دسترس بودن">Uptime</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">10x</div>
+                        <div class="stat-label" data-en="Time Saved" data-fa="صرفه‌جویی زمان">Time Saved</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem & Solution Section -->
+    <section id="problem-solution" class="problem-solution">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-en">The Problem Exchange Owners Face</span>
+                    <span class="lang-fa">مشکلات صرافان</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-en">And how we solve it</span>
+                    <span class="lang-fa">و راه حل ما</span>
+                </p>
+            </div>
+            
+            <div class="problem-solution-grid">
+                <!-- Problem Column -->
+                <div class="problem-column">
+                    <h3 class="column-title">
+                        <span class="lang-en">❌ Manual Process</span>
+                        <span class="lang-fa">❌ فرآیند دستی</span>
+                    </h3>
+                    <ul class="problem-list">
+                        <li class="lang-en">Manual price updates are time-consuming and error-prone</li>
+                        <li class="lang-fa">به‌روزرسانی دستی قیمت‌ها زمان‌بر و مستعد خطا است</li>
+                        <li class="lang-en">Delays in posting prices lose potential customers</li>
+                        <li class="lang-fa">تأخیر در انتشار قیمت‌ها مشتریان بالقوه را از دست می‌دهد</li>
+                        <li class="lang-en">Human errors lead to incorrect pricing and customer complaints</li>
+                        <li class="lang-fa">خطاهای انسانی منجر به قیمت‌گذاری نادرست و شکایات مشتریان می‌شود</li>
+                        <li class="lang-en">Staff must be available 24/7 to update prices</li>
+                        <li class="lang-fa">کارکنان باید 24/7 در دسترس باشند تا قیمت‌ها را به‌روز کنند</li>
+                        <li class="lang-en">No centralized system for managing multiple channels</li>
+                        <li class="lang-fa">سیستم متمرکز برای مدیریت چندین کانال وجود ندارد</li>
+                    </ul>
+                </div>
+                
+                <!-- Solution Column -->
+                <div class="solution-column">
+                    <h3 class="column-title">
+                        <span class="lang-en">✅ Our Solution</span>
+                        <span class="lang-fa">✅ راه حل ما</span>
+                    </h3>
+                    <ul class="solution-list">
+                        <li>
+                            <span class="lang-en"><strong>Automated Updates:</strong> Real-time price synchronization across all platforms</span>
+                            <span class="lang-fa"><strong>به‌روزرسانی خودکار:</strong> همگام‌سازی قیمت در زمان واقعی در تمام پلتفرم‌ها</span>
+                        </li>
+                        <li>
+                            <span class="lang-en"><strong>Instant Posting:</strong> Prices posted to Telegram automatically within seconds</span>
+                            <span class="lang-fa"><strong>انتشار فوری:</strong> قیمت‌ها در عرض چند ثانیه به صورت خودکار در تلگرام منتشر می‌شوند</span>
+                        </li>
+                        <li>
+                            <span class="lang-en"><strong>Error Prevention:</strong> Built-in validation ensures accurate pricing every time</span>
+                            <span class="lang-fa"><strong>جلوگیری از خطا:</strong> اعتبارسنجی داخلی اطمینان از قیمت‌گذاری دقیق در هر زمان</span>
+                        </li>
+                        <li>
+                            <span class="lang-en"><strong>24/7 Operation:</strong> Your digital assistant never sleeps</span>
+                            <span class="lang-fa"><strong>عملیات 24/7:</strong> دستیار دیجیتال شما هرگز نمی‌خوابد</span>
+                        </li>
+                        <li>
+                            <span class="lang-en"><strong>Unified Dashboard:</strong> Manage everything from one central control panel</span>
+                            <span class="lang-fa"><strong>داشبورد یکپارچه:</strong> همه چیز را از یک پنل کنترل مرکزی مدیریت کنید</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-en">Powerful Features for Modern Exchanges</span>
+                    <span class="lang-fa">ویژگی‌های قدرتمند برای صرافی‌های مدرن</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-en">Everything you need to run your exchange efficiently</span>
+                    <span class="lang-fa">همه آنچه برای اجرای کارآمد صرافی خود نیاز دارید</span>
+                </p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">
+                        <span class="lang-en">Real-Time Price Updates</span>
+                        <span class="lang-fa">به‌روزرسانی قیمت در زمان واقعی</span>
+                    </h3>
+                    <p class="feature-description">
+                        <span class="lang-en">Automatically sync and update prices across all your channels in real-time. No delays, no manual work.</span>
+                        <span class="lang-fa">به صورت خودکار قیمت‌ها را در تمام کانال‌های شما در زمان واقعی همگام‌سازی و به‌روزرسانی کنید. بدون تأخیر، بدون کار دستی.</span>
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3 class="feature-title">
+                        <span class="lang-en">Telegram Integration</span>
+                        <span class="lang-fa">ادغام تلگرام</span>
+                    </h3>
+                    <p class="feature-description">
+                        <span class="lang-en">Automatically post price updates to your Telegram channels. Keep your customers informed instantly.</span>
+                        <span class="lang-fa">به صورت خودکار به‌روزرسانی قیمت‌ها را در کانال‌های تلگرام خود منتشر کنید. مشتریان خود را فوراً مطلع نگه دارید.</span>
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3 class="feature-title">
+                        <span class="lang-en">Error-Free Management</span>
+                        <span class="lang-fa">مدیریت بدون خطا</span>
+                    </h3>
+                    <p class="feature-description">
+                        <span class="lang-en">Built-in validation and error checking ensure accurate pricing. Prevent costly mistakes before they happen.</span>
+                        <span class="lang-fa">اعتبارسنجی و بررسی خطای داخلی اطمینان از قیمت‌گذاری دقیق را فراهم می‌کند. از اشتباهات پرهزینه قبل از وقوع جلوگیری کنید.</span>
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3 class="feature-title">
+                        <span class="lang-en">Time & Cost Savings</span>
+                        <span class="lang-fa">صرفه‌جویی در زمان و هزینه</span>
+                    </h3>
+                    <p class="feature-description">
+                        <span class="lang-en">Reduce operational costs by up to 70%. Free your staff to focus on growth instead of manual tasks.</span>
+                        <span class="lang-fa">هزینه‌های عملیاتی را تا 70٪ کاهش دهید. کارکنان خود را برای تمرکز بر رشد به جای کارهای دستی آزاد کنید.</span>
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">
+                        <span class="lang-en">24/7 Digital Assistant</span>
+                        <span class="lang-fa">دستیار دیجیتال 24/7</span>
+                    </h3>
+                    <p class="feature-description">
+                        <span class="lang-en">Your exchange runs smoothly around the clock. No need for night shifts or weekend coverage.</span>
+                        <span class="lang-fa">صرافی شما به صورت شبانه‌روزی به راحتی کار می‌کند. نیازی به شیفت شب یا پوشش آخر هفته نیست.</span>
+                    </p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 class="feature-title">
+                        <span class="lang-en">Analytics & Insights</span>
+                        <span class="lang-fa">تحلیل و بینش</span>
+                    </h3>
+                    <p class="feature-description">
+                        <span class="lang-en">Track performance, monitor trends, and make data-driven decisions with comprehensive analytics.</span>
+                        <span class="lang-fa">عملکرد را ردیابی کنید، روندها را نظارت کنید و با تحلیل جامع تصمیمات مبتنی بر داده بگیرید.</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo / Preview Section -->
+    <section id="demo" class="demo">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-en">See It In Action</span>
+                    <span class="lang-fa">در عمل ببینید</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-en">Watch how easy it is to manage your exchange</span>
+                    <span class="lang-fa">ببینید چقدر مدیریت صرافی شما آسان است</span>
+                </p>
+            </div>
+            
+            <div class="demo-content">
+                <div class="demo-placeholder">
+                    <div class="demo-image-wrapper">
+                        <img src="{% static 'landing/images/demo-screenshot.png' %}" alt="mr. sarafi Dashboard Preview" class="demo-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="demo-placeholder-content" style="display: none;">
+                            <p>📸 Screenshot Placeholder</p>
+                            <p class="demo-placeholder-text" data-en="Replace with actual dashboard screenshot" data-fa="با تصویر واقعی داشبورد جایگزین کنید">Replace with actual dashboard screenshot</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="demo-features-list">
+                    <div class="demo-feature-item">
+                        <span class="demo-check">✓</span>
+                        <span class="lang-en">Intuitive dashboard for easy navigation</span>
+                        <span class="lang-fa">داشبورد بصری برای ناوبری آسان</span>
+                    </div>
+                    <div class="demo-feature-item">
+                        <span class="demo-check">✓</span>
+                        <span class="lang-en">Real-time price monitoring and updates</span>
+                        <span class="lang-fa">نظارت و به‌روزرسانی قیمت در زمان واقعی</span>
+                    </div>
+                    <div class="demo-feature-item">
+                        <span class="demo-check">✓</span>
+                        <span class="lang-en">Automated Telegram channel management</span>
+                        <span class="lang-fa">مدیریت خودکار کانال تلگرام</span>
+                    </div>
+                    <div class="demo-feature-item">
+                        <span class="demo-check">✓</span>
+                        <span class="lang-en">Customizable templates and branding</span>
+                        <span class="lang-fa">قالب‌ها و برندسازی قابل تنظیم</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-en">Simple, Transparent Pricing</span>
+                    <span class="lang-fa">قیمت‌گذاری ساده و شفاف</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-en">Choose the plan that fits your exchange</span>
+                    <span class="lang-fa">پلانی را انتخاب کنید که با صرافی شما سازگار است</span>
+                </p>
+            </div>
+            
+            <div class="pricing-grid">
+                <!-- Basic Plan -->
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">
+                            <span class="lang-en">Basic</span>
+                            <span class="lang-fa">پایه</span>
+                        </h3>
+                        <div class="pricing-price">
+                            <span class="price-amount">$99</span>
+                            <span class="price-period lang-en">/month</span>
+                            <span class="price-period lang-fa">/ماه</span>
+                        </div>
+                        <p class="pricing-description">
+                            <span class="lang-en">Perfect for small exchanges getting started</span>
+                            <span class="lang-fa">عالی برای صرافی‌های کوچک که تازه شروع کرده‌اند</span>
+                        </p>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="lang-en">Up to 10 price types</li>
+                        <li class="lang-fa">تا 10 نوع قیمت</li>
+                        <li class="lang-en">1 Telegram channel</li>
+                        <li class="lang-fa">1 کانال تلگرام</li>
+                        <li class="lang-en">Basic automation</li>
+                        <li class="lang-fa">خودکارسازی پایه</li>
+                        <li class="lang-en">Email support</li>
+                        <li class="lang-fa">پشتیبانی ایمیل</li>
+                        <li class="lang-en">Standard templates</li>
+                        <li class="lang-fa">قالب‌های استاندارد</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-outline" data-en="Get Started" data-fa="شروع کنید">Get Started</a>
+                </div>
+                
+                <!-- Pro Plan (Featured) -->
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">
+                        <span class="lang-en">Most Popular</span>
+                        <span class="lang-fa">محبوب‌ترین</span>
+                    </div>
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">
+                            <span class="lang-en">Pro</span>
+                            <span class="lang-fa">حرفه‌ای</span>
+                        </h3>
+                        <div class="pricing-price">
+                            <span class="price-amount">$249</span>
+                            <span class="price-period lang-en">/month</span>
+                            <span class="price-period lang-fa">/ماه</span>
+                        </div>
+                        <p class="pricing-description">
+                            <span class="lang-en">For growing exchanges that need more power</span>
+                            <span class="lang-fa">برای صرافی‌های در حال رشد که به قدرت بیشتری نیاز دارند</span>
+                        </p>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="lang-en">Unlimited price types</li>
+                        <li class="lang-fa">نوع قیمت نامحدود</li>
+                        <li class="lang-en">Up to 5 Telegram channels</li>
+                        <li class="lang-fa">تا 5 کانال تلگرام</li>
+                        <li class="lang-en">Advanced automation</li>
+                        <li class="lang-fa">خودکارسازی پیشرفته</li>
+                        <li class="lang-en">Priority support</li>
+                        <li class="lang-fa">پشتیبانی اولویت‌دار</li>
+                        <li class="lang-en">Custom templates</li>
+                        <li class="lang-fa">قالب‌های سفارشی</li>
+                        <li class="lang-en">Analytics dashboard</li>
+                        <li class="lang-fa">داشبورد تحلیل</li>
+                        <li class="lang-en">API access</li>
+                        <li class="lang-fa">دسترسی API</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-primary" data-en="Get Started" data-fa="شروع کنید">Get Started</a>
+                </div>
+                
+                <!-- Enterprise Plan -->
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3 class="pricing-name">
+                            <span class="lang-en">Enterprise</span>
+                            <span class="lang-fa">سازمانی</span>
+                        </h3>
+                        <div class="pricing-price">
+                            <span class="price-amount lang-en">Custom</span>
+                            <span class="price-amount lang-fa">سفارشی</span>
+                            <span class="price-period"></span>
+                        </div>
+                        <p class="pricing-description">
+                            <span class="lang-en">For large exchanges with specific needs</span>
+                            <span class="lang-fa">برای صرافی‌های بزرگ با نیازهای خاص</span>
+                        </p>
+                    </div>
+                    <ul class="pricing-features">
+                        <li class="lang-en">Everything in Pro</li>
+                        <li class="lang-fa">همه چیز در نسخه حرفه‌ای</li>
+                        <li class="lang-en">Unlimited channels</li>
+                        <li class="lang-fa">کانال‌های نامحدود</li>
+                        <li class="lang-en">White-label solution</li>
+                        <li class="lang-fa">راه‌حل برند سفید</li>
+                        <li class="lang-en">Dedicated support</li>
+                        <li class="lang-fa">پشتیبانی اختصاصی</li>
+                        <li class="lang-en">Custom integrations</li>
+                        <li class="lang-fa">ادغام‌های سفارشی</li>
+                        <li class="lang-en">SLA guarantee</li>
+                        <li class="lang-fa">ضمانت SLA</li>
+                        <li class="lang-en">On-premise option</li>
+                        <li class="lang-fa">گزینه داخلی</li>
+                    </ul>
+                    <a href="#contact" class="btn btn-outline" data-en="Contact Sales" data-fa="تماس با فروش">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-en">Trusted by Leading Exchanges</span>
+                    <span class="lang-fa">مورد اعتماد صرافی‌های پیشرو</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-en">Join hundreds of exchanges already using mr. sarafi</span>
+                    <span class="lang-fa">به صدها صرافی که از آقای صرافی استفاده می‌کنند بپیوندید</span>
+                </p>
+            </div>
+            
+            <div class="trusted-logos">
+                <div class="logo-item" data-en="Client Logo 1" data-fa="لوگوی مشتری 1">Client Logo 1</div>
+                <div class="logo-item" data-en="Client Logo 2" data-fa="لوگوی مشتری 2">Client Logo 2</div>
+                <div class="logo-item" data-en="Client Logo 3" data-fa="لوگوی مشتری 3">Client Logo 3</div>
+                <div class="logo-item" data-en="Client Logo 4" data-fa="لوگوی مشتری 4">Client Logo 4</div>
+                <div class="logo-item" data-en="Client Logo 5" data-fa="لوگوی مشتری 5">Client Logo 5</div>
+            </div>
+            
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p class="testimonial-text">
+                            <span class="lang-en">"mr. sarafi has completely transformed our operations. We've reduced manual work by 90% and eliminated pricing errors."</span>
+                            <span class="lang-fa">"آقای صرافی عملیات ما را کاملاً متحول کرده است. کار دستی را 90٪ کاهش داده‌ایم و خطاهای قیمت‌گذاری را حذف کرده‌ایم."</span>
+                        </p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👤</div>
+                        <div class="author-info">
+                            <div class="author-name">John Smith</div>
+                            <div class="author-role lang-en">CEO, CryptoExchange</div>
+                            <div class="author-role lang-fa">مدیر عامل، CryptoExchange</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p class="testimonial-text">
+                            <span class="lang-en">"The Telegram integration is a game-changer. Our customers always have the latest prices, and we don't have to lift a finger."</span>
+                            <span class="lang-fa">"ادغام تلگرام یک تغییردهنده بازی است. مشتریان ما همیشه آخرین قیمت‌ها را دارند و ما نیازی به انجام کاری نداریم."</span>
+                        </p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👤</div>
+                        <div class="author-info">
+                            <div class="author-name">Sarah Johnson</div>
+                            <div class="author-role lang-en">Operations Manager, TradeHub</div>
+                            <div class="author-role lang-fa">مدیر عملیات، TradeHub</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p class="testimonial-text">
+                            <span class="lang-en">"Best investment we've made. The ROI was clear within the first month. Highly recommend!"</span>
+                            <span class="lang-fa">"بهترین سرمایه‌گذاری که انجام داده‌ایم. بازگشت سرمایه در ماه اول مشخص بود. به شدت توصیه می‌کنم!"</span>
+                        </p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">👤</div>
+                        <div class="author-info">
+                            <div class="author-name">Michael Chen</div>
+                            <div class="author-role lang-en">Founder, DigitalExchange</div>
+                            <div class="author-role lang-fa">بنیان‌گذار، DigitalExchange</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="lang-en">Frequently Asked Questions</span>
+                    <span class="lang-fa">سوالات متداول</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-en">Everything you need to know</span>
+                    <span class="lang-fa">همه آنچه باید بدانید</span>
+                </p>
+            </div>
+            
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>
+                            <span class="lang-en">How quickly can I get started?</span>
+                            <span class="lang-fa">چقدر سریع می‌توانم شروع کنم؟</span>
+                        </span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>
+                            <span class="lang-en">You can be up and running in less than 24 hours. Our onboarding process is simple and we provide step-by-step guidance to get your exchange connected and automated.</span>
+                            <span class="lang-fa">می‌توانید در کمتر از 24 ساعت راه‌اندازی شوید. فرآیند راه‌اندازی ما ساده است و راهنمایی گام به گام برای اتصال و خودکارسازی صرافی شما ارائه می‌دهیم.</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>
+                            <span class="lang-en">Do I need technical knowledge to use mr. sarafi?</span>
+                            <span class="lang-fa">آیا برای استفاده از آقای صرافی به دانش فنی نیاز دارم؟</span>
+                        </span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>
+                            <span class="lang-en">Not at all! Our intuitive dashboard is designed for non-technical users. However, if you need advanced customization, our team is here to help.</span>
+                            <span class="lang-fa">اصلاً! داشبورد بصری ما برای کاربران غیرفنی طراحی شده است. با این حال، اگر به سفارشی‌سازی پیشرفته نیاز دارید، تیم ما اینجاست تا کمک کند.</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>
+                            <span class="lang-en">Can I integrate with my existing systems?</span>
+                            <span class="lang-fa">آیا می‌توانم با سیستم‌های موجود خود ادغام کنم؟</span>
+                        </span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>
+                            <span class="lang-en">Yes! mr. sarafi offers API access (Pro and Enterprise plans) and can integrate with most exchange management systems. Contact us to discuss your specific integration needs.</span>
+                            <span class="lang-fa">بله! آقای صرافی دسترسی API (پلان‌های حرفه‌ای و سازمانی) ارائه می‌دهد و می‌تواند با اکثر سیستم‌های مدیریت صرافی ادغام شود. با ما تماس بگیرید تا در مورد نیازهای ادغام خاص خود صحبت کنیم.</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>
+                            <span class="lang-en">What happens if there's a pricing error?</span>
+                            <span class="lang-fa">اگر خطای قیمت‌گذاری وجود داشته باشد چه می‌شود؟</span>
+                        </span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>
+                            <span class="lang-en">Our system includes built-in validation and error checking. If an unusual price is detected, the system can automatically pause updates and alert you. You can also set custom price ranges and limits.</span>
+                            <span class="lang-fa">سیستم ما شامل اعتبارسنجی و بررسی خطای داخلی است. اگر قیمت غیرعادی تشخیص داده شود، سیستم می‌تواند به‌طور خودکار به‌روزرسانی‌ها را متوقف کرده و به شما هشدار دهد. همچنین می‌توانید محدوده و محدودیت‌های قیمت سفارشی تنظیم کنید.</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>
+                            <span class="lang-en">Is there a free trial available?</span>
+                            <span class="lang-fa">آیا آزمایش رایگان در دسترس است؟</span>
+                        </span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>
+                            <span class="lang-en">Yes! We offer a 14-day free trial with full access to all features. No credit card required. Start your trial today and see the difference automation makes.</span>
+                            <span class="lang-fa">بله! ما یک آزمایش رایگان 14 روزه با دسترسی کامل به همه ویژگی‌ها ارائه می‌دهیم. نیازی به کارت اعتباری نیست. امروز آزمایش خود را شروع کنید و تفاوت خودکارسازی را ببینید.</span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <button class="faq-question" aria-expanded="false">
+                        <span>
+                            <span class="lang-en">How secure is my data?</span>
+                            <span class="lang-fa">داده‌های من چقدر امن است؟</span>
+                        </span>
+                        <span class="faq-icon">+</span>
+                    </button>
+                    <div class="faq-answer">
+                        <p>
+                            <span class="lang-en">Security is our top priority. We use industry-standard encryption, regular security audits, and comply with data protection regulations. Enterprise customers can also choose on-premise deployment.</span>
+                            <span class="lang-fa">امنیت اولویت اصلی ماست. ما از رمزگذاری استاندارد صنعت، ممیزی‌های امنیتی منظم استفاده می‌کنیم و با مقررات حفاظت از داده‌ها مطابقت داریم. مشتریان سازمانی همچنین می‌توانند استقرار داخلی را انتخاب کنند.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section id="contact" class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">
+                    <span class="lang-en">Ready to Automate Your Exchange?</span>
+                    <span class="lang-fa">آماده خودکارسازی صرافی خود هستید؟</span>
+                </h2>
+                <p class="cta-subtitle">
+                    <span class="lang-en">Join hundreds of exchanges already saving time and reducing errors with mr. sarafi</span>
+                    <span class="lang-fa">به صدها صرافی که در حال حاضر با آقای صرافی در زمان صرفه‌جویی می‌کنند و خطاها را کاهش می‌دهند بپیوندید</span>
+                </p>
+                
+                <div class="cta-buttons">
+                    <!-- REPLACE: Update these links with your actual contact methods -->
+                    <a href="https://t.me/your_telegram_username" class="btn btn-primary btn-large" target="_blank" rel="noopener">
+                        <span class="lang-en">Contact on Telegram</span>
+                        <span class="lang-fa">تماس در تلگرام</span>
+                    </a>
+                    <a href="mailto:support@mrsarafi.com" class="btn btn-secondary btn-large">
+                        <span class="lang-en">Email Us</span>
+                        <span class="lang-fa">ایمیل بزنید</span>
+                    </a>
+                </div>
+                
+                <div class="cta-info">
+                    <p>
+                        <span class="lang-en">📞 Need help? We're here for you</span>
+                        <span class="lang-fa">📞 به کمک نیاز دارید؟ ما اینجا هستیم</span>
+                    </p>
+                    <p>
+                        <span class="lang-en">Start your free 14-day trial today • No credit card required</span>
+                        <span class="lang-fa">امروز آزمایش رایگان 14 روزه خود را شروع کنید • نیازی به کارت اعتباری نیست</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">
+                        <span class="lang-en">mr. sarafi</span>
+                        <span class="lang-fa">آقای صرافی</span>
+                    </h4>
+                    <p class="footer-description">
+                        <span class="lang-en">Premium automated exchange management system for modern cryptocurrency exchanges.</span>
+                        <span class="lang-fa">سیستم مدیریت صرافی خودکار ممتاز برای صرافی‌های رمزنگاری مدرن.</span>
+                    </p>
+                    <!-- REPLACE: Add your social media links -->
+                    <div class="footer-social">
+                        <a href="#" class="social-link" aria-label="Twitter">
+                            <span class="lang-en">Twitter</span>
+                            <span class="lang-fa">توییتر</span>
+                        </a>
+                        <a href="#" class="social-link" aria-label="LinkedIn">
+                            <span class="lang-en">LinkedIn</span>
+                            <span class="lang-fa">لینکدین</span>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Telegram">
+                            <span class="lang-en">Telegram</span>
+                            <span class="lang-fa">تلگرام</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="footer-title">
+                        <span class="lang-en">Product</span>
+                        <span class="lang-fa">محصول</span>
+                    </h4>
+                    <ul class="footer-links">
+                        <li><a href="#features" class="lang-en">Features</a><a href="#features" class="lang-fa">ویژگی‌ها</a></li>
+                        <li><a href="#pricing" class="lang-en">Pricing</a><a href="#pricing" class="lang-fa">قیمت‌گذاری</a></li>
+                        <li><a href="#demo" class="lang-en">Demo</a><a href="#demo" class="lang-fa">دمو</a></li>
+                        <li><a href="#faq" class="lang-en">FAQ</a><a href="#faq" class="lang-fa">سوالات متداول</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="footer-title">
+                        <span class="lang-en">Company</span>
+                        <span class="lang-fa">شرکت</span>
+                    </h4>
+                    <ul class="footer-links">
+                        <li><a href="#contact" class="lang-en">Contact</a><a href="#contact" class="lang-fa">تماس</a></li>
+                        <li><a href="#" class="lang-en">About</a><a href="#" class="lang-fa">درباره</a></li>
+                        <li><a href="#" class="lang-en">Blog</a><a href="#" class="lang-fa">وبلاگ</a></li>
+                        <li><a href="#" class="lang-en">Careers</a><a href="#" class="lang-fa">فرصت‌های شغلی</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="footer-title">
+                        <span class="lang-en">Legal</span>
+                        <span class="lang-fa">قانونی</span>
+                    </h4>
+                    <ul class="footer-links">
+                        <li><a href="#" class="lang-en">Privacy Policy</a><a href="#" class="lang-fa">حریم خصوصی</a></li>
+                        <li><a href="#" class="lang-en">Terms of Service</a><a href="#" class="lang-fa">شرایط استفاده</a></li>
+                        <li><a href="#" class="lang-en">Cookie Policy</a><a href="#" class="lang-fa">سیاست کوکی</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>
+                    <span class="lang-en">&copy; 2025 mr. sarafi. All rights reserved.</span>
+                    <span class="lang-fa">© 2025 آقای صرافی. تمامی حقوق محفوظ است.</span>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{% static 'landing/js/main.js' %}"></script>
+</body>
+</html>

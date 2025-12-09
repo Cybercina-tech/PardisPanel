@@ -11,6 +11,7 @@ from django.utils import timezone
 from PIL import Image, ImageDraw, ImageFont
 
 from price_publisher.services.image_renderer import RenderedPriceImage
+from price_publisher.services.legacy_category_renderer import _reshape_farsi_text
 
 STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
 IMAGE_ROOT = STATIC_ROOT_DIR / "img"
@@ -22,11 +23,12 @@ BACKGROUND_RELATIVE_PATH = Path("templates") / "USDT.jpg"
 
 
 OFFER_TEXT_POSITIONS = {
-    # Date fields commented out as requested
-    # "farsi_date": (1900, 250),
-    # "farsi_weekday": (1860, 420),
-    # "english_date": (410, 250),  # Moved slightly to the left
-    # "english_weekday": (580, 420),
+    # Date fields
+    "farsi_date": (1900, 250),
+    "farsi_weekday": (1860, 420),  # Default position
+    "farsi_weekday_tuesday": (615, 435),  # Special position for Tuesday: x=615, y=435
+    "english_date": (410, 250),  # Moved slightly to the left
+    "english_weekday": (580, 420),
     # Updated coordinates for new banner
     "tether_sell_irr": (280, 570),  # فروش تتر به تومن
     "tether_buy_irr": (900, 570),    # خرید تتر به تومن
@@ -36,11 +38,12 @@ OFFER_TEXT_POSITIONS = {
 }
 
 FONT_FILES = {
-    # Date fonts commented out as requested
-    # "farsi_date": ("Morabba.ttf", 115),
-    # "farsi_weekday": ("Morabba.ttf", 86),
-    # "english_date": ("YekanBakh.ttf", 100),
-    # "english_weekday": ("YekanBakh.ttf", 94),  # Reduced by 1 degree
+    # Date fonts
+    "farsi_date": ("Morabba.ttf", 115),
+    "farsi_weekday": ("Morabba.ttf", 86),
+    "farsi_weekday_tuesday": ("Morabba.ttf", 100),  # Size 100 for Tuesday
+    "english_date": ("montsrrat.otf", 100),  # Changed to English font
+    "english_weekday": ("montsrrat.otf", 94),  # Changed to English font
     "english_number": ("montsrrat.otf", 113),  # Reduced by 2 degrees (from 115)
     "tether_price": ("montsrrat.otf", 100),  # English font for Tether prices
     "working_hours": ("Morabba.ttf", 50),  # ساعات کاری
@@ -147,9 +150,9 @@ def render_tether_board(
     draw_ctx = ImageDraw.Draw(image)
     fonts = _load_fonts()
 
-    # Date drawing commented out as requested
-    # now = timezone.localtime(timestamp) if timestamp else timezone.localtime()
-    # _draw_dates(draw_ctx, fonts, now)
+    # Draw dates with current time to ensure accuracy
+    now = timezone.localtime(timezone.now())
+    _draw_dates(draw_ctx, fonts, now)
 
     price_map = _build_price_map(price_items)
     for key in TETHER_LAYOUT_ORDER:
@@ -171,9 +174,11 @@ def render_tether_board(
     working_hours_font = fonts.get("working_hours")
     if working_hours_font:
         for i, line in enumerate(working_hours_lines):
+            # Reshape Persian text for proper RTL display
+            reshaped_line = _reshape_farsi_text(line)
             draw_ctx.text(
                 (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
-                line,
+                reshaped_line,
                 font=working_hours_font,
                 fill=(255, 255, 255)
             )
@@ -208,10 +213,13 @@ def _load_fonts():
 
 
 def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
+    """Draw dates on tether board with correct timestamp and reshape for Persian text."""
     jalali = jdatetime.datetime.fromgregorian(datetime=now)
     farsi_date = _to_farsi_digits(
         f"{jalali.day} {_farsi_month(jalali.month)} {jalali.year}"
     )
+    # Reshape Persian date for proper RTL display
+    farsi_date = _reshape_farsi_text(farsi_date)
     draw_ctx.text(
         OFFER_TEXT_POSITIONS["farsi_date"],
         farsi_date,
@@ -220,26 +228,26 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     )
 
     weekday_en = now.strftime("%A")
+    farsi_weekday = FARSI_WEEKDAYS.get(weekday_en, "")
+    # Reshape Persian weekday for proper RTL display
+    farsi_weekday = _reshape_farsi_text(farsi_weekday)
+    
+    # Use special position and font for Tuesday
+    if weekday_en == "Tuesday":
+        weekday_position = OFFER_TEXT_POSITIONS.get("farsi_weekday_tuesday", OFFER_TEXT_POSITIONS["farsi_weekday"])
+        weekday_font = fonts.get("farsi_weekday_tuesday", fonts["farsi_weekday"])
+    else:
+        weekday_position = OFFER_TEXT_POSITIONS["farsi_weekday"]
+        weekday_font = fonts["farsi_weekday"]
+    
     draw_ctx.text(
-        OFFER_TEXT_POSITIONS["farsi_weekday"],
-        FARSI_WEEKDAYS.get(weekday_en, ""),
-        font=fonts["farsi_weekday"],
+        weekday_position,
+        farsi_weekday,
+        font=weekday_font,
         fill="white",
     )
 
-    eng_date = f"{now.year} {now.strftime('%b')} {now.day}"
-    draw_ctx.text(
-        OFFER_TEXT_POSITIONS["english_date"],
-        _to_english_digits(eng_date),
-        font=fonts["english_number"],
-        fill="white",
-    )
-    draw_ctx.text(
-        OFFER_TEXT_POSITIONS["english_weekday"],
-        weekday_en,
-        font=fonts["english_weekday"],
-        fill="white",
-    )
+    # English dates removed as requested - only Persian dates are shown
 
 
 def _build_price_map(price_items: Iterable[Tuple]) -> dict:
@@ -338,10 +346,11 @@ def _format_history_value(price_history, key: str) -> str:
     notes = (getattr(price_history, "notes", "") or "").strip().lower()
 
     if any(token in notes for token in ("call", "تماس")):
-        return "تماس بگیرید"
+        return _reshape_farsi_text("تماس بگیرید")
 
     if any(token in notes for token in ("stop", "توقف")):
-        return "توقف خرید" if "buy" in key else "توقف فروش"
+        text = "توقف خرید" if "buy" in key else "توقف فروش"
+        return _reshape_farsi_text(text)
 
     if value is None:
         return "—"

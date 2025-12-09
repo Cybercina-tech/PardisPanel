@@ -33,7 +33,7 @@ WEEKDAY_POSITIONS = {
     "Saturday": ((1920, 410), (610, 420)),
     "Sunday": ((1870, 410), (650, 420)),
     "Monday": ((1900, 430), (650, 430)),
-    "Tuesday": ((1870, 405), (640, 415)),
+    "Tuesday": ((1900, 420), (640, 415)),  # Updated position for Tuesday: x=1900, y=420
     "Wednesday": ((1870, 405), (580, 420)),
     "Thursday": ((1870, 410), (610, 425)),
     "Friday": ((1965, 420), (680, 425)),
@@ -153,7 +153,8 @@ def render_category_board(
     draw_ctx = ImageDraw.Draw(image)
 
     fonts = _load_fonts()
-    now = timezone.localtime(timestamp) if timestamp else timezone.localtime()
+    # Always use current time for date display to ensure accuracy
+    now = timezone.localtime(timezone.now())
     _draw_dates(draw_ctx, fonts, now)
 
     price_map = _build_price_map(price_items)
@@ -266,6 +267,9 @@ def _load_fonts():
         "farsi_big": ImageFont.truetype(
             str(FONT_ROOT / "YekanBakh.ttf"), 80
         ),  # weekday fa
+        "farsi_big_tuesday": ImageFont.truetype(
+            str(FONT_ROOT / "YekanBakh.ttf"), 100
+        ),  # weekday fa for Tuesday - size 100
         "farsi_num": ImageFont.truetype(
             str(FONT_ROOT / "YekanBakh.ttf"), 100
         ),  # date fa
@@ -322,10 +326,12 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     farsi_weekday = FARSI_WEEKDAYS.get(today_en, "")
     # Reshape Farsi weekday for proper RTL display
     farsi_weekday = _reshape_farsi_text(farsi_weekday)
+    # Use size 100 font for Tuesday, otherwise use default size 80
+    weekday_font = fonts.get("farsi_big_tuesday", fonts["farsi_big"]) if today_en == "Tuesday" else fonts["farsi_big"]
     draw_ctx.text(
         farsi_weekday_pos,
         farsi_weekday,
-        font=fonts["farsi_big"],
+        font=weekday_font,
         fill="white",
     )
 
@@ -428,33 +434,23 @@ def _reshape_farsi_text(text: str) -> str:
     Reshape Persian/Farsi text for proper RTL display in images.
     Works correctly on all operating systems (Windows, Linux, macOS).
     
-    On Linux, we use a simpler approach: only apply bidi algorithm without reshaping,
-    as arabic_reshaper can cause rendering issues on some Linux systems.
+    Uses reshaping + bidi algorithm on all systems for consistent rendering.
     """
     if not text:
         return text
     
-    import platform
-    is_linux = platform.system().lower() == 'linux'
-    
     if RTL_SUPPORT and get_display:
         try:
-            if is_linux:
-                # On Linux: Only apply bidi algorithm, skip reshaping
-                # This prevents rendering issues while still handling RTL correctly
-                bidi_text = get_display(text)
+            # Use full reshaping + bidi on all systems for consistent rendering
+            if arabic_reshaper:
+                # Reshape Arabic/Persian characters
+                reshaped_text = arabic_reshaper.reshape(text)
+                # Apply bidirectional algorithm for proper display
+                bidi_text = get_display(reshaped_text)
                 return bidi_text
             else:
-                # On Windows/macOS: Use full reshaping + bidi
-                if arabic_reshaper:
-                    # Reshape Arabic/Persian characters
-                    reshaped_text = arabic_reshaper.reshape(text)
-                    # Apply bidirectional algorithm for proper display
-                    bidi_text = get_display(reshaped_text)
-                    return bidi_text
-                else:
-                    # Fallback to bidi only if arabic_reshaper not available
-                    return get_display(text)
+                # Fallback to bidi only if arabic_reshaper not available
+                return get_display(text)
         except Exception as e:
             # Log the error for debugging but don't fail
             import logging

@@ -1,5 +1,7 @@
 import json
+import logging
 from io import BytesIO
+from pathlib import Path
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -12,6 +14,14 @@ from django.conf import settings
 
 from .forms import TemplateForm
 from .models import Template
+
+# Import reshape function for Persian text
+try:
+    from price_publisher.services.legacy_category_renderer import _reshape_farsi_text
+except ImportError:
+    # Fallback if import fails
+    def _reshape_farsi_text(text: str) -> str:
+        return text
 
 
 class TemplateListView(LoginRequiredMixin, ListView):
@@ -112,71 +122,163 @@ class PreviewView(LoginRequiredMixin, View):
         try:
             # Load template image
             bg_path = template.image.path
-            with Image.open(bg_path).convert('RGBA') as img:
-                draw = ImageDraw.Draw(img)
+            img = Image.open(bg_path).convert('RGBA')
+            draw = ImageDraw.Draw(img)
+            
+            # Get configuration - use POST data if available (for live preview), otherwise use saved config
+            if request.method == 'POST' and 'config' in request.POST:
+                try:
+                    config_data = json.loads(request.POST.get('config', '{}'))
+                    config = config_data.get('fields', {})
+                except json.JSONDecodeError:
+                    config = (template.config or {}).get('fields', {})
+            else:
+                config = (template.config or {}).get('fields', {})
+            
+            # Debug: log config
+            logger = logging.getLogger(__name__)
+            logger.debug(f"Preview config has {len(config)} fields: {list(config.keys())}")
+            
+            # Default font path - prioritize Persian fonts
+            STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
+            FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", STATIC_ROOT_DIR / "fonts"))
+            
+            font_candidates = [
+                getattr(settings, 'TEMPLATE_EDITOR_DEFAULT_FONT', None),
+                str(FONT_ROOT / "YekanBakh.ttf"),  # Persian font
+                str(FONT_ROOT / "Morabba.ttf"),    # Persian font
+            ]
+            
+            # Draw each text field
+            for field_name, field_config in config.items():
+                if not isinstance(field_config, dict):
+                    continue
                 
-                # Get configuration - use POST data if available (for live preview), otherwise use saved config
-                if request.method == 'POST' and 'config' in request.POST:
-                    try:
-                        config_data = json.loads(request.POST.get('config', '{}'))
-                        config = config_data.get('fields', {})
-                    except json.JSONDecodeError:
-                        config = template.config.get('fields', {})
-                else:
-                    config = template.config.get('fields', {})
+                x = field_config.get('x', 0)
+                y = field_config.get('y', 0)
+                size = field_config.get('size', 32)
+                color = field_config.get('color', '#000000')
+                align = field_config.get('align', 'left')
+                max_width = field_config.get('max_width')
                 
-                # Default font path
-                font_path = getattr(settings, 'TEMPLATE_EDITOR_DEFAULT_FONT', None)
+                # Get sample text (use field name as preview)
+                sample_text = field_config.get('sample_text', field_name.replace('_', ' ').title())
+                if not sample_text or not str(sample_text).strip():
+                    # If no sample text, use field name as fallback
+                    sample_text = field_name.replace('_', ' ').title()
+                    if not sample_text:
+                        continue
                 
-                # Draw each text field
-                for field_name, field_config in config.items():
-                    x = field_config.get('x', 0)
-                    y = field_config.get('y', 0)
-                    size = field_config.get('size', 32)
-                    color = field_config.get('color', '#000000')
-                    align = field_config.get('align', 'left')
-                    max_width = field_config.get('max_width')
+                # Check if text is RTL (Persian/Arabic)
+                try:
+                    is_rtl = self._is_rtl(str(sample_text))
+                    direction = "rtl" if is_rtl else None
                     
-                    # Get sample text (use field name as preview)
-                    sample_text = field_config.get('sample_text', field_name.replace('_', ' ').title())
-                    
-                    # Load font
+                    # Reshape Persian text for proper RTL display
+                    text_to_draw = str(sample_text)
+                    if is_rtl and text_to_draw.strip():
+                        try:
+                            reshaped = _reshape_farsi_text(text_to_draw)
+                            # Only use reshaped text if it's not empty and different from original
+                            if reshaped and reshaped.strip() and len(reshaped.strip()) > 0:
+                                text_to_draw = reshaped
+                        except Exception as reshape_error:
+                            # If reshape fails, use original text
+                            logger = logging.getLogger(__name__)
+                            logger.debug(f"Reshape failed for '{text_to_draw}': {reshape_error}")
+                            pass
+                except Exception:
+                    text_to_draw = str(sample_text)
+                    direction = None
+                
+                # Load font - try Persian fonts first
+                font = None
+                for font_path in font_candidates:
+                    if not font_path:
+                        continue
                     try:
-                        if font_path:
-                            font = ImageFont.truetype(font_path, size=size)
-                        else:
-                            font = ImageFont.load_default()
-                    except (OSError, IOError):
+                        font_file = Path(font_path)
+                        if font_file.exists():
+                            font = ImageFont.truetype(str(font_file), size=size)
+                            break
+                    except (OSError, IOError, TypeError) as e:
+                        logger = logging.getLogger(__name__)
+                        logger.debug(f"Failed to load font '{font_path}': {e}")
+                        continue
+                
+                if font is None:
+                    try:
                         font = ImageFont.load_default()
-                    
-                    # Parse color
+                    except Exception as e:
+                        logger = logging.getLogger(__name__)
+                        logger.error(f"Failed to load default font: {e}")
+                        # Don't skip - try to draw anyway
+                        font = ImageFont.load_default()
+                
+                # Parse color
+                try:
                     color_rgb = self._parse_color(color)
-                    
-                    # Draw text
+                except Exception:
+                    color_rgb = (0, 0, 0)
+                
+                # Draw text
+                try:
                     if max_width:
                         # Wrap text if max_width is specified
-                        lines = self._wrap_text(sample_text, font, max_width, draw)
-                        line_height = font.getbbox("Ay")[3] if hasattr(font, 'getbbox') else font.getsize("Ay")[1]
+                        lines = self._wrap_text(text_to_draw, font, max_width, draw)
+                        try:
+                            line_height = font.getbbox("Ay")[3] if hasattr(font, 'getbbox') else font.getsize("Ay")[1]
+                        except Exception:
+                            line_height = size + 4  # Fallback line height
                         for i, line in enumerate(lines):
                             line_y = y + i * (line_height + 4)
-                            draw.text((x, line_y), line, font=font, fill=color_rgb)
+                            try:
+                                draw.text((x, line_y), line, font=font, fill=color_rgb, direction=direction)
+                            except Exception as line_error:
+                                # Try without direction if it fails
+                                try:
+                                    draw.text((x, line_y), line, font=font, fill=color_rgb)
+                                except Exception:
+                                    logger = logging.getLogger(__name__)
+                                    logger.warning(f"Failed to draw line '{line}' for field '{field_name}': {line_error}")
                     else:
-                        draw.text((x, y), sample_text, font=font, fill=color_rgb)
-                
-                # Convert to RGB for JPEG compatibility
-                img_rgb = img.convert('RGB')
-                
-                # Save to BytesIO
-                buffer = BytesIO()
-                img_rgb.save(buffer, format='PNG')
-                buffer.seek(0)
-                
-                # Return as HTTP response
-                response = HttpResponse(buffer.getvalue(), content_type='image/png')
-                return response
+                        try:
+                            draw.text((x, y), text_to_draw, font=font, fill=color_rgb, direction=direction)
+                        except Exception:
+                            # Try without direction if it fails
+                            draw.text((x, y), text_to_draw, font=font, fill=color_rgb)
+                except Exception as draw_error:
+                    # Log drawing error but continue with other fields
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Failed to draw text for field '{field_name}': {draw_error}")
+                    # Try to draw without direction as fallback
+                    try:
+                        draw.text((x, y), str(sample_text), font=font, fill=color_rgb)
+                    except Exception:
+                        pass
+            
+            # Convert to RGB for JPEG compatibility
+            img_rgb = img.convert('RGB')
+            
+            # Save to BytesIO
+            buffer = BytesIO()
+            img_rgb.save(buffer, format='PNG')
+            buffer.seek(0)
+            
+            # Close image to free memory
+            img.close()
+            img_rgb.close()
+            
+            # Return as HTTP response
+            response = HttpResponse(buffer.getvalue(), content_type='image/png')
+            return response
                 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            import traceback
+            error_details = traceback.format_exc()
+            logger = logging.getLogger(__name__)
+            logger.error(f"Preview error: {error_details}")
+            return JsonResponse({'error': str(e), 'details': error_details}, status=500)
     
     def _parse_color(self, color_str):
         """Parse color string to RGB tuple."""
@@ -191,6 +293,13 @@ class PreviewView(LoginRequiredMixin, View):
             return tuple(int(color_str[i:i+2], 16) for i in range(0, 6, 2))
         except ValueError:
             return (0, 0, 0)
+    
+    def _is_rtl(self, text: str) -> bool:
+        """Check if text is right-to-left (Persian/Arabic)."""
+        for char in text:
+            if "\u0600" <= char <= "\u06FF" or "\u0750" <= char <= "\u077F":
+                return True
+        return False
     
     def _wrap_text(self, text, font, max_width, draw):
         """Wrap text to fit within max_width."""
