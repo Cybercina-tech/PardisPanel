@@ -13,6 +13,15 @@ from django.utils import timezone
 from PIL import Image, ImageDraw, ImageFont
 
 try:
+    import arabic_reshaper
+    from bidi.algorithm import get_display
+    RTL_SUPPORT = True
+except ImportError:
+    RTL_SUPPORT = False
+    arabic_reshaper = None
+    get_display = None
+
+try:
     from setting.models import PriceThemeState
 except Exception:  # pragma: no cover - optional dependency during migrations/tests
     PriceThemeState = None
@@ -23,7 +32,7 @@ from price_publisher.services.image_renderer import RenderedPriceImage
 WEEKDAY_POSITIONS = {
     "Saturday": ((1920, 410), (610, 420)),
     "Sunday": ((1870, 410), (650, 420)),
-    "Monday": ((1890, 410), (650, 430)),
+    "Monday": ((1900, 430), (650, 430)),
     "Tuesday": ((1870, 405), (640, 415)),
     "Wednesday": ((1870, 405), (580, 420)),
     "Thursday": ((1870, 410), (610, 425)),
@@ -190,6 +199,7 @@ def _resolve_background_for_category(category) -> Path:
         rotating = _get_rotating_background()
         if rotating is not None:
             return rotating
+        # If rotating backgrounds unavailable, fall through to legacy backgrounds
 
     def candidate(keys):
         for key in keys:
@@ -201,6 +211,8 @@ def _resolve_background_for_category(category) -> Path:
         [
             slug,
             name,
+            "pound",  # Fallback for pound categories if rotating unavailable
+            "gbp",    # Fallback for GBP categories if rotating unavailable
             "price_theme_default",
         ]
     )
@@ -255,7 +267,7 @@ def _get_rotating_background():
 def _load_fonts():
     fonts = {
         "farsi_big": ImageFont.truetype(
-            str(FONT_ROOT / "YekanBakh.ttf"), 89
+            str(FONT_ROOT / "YekanBakh.ttf"), 80
         ),  # weekday fa
         "farsi_num": ImageFont.truetype(
             str(FONT_ROOT / "YekanBakh.ttf"), 100
@@ -301,6 +313,8 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     farsi_date_str = _to_farsi_digits(
         f"{jalali.day}{_farsi_month(jalali.month)}{jalali.year}"
     )
+    # Reshape Farsi date for proper RTL display
+    farsi_date_str = _reshape_farsi_text(farsi_date_str)
     draw_ctx.text(
         (1900, 255),
         farsi_date_str,
@@ -308,9 +322,12 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
         fill="white",
     )
 
+    farsi_weekday = FARSI_WEEKDAYS.get(today_en, "")
+    # Reshape Farsi weekday for proper RTL display
+    farsi_weekday = _reshape_farsi_text(farsi_weekday)
     draw_ctx.text(
         farsi_weekday_pos,
-        FARSI_WEEKDAYS.get(today_en, ""),
+        farsi_weekday,
         font=fonts["farsi_big"],
         fill="white",
     )
@@ -387,10 +404,12 @@ def _resolve_display_value(
 
     note = (history.notes or "").strip().lower()
     if any(token in note for token in ("call", "تماس")):
-        return ("تماس بگیرید", "call", call_position)
-
+        text = _reshape_farsi_text("تماس بگیرید")
+        return (text, "call", call_position)
+    
     if any(token in note for token in ("stop", "توقف")):
         text = "توقف خرید" if index < 2 else "توقف فروش"
+        text = _reshape_farsi_text(text)
         return (text, "stop", stop_position)
 
     value = _format_price_value(history.price)
@@ -405,6 +424,27 @@ def _format_price_value(value) -> str:
         integer_value = int(decimal_value)
     formatted = f"{integer_value:,}"
     return _to_english_digits(formatted)  # Convert to English digits for GBP/USDT prices
+
+
+def _reshape_farsi_text(text: str) -> str:
+    """
+    Reshape Persian/Farsi text for proper RTL display in images.
+    Works correctly on all operating systems (Windows, Linux, macOS).
+    """
+    if not text:
+        return text
+    
+    if RTL_SUPPORT and arabic_reshaper and get_display:
+        try:
+            # Reshape Arabic/Persian characters
+            reshaped_text = arabic_reshaper.reshape(text)
+            # Apply bidirectional algorithm for proper display
+            bidi_text = get_display(reshaped_text)
+            return bidi_text
+        except Exception:
+            # Fallback to original text if reshaping fails
+            return text
+    return text
 
 
 def _to_farsi_digits(value: str) -> str:
