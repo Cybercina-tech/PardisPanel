@@ -144,6 +144,13 @@ LEGACY_FINAL_BUTTONS = [
     [
         {"text": "امور مشتریان ۳", "url": "https://wa.me/447399990340"},
     ],
+    [
+        {"text": "وب سایت", "url": "https://sarafipardis.co.uk/"},
+        {
+            "text": "اینستاگرام",
+            "url": "https://www.instagram.com/sarafiipardis",
+        },
+    ],
 ]
 
 
