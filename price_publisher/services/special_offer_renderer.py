@@ -262,7 +262,7 @@ def render_special_offer_board(
                 line,
                 font=working_hours_font,
                 fill=(255, 255, 255)
-            )
+    )
 
     buffer = io.BytesIO()
     buffer.name = template.background

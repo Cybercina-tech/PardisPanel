@@ -131,18 +131,18 @@ LEGACY_FINAL_MESSAGE = (
 LEGACY_FINAL_BUTTONS = [
     [
         {
-            "text": "امور مشتریان ۱",
+            "text": "ارتباط با امور مشتریان ۱",
             "url": "https://wa.me/447533544249",
         }
     ],
     [
         {
-            "text": "امور مشتریان ۲",
+            "text": "ارتباط با امور مشتریان ۲",
             "url": "https://wa.me/989121894230",
         }
     ],
     [
-        {"text": "امور مشتریان ۳", "url": "https://wa.me/447399990340"},
+        {"text": "ارتباط با امور مشتریان ۳", "url": "https://wa.me/447399990340"},
     ],
     [
         {"text": "وب سایت", "url": "https://sarafipardis.co.uk/"},
