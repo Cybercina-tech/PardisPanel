@@ -26,6 +26,9 @@ PARDIS_INLINE_BUTTONS = [
     ],
     [{"text": "مدیریت صرافی", "url": "https://wa.me/447399990340"}],
     [
+        {"text": "ارتباط با کارشناس خرید و فروش 4", "url": "https://wa.me/989121894230"}
+    ],
+    [
         {"text": "وب سایت", "url": "https://sarafipardis.co.uk/"},
         {"text": "اینستاگرام", "url": "https://www.instagram.com/sarafiipardis"},
     ],

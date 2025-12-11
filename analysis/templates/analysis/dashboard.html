@@ -470,144 +470,289 @@
 {{ special_timeline_data_json|json_script:"analysis-special-timeline-data" }}
 {{ category_summary_json|json_script:"analysis-category-data" }}
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const timelineData = JSON.parse(document.getElementById("analysis-timeline-data").textContent || "[]");
-        const specialTimelineData = JSON.parse(document.getElementById("analysis-special-timeline-data").textContent || "[]");
-        const categoryData = JSON.parse(document.getElementById("analysis-category-data").textContent || "[]");
+    // Wait for Chart.js and adapter to load
+    function initializeCharts() {
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error("Chart.js is not loaded. Waiting...");
+            setTimeout(initializeCharts, 100);
+            return;
+        }
+
+        console.log("Chart.js loaded:", typeof Chart);
+        console.log("Chart object:", Chart);
+
+        let timelineData = [];
+        let specialTimelineData = [];
+        let categoryData = [];
+
+        try {
+            const timelineElement = document.getElementById("analysis-timeline-data");
+            const specialTimelineElement = document.getElementById("analysis-special-timeline-data");
+            const categoryElement = document.getElementById("analysis-category-data");
+
+            if (timelineElement) {
+                const rawText = timelineElement.textContent || "[]";
+                timelineData = JSON.parse(rawText);
+                console.log("Timeline data loaded:", timelineData.length, "datasets");
+            } else {
+                console.warn("Timeline data element not found");
+            }
+            if (specialTimelineElement) {
+                const rawText = specialTimelineElement.textContent || "[]";
+                specialTimelineData = JSON.parse(rawText);
+                console.log("Special timeline data loaded:", specialTimelineData.length, "datasets");
+            } else {
+                console.warn("Special timeline data element not found");
+            }
+            if (categoryElement) {
+                const rawText = categoryElement.textContent || "[]";
+                categoryData = JSON.parse(rawText);
+                console.log("Category data loaded:", categoryData.length, "items");
+            } else {
+                console.warn("Category data element not found");
+            }
+        } catch (e) {
+            console.error("Error parsing JSON data:", e);
+            console.error("Error stack:", e.stack);
+        }
 
         // Combine regular and special price timelines
         const allTimelineData = [...timelineData, ...specialTimelineData];
+        console.log("Total timeline datasets:", allTimelineData.length);
 
         const timelineCtx = document.getElementById("priceTimelineChart");
-        if (timelineCtx && allTimelineData.length) {
-            new Chart(timelineCtx, {
-                type: "line",
-                data: {
-                    datasets: allTimelineData.map(dataset => ({
-                        ...dataset,
-                        parsing: false,
-                        pointRadius: 0,
-                        pointHitRadius: 8,
-                    })),
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        intersect: false,
-                        mode: "nearest",
-                    },
-                    plugins: {
-                        legend: {
-                            position: "bottom",
-                            labels: {
-                                usePointStyle: true,
-                                color: 'rgba(255, 255, 255, 0.8)',
-                            },
+        if (timelineCtx) {
+            if (allTimelineData.length > 0) {
+                try {
+                    // Ensure data is properly formatted
+                    const formattedDatasets = allTimelineData.map(dataset => {
+                        if (!dataset || !dataset.data || !Array.isArray(dataset.data)) {
+                            return null;
+                        }
+                        
+                        // Format data points - ensure dates are strings
+                        const formattedData = dataset.data.map(point => {
+                            if (!point || typeof point.x === 'undefined' || typeof point.y === 'undefined') {
+                                return null;
+                            }
+                            // Convert date to ISO string if needed
+                            let xValue = point.x;
+                            if (xValue instanceof Date) {
+                                xValue = xValue.toISOString();
+                            } else if (typeof xValue === 'string' && !xValue.includes('T')) {
+                                // If it's a date string without time, add time component
+                                xValue = new Date(xValue).toISOString();
+                            }
+                            return {
+                                x: xValue,
+                                y: parseFloat(point.y) || 0
+                            };
+                        }).filter(p => p !== null);
+
+                        if (formattedData.length === 0) {
+                            return null;
+                        }
+
+                        return {
+                            label: dataset.label || 'Unknown',
+                            data: formattedData,
+                            borderColor: dataset.borderColor || '#2563eb',
+                            backgroundColor: dataset.backgroundColor || 'rgba(37, 99, 235, 0.1)',
+                            tension: dataset.tension || 0.35,
+                            fill: dataset.fill !== undefined ? dataset.fill : false,
+                            borderDash: dataset.borderDash,
+                            pointRadius: 2,
+                            pointHoverRadius: 4,
+                            pointHitRadius: 8,
+                        };
+                    }).filter(d => d !== null);
+
+                    if (formattedDatasets.length === 0) {
+                        throw new Error("No valid datasets after formatting");
+                    }
+
+                    new Chart(timelineCtx, {
+                        type: "line",
+                        data: {
+                            datasets: formattedDatasets
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: context => {
-                                    const value = context.parsed.y ?? 0;
-                                    return `${context.dataset.label}: ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                intersect: false,
+                                mode: "nearest",
+                            },
+                            plugins: {
+                                legend: {
+                                    position: "bottom",
+                                    labels: {
+                                        usePointStyle: true,
+                                        color: 'rgba(255, 255, 255, 0.8)',
+                                        padding: 12,
+                                        font: {
+                                            size: 11
+                                        }
+                                    },
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: context => {
+                                            const value = context.parsed.y ?? 0;
+                                            return `${context.dataset.label}: ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                                        },
+                                    },
+                                },
+                            },
+                            scales: {
+                                x: {
+                                    type: "time",
+                                    time: {
+                                        unit: "day",
+                                        tooltipFormat: "MMM d, HH:mm",
+                                        displayFormats: {
+                                            day: "MMM d"
+                                        }
+                                    },
+                                    grid: { 
+                                        display: false,
+                                        color: 'rgba(255, 255, 255, 0.1)',
+                                    },
+                                    ticks: {
+                                        color: 'rgba(255, 255, 255, 0.7)',
+                                        maxRotation: 45,
+                                        minRotation: 0,
+                                    },
+                                },
+                                y: {
+                                    beginAtZero: false,
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)',
+                                    },
+                                    ticks: {
+                                        color: 'rgba(255, 255, 255, 0.7)',
+                                        callback: value => value.toLocaleString(),
+                                    },
                                 },
                             },
                         },
-                    },
-                    scales: {
-                        x: {
-                            type: "time",
-                            time: {
-                                unit: "day",
-                                tooltipFormat: "MMM d, HH:mm",
-                            },
-                            grid: { 
-                                display: false,
-                                color: 'rgba(255, 255, 255, 0.1)',
-                            },
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.7)',
-                            },
-                        },
-                        y: {
-                            beginAtZero: false,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)',
-                            },
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                callback: value => value.toLocaleString(),
-                            },
-                        },
-                    },
-                },
-            });
-        } else if (timelineCtx) {
-            timelineCtx.closest(".chart-card").innerHTML = '<div class="text-white-50 p-4">Not enough price history to display trajectories yet.</div>';
+                    });
+                } catch (error) {
+                    console.error("Error creating timeline chart:", error);
+                    console.error("Error details:", error.message, error.stack);
+                    timelineCtx.closest(".chart-card").innerHTML = '<div class="text-white-50 p-4">Error loading price trajectories: ' + error.message + '</div>';
+                }
+            } else {
+                timelineCtx.closest(".chart-card").innerHTML = '<div class="text-white-50 p-4">Not enough price history to display trajectories yet.</div>';
+            }
         }
 
         const categoryCtx = document.getElementById("categorySummaryChart");
-        if (categoryCtx && categoryData.length) {
-            const labels = categoryData.map(item => item.category);
-            const averages = categoryData.map(item => item.average_price ?? 0);
+        if (categoryCtx) {
+            if (categoryData && Array.isArray(categoryData) && categoryData.length > 0) {
+                try {
+                    const labels = categoryData.map(item => {
+                        if (!item || typeof item !== 'object') return 'Unknown';
+                        return item.category || item.name || 'Unknown';
+                    }).filter(l => l !== null);
 
-            new Chart(categoryCtx, {
-                type: "bar",
-                data: {
-                    labels,
-                    datasets: [
-                        {
-                            label: "Average price",
-                            data: averages,
-                            backgroundColor: "rgba(255, 215, 0, 0.35)",
-                            borderColor: "rgba(255, 215, 0, 0.85)",
-                            borderRadius: 12,
-                            borderWidth: 1.2,
+                    const averages = categoryData.map(item => {
+                        if (!item || typeof item !== 'object') return 0;
+                        const avg = item.average_price ?? item.avg ?? 0;
+                        return parseFloat(avg) || 0;
+                    }).filter(a => !isNaN(a));
+
+                    if (labels.length === 0 || averages.length === 0 || labels.length !== averages.length) {
+                        throw new Error("Invalid category data structure");
+                    }
+
+                    new Chart(categoryCtx, {
+                        type: "bar",
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: "Average price",
+                                    data: averages,
+                                    backgroundColor: "rgba(255, 215, 0, 0.35)",
+                                    borderColor: "rgba(255, 215, 0, 0.85)",
+                                    borderRadius: 12,
+                                    borderWidth: 1.2,
+                                },
+                            ],
                         },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: context => {
-                                    const value = context.parsed.y ?? 0;
-                                    return `Average: ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        title: (context) => {
+                                            if (context && context.length > 0 && context[0].label) {
+                                                return context[0].label;
+                                            }
+                                            return 'Category';
+                                        },
+                                        label: context => {
+                                            const value = context.parsed.y ?? 0;
+                                            return `Average: ${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                                        },
+                                    },
+                                },
+                            },
+                            scales: {
+                                x: {
+                                    ticks: { 
+                                        maxRotation: 45, 
+                                        minRotation: 0,
+                                        color: 'rgba(255, 255, 255, 0.7)',
+                                        font: {
+                                            size: 10
+                                        }
+                                    },
+                                    grid: { 
+                                        display: false,
+                                        color: 'rgba(255, 255, 255, 0.1)',
+                                    },
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)',
+                                    },
+                                    ticks: {
+                                        color: 'rgba(255, 255, 255, 0.7)',
+                                        callback: value => {
+                                            if (typeof value === 'number') {
+                                                return value.toLocaleString();
+                                            }
+                                            return value;
+                                        },
+                                    },
                                 },
                             },
                         },
-                    },
-                    scales: {
-                        x: {
-                            ticks: { 
-                                maxRotation: 0, 
-                                minRotation: 0,
-                                color: 'rgba(255, 255, 255, 0.7)',
-                            },
-                            grid: { 
-                                display: false,
-                                color: 'rgba(255, 255, 255, 0.1)',
-                            },
-                        },
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)',
-                            },
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.7)',
-                                callback: value => value.toLocaleString(),
-                            },
-                        },
-                    },
-                },
-            });
-        } else if (categoryCtx) {
-            categoryCtx.closest(".chart-card").innerHTML = '<div class="text-white-50 p-4">No categorical insights yet. Make sure prices are recorded for each category.</div>';
+                    });
+                } catch (error) {
+                    console.error("Error creating category chart:", error);
+                    console.error("Category data:", categoryData);
+                    console.error("Error details:", error.message, error.stack);
+                    categoryCtx.closest(".chart-card").innerHTML = '<div class="text-white-50 p-4">Error loading category pulse: ' + error.message + '</div>';
+                }
+            } else {
+                categoryCtx.closest(".chart-card").innerHTML = '<div class="text-white-50 p-4">No categorical insights yet. Make sure prices are recorded for each category.</div>';
+            }
         }
-    });
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeCharts);
+    } else {
+        // DOM already loaded
+        initializeCharts();
+    }
 </script>
 {% endblock %}

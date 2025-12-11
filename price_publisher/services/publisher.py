@@ -145,6 +145,9 @@ LEGACY_FINAL_BUTTONS = [
         {"text": "ارتباط با امور مشتریان ۳", "url": "https://wa.me/447399990340"},
     ],
     [
+        {"text": "ارتباط با امور مشتریان ۴", "url": "https://wa.me/989121894230"},
+    ],
+    [
         {"text": "وب سایت", "url": "https://sarafipardis.co.uk/"},
         {
             "text": "اینستاگرام",
@@ -599,13 +602,35 @@ class PricePublisherService:
     def _build_tether_caption(timestamp) -> str:
         """Build a professional and attractive caption for Tether prices with dates."""
         farsi_date, farsi_weekday, english_date, english_weekday = PricePublisherService._format_dates(timestamp)
+        office_map_url = "https://maps.app.goo.gl/d3sorvbK9VRFvSBaA"
+        office_address = "Office A, 708A High Road, North Finchley, N12 9QL"
         
         caption = (
             f"📅 <b>تاریخ:</b>\n\n"
             f"🇮🇷 {farsi_weekday} {farsi_date}\n\n"
             f"🇬🇧 {english_weekday}, {english_date}\n\n"
             f"━━━━━━\n\n"
-            f"{PricePublisherService._build_common_description('خرید فروش تتر')}"
+            "💷 خرید فروش تتر\n\n"
+            "━━━━━━━━━━━\n"
+            "💬 کارشناسان ما همواره پاسخ‌گوی شما هستند.\n"
+            "📞 تماس با ما:\n"
+            "1️⃣ Mr.Mahdi\n"
+            f"📱 <a href=\"https://wa.me/447533544249\">+44 7533 544249</a>\n"
+            "2️⃣Ms.Maria\n"
+            f"📱 <a href=\"https://wa.me/447399990340\">+44 7399 990340</a>\n"
+            "3️⃣ Ms.Sogand\n"
+            f"📱 <a href=\"https://wa.me/447777238863\">+44 7777 238 863</a>\n"
+            "👤 Ms.Kianian\n"
+            f"📱 <a href=\"https://wa.me/989121894230\">+98 912 189 4230</a>\n\n"
+            "📍 آدرس دفتر:\n"
+            f"🏢 <a href=\"{office_map_url}\">{office_address}</a>\n\n"
+            "━━━━━━━━━━━\n"
+            "🕐 ساعات کاری:\n"
+            "دوشنبه تا شنبه از ۹:۳۰ صبح تا ۵ عصر (به وقت لندن)\n"
+            "یکشنبه‌ها تعطیل است\n"
+            "━━━━━━━━━━━\n"
+            "صرافی پردیس، همراهی مطمئن در تمامی امور ارزی شما\n"
+            "🌍 خدمات در لندن و لیدز"
         )
         
         return caption
@@ -613,7 +638,34 @@ class PricePublisherService:
     @staticmethod
     def _build_gbp_category_caption(timestamp) -> str:
         """Build a professional and attractive caption for GBP category prices without dates."""
-        return PricePublisherService._build_common_description('خرید فروش پوند')
+        office_map_url = "https://maps.app.goo.gl/d3sorvbK9VRFvSBaA"
+        office_address = "Office A, 708A High Road, North Finchley, N12 9QL"
+        
+        caption = (
+            "💷 خرید و فروش پوند (GBP)\n"
+            "💰 نقدی و حسابی\n\n"
+            "━━━━━━━━━━━\n"
+            "💬 کارشناسان ما همواره پاسخ‌گوی شما هستند.\n"
+            "📞 تماس با ما:\n"
+            "1️⃣ Mr.Mahdi\n"
+            f"📱 <a href=\"https://wa.me/447533544249\">+44 7533 544249</a>\n"
+            "2️⃣Ms.Maria\n"
+            f"📱 <a href=\"https://wa.me/447399990340\">+44 7399 990340</a>\n"
+            "3️⃣ Ms.Sogand\n"
+            f"📱 <a href=\"https://wa.me/447777238863\">+44 7777 238 863</a>\n"
+            "👤 Ms.Kianian\n"
+            f"📱 <a href=\"https://wa.me/989121894230\">+98 912 189 4230</a>\n\n"
+            "📍 آدرس دفتر:\n"
+            f"🏢 <a href=\"{office_map_url}\">{office_address}</a>\n\n"
+            "━━━━━━━━━━━\n"
+            "🕐 ساعات کاری:\n"
+            "دوشنبه تا شنبه از ۹:۳۰ صبح تا ۵ عصر (به وقت لندن)\n"
+            "یکشنبه‌ها تعطیل است\n"
+            "━━━━━━━━━━━\n"
+            "صرافی پردیس، همراهی مطمئن در تمامی امور ارزی شما\n"
+            "🌍 خدمات در لندن و لیدز"
+        )
+        return caption
 
     @staticmethod
     def _get_special_pound_title(is_account: bool, is_sell: bool) -> str:

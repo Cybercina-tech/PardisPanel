@@ -1,12 +1,20 @@
 import json
 import math
 from collections import defaultdict
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import OuterRef, Subquery, Count
 from django.utils import timezone
 from django.views.generic import TemplateView
+
+
+class ChartJSONEncoder(DjangoJSONEncoder):
+    """Custom JSON encoder that ensures dates are in ISO format for Chart.js"""
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return timezone.localtime(obj).isoformat()
+        return super().default(obj)
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -75,9 +83,9 @@ class AnalyticsDashboardView(TemplateView):
                 "price_statistics": price_statistics,
                 "finalization_stats": finalization_stats,
                 "overall_stats": overall_stats,
-                "timeline_data_json": json.dumps(timelines, cls=DjangoJSONEncoder),
-                "special_timeline_data_json": json.dumps(special_timelines, cls=DjangoJSONEncoder),
-                "category_summary_json": json.dumps(category_summary, cls=DjangoJSONEncoder),
+                "timeline_data_json": json.dumps(timelines, cls=ChartJSONEncoder),
+                "special_timeline_data_json": json.dumps(special_timelines, cls=ChartJSONEncoder),
+                "category_summary_json": json.dumps(category_summary, cls=ChartJSONEncoder),
             }
         )
 
@@ -108,6 +116,9 @@ class AnalyticsDashboardView(TemplateView):
 
     def _build_timelines(self, price_types, window_start):
         relevant_ids = [pt.id for pt in price_types if pt.latest_price is not None]
+        
+        if not relevant_ids:
+            return []
 
         history_qs = (
             PriceHistory.objects.filter(price_type_id__in=relevant_ids, created_at__gte=window_start)
@@ -122,9 +133,11 @@ class AnalyticsDashboardView(TemplateView):
 
         timeline_map = defaultdict(list)
         for history in history_qs:
+            # Convert datetime to ISO string for Chart.js compatibility
+            timestamp = timezone.localtime(history.created_at).isoformat()
             timeline_map[history.price_type_id].append(
                 {
-                    "x": history.created_at,
+                    "x": timestamp,
                     "y": float(history.price),
                 }
             )
@@ -132,7 +145,7 @@ class AnalyticsDashboardView(TemplateView):
         datasets = []
         for index, price_type in enumerate(price_types):
             data_points = timeline_map.get(price_type.id)
-            if not data_points:
+            if not data_points or len(data_points) == 0:
                 continue
 
             color = self.palette[index % len(self.palette)]
@@ -244,6 +257,9 @@ class AnalyticsDashboardView(TemplateView):
     def _build_special_timelines(self, special_price_types, window_start):
         """Build timeline data for special prices."""
         relevant_ids = [spt.id for spt in special_price_types if spt.latest_price is not None]
+        
+        if not relevant_ids:
+            return []
 
         history_qs = (
             SpecialPriceHistory.objects.filter(
@@ -260,9 +276,11 @@ class AnalyticsDashboardView(TemplateView):
 
         timeline_map = defaultdict(list)
         for history in history_qs:
+            # Convert datetime to ISO string for Chart.js compatibility
+            timestamp = timezone.localtime(history.created_at).isoformat()
             timeline_map[history.special_price_type_id].append(
                 {
-                    "x": history.created_at,
+                    "x": timestamp,
                     "y": float(history.price),
                 }
             )
@@ -270,7 +288,7 @@ class AnalyticsDashboardView(TemplateView):
         datasets = []
         for index, special_price_type in enumerate(special_price_types):
             data_points = timeline_map.get(special_price_type.id)
-            if not data_points:
+            if not data_points or len(data_points) == 0:
                 continue
 
             color = self.palette[(index + 5) % len(self.palette)]  # Different color range
