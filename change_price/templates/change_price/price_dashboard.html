@@ -49,11 +49,12 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="price-list">
-                        {% for price_type in category.price_types.all %}
+                        {% load change_price_tags %}
+                        {% for price_type in category.price_types.all|sort_gbp_price_types %}
                         <div class="price-list-item border-light-gold">
                             <div class="price-item">
                                 <div class="price-info" dir="auto">
-                                    <h6 class="mb-1 text-gold text-center">{{ price_type.name }}</h6>
+                                    <h6 class="mb-1 text-gold text-center">{{ price_type.name|clean_gbp_name:category.name }}</h6>
                                     <div class="small d-flex flex-wrap align-items-center gap-2 text-wrap">
                                         <span class="text-gold-light">{{ price_type.source_currency.code }} / {{ price_type.target_currency.code }}</span>
                                         <span class="badge bg-light-gold text-dark">{{ price_type.get_trade_type_display }}</span>

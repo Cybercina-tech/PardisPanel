@@ -1,20 +1,17 @@
 import json
 import logging
 from io import BytesIO
-from pathlib import Path
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView, View
-from PIL import Image, ImageDraw, ImageFont
-from django.conf import settings
+from PIL import Image, ImageDraw
 
 from .forms import TemplateForm
 from .models import Template
-
 
 
 class TemplateListView(LoginRequiredMixin, ListView):
@@ -81,7 +78,8 @@ class TemplateEditView(LoginRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_edit'] = True
-        context['config'] = json.dumps(self.object.config if self.object.config else {})
+        # Security: Pass config dict directly - json_script filter will handle JSON encoding safely
+        context['config'] = self.object.config if self.object.config else {}
         return context
 
 
@@ -99,6 +97,8 @@ class TemplateDeleteView(LoginRequiredMixin, DeleteView):
 
 class PreviewView(LoginRequiredMixin, View):
     """Generate live preview of template with current configuration."""
+    
+    logger = logging.getLogger(__name__)
     
     def get(self, request, pk):
         return self._render_preview(request, pk)
@@ -128,19 +128,11 @@ class PreviewView(LoginRequiredMixin, View):
             else:
                 config = (template.config or {}).get('fields', {})
             
-            # Debug: log config
-            logger = logging.getLogger(__name__)
-            logger.debug(f"Preview config has {len(config)} fields: {list(config.keys())}")
+            self.logger.debug(f"Preview config has {len(config)} fields: {list(config.keys())}")
             
-            # Default font path - prioritize Persian fonts
-            STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
-            FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", STATIC_ROOT_DIR / "fonts"))
-            
-            font_candidates = [
-                getattr(settings, 'TEMPLATE_EDITOR_DEFAULT_FONT', None),
-                str(FONT_ROOT / "YekanBakh.ttf"),  # Persian font
-                str(FONT_ROOT / "Morabba.ttf"),    # Persian font
-            ]
+            # Import font utility to avoid code duplication
+            from .utils import DEFAULT_FONT_CANDIDATES
+            font_candidates = [f for f in DEFAULT_FONT_CANDIDATES if f]
             
             # Draw each text field
             for field_name, field_config in config.items():
@@ -157,43 +149,21 @@ class PreviewView(LoginRequiredMixin, View):
                 # Get sample text (use field name as preview)
                 sample_text = field_config.get('sample_text', field_name.replace('_', ' ').title())
                 if not sample_text or not str(sample_text).strip():
-                    # If no sample text, use field name as fallback
                     sample_text = field_name.replace('_', ' ').title()
                     if not sample_text:
                         continue
                 
-                    # Check if text is RTL (Persian/Arabic)
-                    try:
-                        is_rtl = self._is_rtl(str(sample_text))
-                        direction = "rtl" if is_rtl else None
-                        text_to_draw = str(sample_text)
-                    except Exception:
-                        text_to_draw = str(sample_text)
-                        direction = None
+                # Check if text is RTL (Persian/Arabic)
+                text_to_draw = str(sample_text)
+                try:
+                    is_rtl = self._is_rtl(text_to_draw)
+                    direction = "rtl" if is_rtl else None
+                except Exception:
+                    direction = None
                 
-                # Load font - try Persian fonts first
-                font = None
-                for font_path in font_candidates:
-                    if not font_path:
-                        continue
-                    try:
-                        font_file = Path(font_path)
-                        if font_file.exists():
-                            font = ImageFont.truetype(str(font_file), size=size)
-                            break
-                    except (OSError, IOError, TypeError) as e:
-                        logger = logging.getLogger(__name__)
-                        logger.debug(f"Failed to load font '{font_path}': {e}")
-                        continue
-                
-                if font is None:
-                    try:
-                        font = ImageFont.load_default()
-                    except Exception as e:
-                        logger = logging.getLogger(__name__)
-                        logger.error(f"Failed to load default font: {e}")
-                        # Don't skip - try to draw anyway
-                        font = ImageFont.load_default()
+                # Load font using utility function
+                from .utils import _get_font
+                font = _get_font(size)
                 
                 # Parse color
                 try:
@@ -219,8 +189,7 @@ class PreviewView(LoginRequiredMixin, View):
                                 try:
                                     draw.text((x, line_y), line, font=font, fill=color_rgb)
                                 except Exception:
-                                    logger = logging.getLogger(__name__)
-                                    logger.warning(f"Failed to draw line '{line}' for field '{field_name}': {line_error}")
+                                    self.logger.warning(f"Failed to draw line '{line}' for field '{field_name}': {line_error}")
                     else:
                         try:
                             draw.text((x, y), text_to_draw, font=font, fill=color_rgb, direction=direction)
@@ -228,9 +197,7 @@ class PreviewView(LoginRequiredMixin, View):
                             # Try without direction if it fails
                             draw.text((x, y), text_to_draw, font=font, fill=color_rgb)
                 except Exception as draw_error:
-                    # Log drawing error but continue with other fields
-                    logger = logging.getLogger(__name__)
-                    logger.warning(f"Failed to draw text for field '{field_name}': {draw_error}")
+                    self.logger.warning(f"Failed to draw text for field '{field_name}': {draw_error}")
                     # Try to draw without direction as fallback
                     try:
                         draw.text((x, y), str(sample_text), font=font, fill=color_rgb)
@@ -256,56 +223,20 @@ class PreviewView(LoginRequiredMixin, View):
         except Exception as e:
             import traceback
             error_details = traceback.format_exc()
-            logger = logging.getLogger(__name__)
-            logger.error(f"Preview error: {error_details}")
+            self.logger.error(f"Preview error: {error_details}")
             return JsonResponse({'error': str(e), 'details': error_details}, status=500)
     
     def _parse_color(self, color_str):
         """Parse color string to RGB tuple."""
-        if not color_str:
-            return (0, 0, 0)
-        color_str = color_str.strip()
-        if color_str.startswith('#'):
-            color_str = color_str[1:]
-        if len(color_str) == 3:
-            color_str = ''.join(c * 2 for c in color_str)
-        try:
-            return tuple(int(color_str[i:i+2], 16) for i in range(0, 6, 2))
-        except ValueError:
-            return (0, 0, 0)
+        from .utils import _parse_color as parse_color
+        return parse_color(color_str)
     
     def _is_rtl(self, text: str) -> bool:
         """Check if text is right-to-left (Persian/Arabic)."""
-        for char in text:
-            if "\u0600" <= char <= "\u06FF" or "\u0750" <= char <= "\u077F":
-                return True
-        return False
+        from .utils import _is_rtl
+        return _is_rtl(text)
     
     def _wrap_text(self, text, font, max_width, draw):
         """Wrap text to fit within max_width."""
-        if not text:
-            return ['']
-        words = text.split()
-        if not words:
-            return [text]
-        
-        lines = []
-        current_line = words[0]
-        
-        for word in words[1:]:
-            trial_line = f"{current_line} {word}"
-            if hasattr(draw, 'textlength'):
-                width = draw.textlength(trial_line, font=font)
-            elif hasattr(font, 'getlength'):
-                width = font.getlength(trial_line)
-            else:
-                width = font.getsize(trial_line)[0]
-            
-            if width <= max_width:
-                current_line = trial_line
-            else:
-                lines.append(current_line)
-                current_line = word
-        
-        lines.append(current_line)
-        return lines
+        from .utils import _wrap_text
+        return _wrap_text(text, font, max_width, draw)

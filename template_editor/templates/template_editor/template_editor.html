@@ -131,8 +131,8 @@
     </div>
 </div>
 
-<!-- Hidden input to store config -->
-<input type="hidden" id="templateConfig" value='{{ config|safe }}'>
+<!-- Security: Use json_script filter to safely pass JSON data to JavaScript -->
+{{ config|json_script:"template-config-data" }}
 <input type="hidden" id="templateId" value="{{ template.pk }}">
 {% endblock %}
 

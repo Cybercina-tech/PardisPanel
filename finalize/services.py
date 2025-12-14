@@ -3,14 +3,23 @@ Service for sending finalized prices to external API.
 Based on the data.py reference file.
 """
 import logging
+import os
 import requests
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-# API Configuration (from data.py reference)
-EXTERNAL_API_URL = "https://sarafipardis.co.uk/wp-json/pardis/v1/rates"
-EXTERNAL_API_KEY = "PX9k7mN2qR8vL4jH6wE3tY1uI5oP0aS9dF7gK2mN8xZ4cV6bQ1wE3rT5yU8iO0pL"
+# API Configuration - Security: Use environment variables for sensitive data
+EXTERNAL_API_URL = os.environ.get(
+    'EXTERNAL_API_URL',
+    "https://sarafipardis.co.uk/wp-json/pardis/v1/rates"
+)
+# Security: API key should be set via EXTERNAL_API_KEY environment variable
+# Fallback to old value for backward compatibility (should be removed after migration)
+EXTERNAL_API_KEY = os.environ.get(
+    'EXTERNAL_API_KEY',
+    "PX9k7mN2qR8vL4jH6wE3tY1uI5oP0aS9dF7gK2mN8xZ4cV6bQ1wE3rT5yU8iO0pL"
+)
 
 # The four keys we always want to handle (like data.py’s GBP/USDT helpers)
 RATE_KEYS = ("GBP_BUY", "GBP_SELL", "USDT_BUY", "USDT_SELL")

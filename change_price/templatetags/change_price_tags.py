@@ -2,8 +2,92 @@ from django import template
 from django.utils import timezone
 from datetime import datetime
 import pytz
+import re
 
 register = template.Library()
+
+
+@register.filter
+def sort_gbp_price_types(price_types):
+    """
+    Sort price types for GBP/Pound category in specific order:
+    1. خرید نقدی (Buy Cash)
+    2. خرید حسابی (Buy Account)
+    3. فروش نقد (Sell Cash)
+    4. فروش حسابی (Sell Account)
+    5. فروش رسمی (Sell Official)
+    
+    Usage: {{ category.price_types.all|sort_gbp_price_types }}
+    """
+    if not price_types:
+        return price_types
+    
+    # Convert to list if it's a queryset
+    price_types_list = list(price_types)
+    
+    # Define order based on trade_type and name patterns
+    def get_sort_key(price_type):
+        name_lower = price_type.name.lower()
+        trade_type = price_type.trade_type.lower()
+        
+        # Buy types
+        if trade_type == 'buy':
+            if 'نقدی' in price_type.name or 'cash' in name_lower or 'نقد' in price_type.name:
+                return 1  # خرید نقدی
+            elif 'حسابی' in price_type.name or 'account' in name_lower:
+                return 2  # خرید حسابی
+            else:
+                return 10  # Other buy types
+        # Sell types
+        elif trade_type == 'sell':
+            if 'نقد' in price_type.name or 'cash' in name_lower:
+                return 3  # فروش نقد
+            elif 'حسابی' in price_type.name or 'account' in name_lower:
+                return 4  # فروش حسابی
+            elif 'رسمی' in price_type.name or 'official' in name_lower:
+                return 5  # فروش رسمی
+            else:
+                return 20  # Other sell types
+        else:
+            return 30  # Unknown types
+    
+    # Sort by the key
+    sorted_list = sorted(price_types_list, key=get_sort_key)
+    
+    return sorted_list
+
+
+@register.filter
+def clean_gbp_name(price_type_name, category_name=''):
+    """
+    Remove 'پوند' or 'pound' or 'GBP' from price type name for GBP categories.
+    Example: 'خرید پوند نقدی' -> 'خرید نقدی'
+    
+    Usage: {{ price_type.name|clean_gbp_name:category.name }}
+    """
+    if not price_type_name:
+        return price_type_name
+    
+    # Check if this is a GBP category
+    category_lower = category_name.lower() if category_name else ''
+    is_gbp_category = 'پوند' in category_name or 'pound' in category_lower or 'gbp' in category_lower
+    
+    if not is_gbp_category:
+        return price_type_name
+    
+    # Remove pound-related words from name
+    cleaned = price_type_name
+    # Remove 'پوند' (with spaces)
+    cleaned = cleaned.replace(' پوند ', ' ').replace('پوند ', '').replace(' پوند', '')
+    # Remove 'pound' (case insensitive, with spaces)
+    cleaned = re.sub(r'\s*pound\s*', ' ', cleaned, flags=re.IGNORECASE)
+    # Remove 'GBP' (with spaces)
+    cleaned = re.sub(r'\s*gbp\s*', ' ', cleaned, flags=re.IGNORECASE)
+    # Clean up multiple spaces
+    cleaned = ' '.join(cleaned.split())
+    
+    return cleaned.strip()
+
 
 @register.filter
 def get_item(dictionary, key):

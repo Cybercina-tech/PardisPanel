@@ -7,8 +7,10 @@
     'use strict';
 
     // Get template ID and initial config
+    // Security: Read from json_script element (safer than hidden input with |safe)
     const templateId = document.getElementById('templateId').value;
-    const initialConfig = JSON.parse(document.getElementById('templateConfig').value || '{}');
+    const configElement = document.getElementById('template-config-data');
+    const initialConfig = configElement ? JSON.parse(configElement.textContent) : {};
     
     // State
     let fields = initialConfig.fields || {};

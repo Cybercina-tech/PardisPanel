@@ -53,9 +53,10 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    {% load change_price_tags %}
                                     {% for item in pending_list %}
                                     <tr>
-                                        <td>{{ item.price_type.name }}</td>
+                                        <td>{{ item.price_type.name|clean_gbp_name:category.name }}</td>
                                         <td class="text-white-50">
                                             {{ item.price_type.source_currency.code }}/{{ item.price_type.target_currency.code }}
                                         </td>

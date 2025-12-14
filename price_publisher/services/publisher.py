@@ -103,8 +103,9 @@ PERSIAN_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
 # Contact information
 CONTACT_INFO = {
     "Mr. Mahdi": "+447533544249",
-    "Ms. Kianian": "+989121894230",
-    "Manager": "+447399990340",
+    "Ms. Maria": "+447399990340",
+    "Ms. Sogand": "+447777238863",
+    "Ms. Kianian": "+989121894230",  # Financial Manager
 }
 
 OFFICE_ADDRESS = """Office A
@@ -138,14 +139,14 @@ LEGACY_FINAL_BUTTONS = [
     [
         {
             "text": "ارتباط با امور مشتریان ۲",
-            "url": "https://wa.me/989121894230",
+            "url": "https://wa.me/447399990340",
         }
     ],
     [
-        {"text": "ارتباط با امور مشتریان ۳", "url": "https://wa.me/447399990340"},
+        {"text": "ارتباط با امور مشتریان ۳", "url": "https://wa.me/447777238863"},
     ],
     [
-        {"text": "ارتباط با امور مشتریان ۴", "url": "https://wa.me/989121894230"},
+        {"text": "مدیر مالی", "url": "https://wa.me/989121894230"},
     ],
     [
         {"text": "وب سایت", "url": "https://sarafipardis.co.uk/"},

@@ -18,6 +18,48 @@ from .models import Finalization, FinalizedPriceHistory, SpecialPriceFinalizatio
 from .services import ExternalAPIService
 from setting.utils import log_finalize_event, log_telegram_event
 
+
+def sort_gbp_price_types(price_types):
+    """
+    Sort price types for GBP/Pound category in specific order:
+    1. خرید نقدی (Buy Cash)
+    2. خرید حسابی (Buy Account)
+    3. فروش نقد (Sell Cash)
+    4. فروش حسابی (Sell Account)
+    5. فروش رسمی (Sell Official)
+    """
+    if not price_types:
+        return price_types
+    
+    price_types_list = list(price_types)
+    
+    def get_sort_key(price_type):
+        name_lower = price_type.name.lower()
+        trade_type = price_type.trade_type.lower()
+        
+        # Buy types
+        if trade_type == 'buy':
+            if 'نقدی' in price_type.name or 'cash' in name_lower or 'نقد' in price_type.name:
+                return 1  # خرید نقدی
+            elif 'حسابی' in price_type.name or 'account' in name_lower:
+                return 2  # خرید حسابی
+            else:
+                return 10  # Other buy types
+        # Sell types
+        elif trade_type == 'sell':
+            if 'نقد' in price_type.name or 'cash' in name_lower:
+                return 3  # فروش نقد
+            elif 'حسابی' in price_type.name or 'account' in name_lower:
+                return 4  # فروش حسابی
+            elif 'رسمی' in price_type.name or 'official' in name_lower:
+                return 5  # فروش رسمی
+            else:
+                return 20  # Other sell types
+        else:
+            return 30  # Unknown types
+    
+    return sorted(price_types_list, key=get_sort_key)
+
 logger = logging.getLogger(__name__)
 
 
@@ -61,6 +103,11 @@ def finalize_dashboard(request):
         
         # Get all price types for this category
         price_types = category.price_types.all()
+        
+        # Sort price types for GBP/Pound category
+        category_name_lower = category.name.lower()
+        if 'پوند' in category.name or 'pound' in category_name_lower or 'gbp' in category_name_lower:
+            price_types = sort_gbp_price_types(price_types)
         category_pending = []
         
         for price_type in price_types:
@@ -156,6 +203,11 @@ def finalize_category(request, category_id):
         price_types = PriceType.objects.filter(category=category).select_related(
             'source_currency', 'target_currency'
         )
+        
+        # Sort price types for GBP/Pound category
+        category_name_lower = category.name.lower()
+        if 'پوند' in category.name or 'pound' in category_name_lower or 'gbp' in category_name_lower:
+            price_types = sort_gbp_price_types(price_types)
         
         # Build price_items: include ALL price types in the category
         # For each price_type:
@@ -355,6 +407,12 @@ def finalize_category(request, category_id):
     price_types = PriceType.objects.filter(category=category).select_related(
         'source_currency', 'target_currency'
     )
+    
+    # Sort price types for GBP/Pound category
+    category_name_lower = category.name.lower()
+    if 'پوند' in category.name or 'pound' in category_name_lower or 'gbp' in category_name_lower:
+        price_types = sort_gbp_price_types(price_types)
+    
     pending_prices = []
     for price_type in price_types:
         latest_price = price_type.price_histories.first()

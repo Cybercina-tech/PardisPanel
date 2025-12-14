@@ -28,24 +28,30 @@ OFFER_TEXT_POSITIONS = {
     "farsi_weekday_tuesday": (615, 435),  # Special position for Tuesday: x=615, y=435
     "english_date": (410, 250),  # Moved slightly to the left
     "english_weekday": (580, 420),
+    # Tether banner date fields
+    "tether_date": (1280, 290),  # Date format: "14 dec"
+    "tether_year": (1330, 410),  # Year: "2025"
     # Updated coordinates for new banner
-    "tether_sell_irr": (280, 570),  # فروش تتر به تومن
-    "tether_buy_irr": (900, 570),    # خرید تتر به تومن
-    "tether_sell_gbp": (350, 950),   # فروش تتر به پوند
-    "tether_buy_gbp": (930, 950),    # خرید تتر به پوند
+    "tether_sell_irr": (580, 1130),  # فروش تتر به تومن
+    "tether_buy_irr": (1800, 1130),    # خرید تتر به تومن
+    "tether_buy_gbp": (1860, 1900),    # خرید تتر به پوند
+    "tether_sell_gbp": (690, 1900),   # فروش تتر به پوند
     "working_hours": (1200, 2200),   # ساعات کاری
 }
 
 FONT_FILES = {
     # Date fonts
-    "farsi_date": ("Morabba.ttf", 115),
-    "farsi_weekday": ("Morabba.ttf", 86),
-    "farsi_weekday_tuesday": ("Morabba.ttf", 100),  # Size 100 for Tuesday
-    "english_date": ("montsrrat.otf", 100),  # Changed to English font
-    "english_weekday": ("montsrrat.otf", 94),  # Changed to English font
-    "english_number": ("montsrrat.otf", 113),  # Reduced by 2 degrees (from 115)
-    "tether_price": ("montsrrat.otf", 100),  # English font for Tether prices
-    "working_hours": ("Morabba.ttf", 50),  # ساعات کاری
+    "farsi_date": ("Morabba.ttf", 200),
+    "farsi_weekday": ("Morabba.ttf", 200),
+    "farsi_weekday_tuesday": ("Morabba.ttf", 200),  # Size 200 for Tuesday
+    "english_date": ("montsrrat.otf", 200),  # Changed to English font
+    "english_weekday": ("montsrrat.otf", 200),  # Changed to English font
+    "english_number": ("montsrrat.otf", 200),  # Size 200
+    "tether_price": ("montsrrat.otf", 200),  # English font for Tether prices
+    "working_hours": ("Morabba.ttf", 200),  # ساعات کاری
+    # Tether banner date fonts (English)
+    "tether_date": ("montsrrat.otf", 130),  # Date format: "14 dec" - size 130
+    "tether_year": ("montsrrat.otf", 145),  # Year: "2025" - size 145
 }
 
 FARSI_WEEKDAYS = {
@@ -149,7 +155,9 @@ def render_tether_board(
     draw_ctx = ImageDraw.Draw(image)
     fonts = _load_fonts()
 
-    # Dates removed - only prices are displayed on tether board
+    # Draw date and year on tether board
+    now = timezone.localtime(timestamp) if timestamp else timezone.localtime()
+    _draw_tether_dates(draw_ctx, fonts, now)
 
     price_map = _build_price_map(price_items)
     for key in TETHER_LAYOUT_ORDER:
@@ -163,20 +171,6 @@ def render_tether_board(
             font=fonts["tether_price"],
             fill=(0, 0, 0),  # Completely black color
         )
-    
-    # اضافه کردن ساعات کاری
-    working_hours_text = "ساعات کاری:\nدوشنبه تا شنبه: ۹:۳۰ صبح تا ۵:۰۰ عصر\nیکشنبه: تعطیل"
-    working_hours_lines = working_hours_text.split('\n')
-    working_hours_y = OFFER_TEXT_POSITIONS["working_hours"][1]
-    working_hours_font = fonts.get("working_hours")
-    if working_hours_font:
-        for i, line in enumerate(working_hours_lines):
-            draw_ctx.text(
-                (OFFER_TEXT_POSITIONS["working_hours"][0], working_hours_y + i * 60),
-                line,
-                font=working_hours_font,
-                fill=(255, 255, 255)
-            )
 
     buffer = io.BytesIO()
     buffer.name = "tether_prices.png"
@@ -205,6 +199,30 @@ def _load_fonts():
                 ) from e
             raise
     return fonts
+
+
+def _draw_tether_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
+    """Draw date and year on tether board in English format."""
+    # Date format: "14 dec" (day + abbreviated month)
+    day = now.day
+    month_abbr = now.strftime("%b").lower()  # e.g., "dec"
+    date_text = f"{day} {month_abbr}"
+    
+    draw_ctx.text(
+        OFFER_TEXT_POSITIONS["tether_date"],
+        date_text,
+        font=fonts["tether_date"],
+        fill=(0, 0, 0),  # Black color
+    )
+    
+    # Year format: "2025"
+    year_text = str(now.year)
+    draw_ctx.text(
+        OFFER_TEXT_POSITIONS["tether_year"],
+        year_text,
+        font=fonts["tether_year"],
+        fill=(0, 0, 0),  # Black color
+    )
 
 
 def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
@@ -334,26 +352,20 @@ def _normalize(value: str) -> str:
 
 def _format_history_value(price_history, key: str) -> str:
     value = getattr(price_history, "price", None)
-    notes = (getattr(price_history, "notes", "") or "").strip().lower()
 
-    if any(token in notes for token in ("call", "تماس")):
-        return "تماس بگیرید"
-
-    if any(token in notes for token in ("stop", "توقف")):
-        return "توقف خرید" if "buy" in key else "توقف فروش"
-
+    # فقط عدد قیمت را نمایش می‌دهیم، هیچ متن دیگری نمایش داده نمی‌شود
     if value is None:
-        return "—"
+        return ""  # اگر قیمت وجود ندارد، خالی برمی‌گردانیم
 
     try:
         decimal_value = Decimal(value)
     except (InvalidOperation, TypeError):
-        return str(value)  # Keep English digits for Tether prices
+        return ""  # اگر نمی‌توان قیمت را تبدیل کرد، خالی برمی‌گردانیم
 
     integral = decimal_value == decimal_value.to_integral()
     quantized = decimal_value.quantize(Decimal("1")) if integral else decimal_value
     text = f"{quantized:,}"
-    return text  # Keep English digits for Tether prices
+    return text  # فقط عدد قیمت با فرمت عددی
 
 
 def _to_farsi_digits(value: str) -> str:

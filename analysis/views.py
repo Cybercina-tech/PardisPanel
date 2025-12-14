@@ -620,6 +620,25 @@ class PricingDataAPIView(APIView):
         )
 
         items_by_category = defaultdict(list)
+        
+        # Group price types by category for sorting
+        price_types_by_category = defaultdict(list)
+        for pt in price_types:
+            price_types_by_category[pt.category_id].append(pt)
+        
+        # Sort price types within GBP categories
+        for category_id, pts in price_types_by_category.items():
+            category = pts[0].category
+            category_name_lower = category.name.lower()
+            if 'پوند' in category.name or 'pound' in category_name_lower or 'gbp' in category_name_lower:
+                # Import sort function
+                from finalize.views import sort_gbp_price_types
+                price_types_by_category[category_id] = sort_gbp_price_types(pts)
+        
+        # Flatten back to list maintaining category order
+        price_types = []
+        for category_id in sorted(price_types_by_category.keys()):
+            price_types.extend(price_types_by_category[category_id])
 
         for pt in price_types:
             # Skip types that have never had a price recorded.
