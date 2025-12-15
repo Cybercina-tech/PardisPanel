@@ -95,6 +95,16 @@
                         <input type="text" id="fieldWeight" class="form-control theme-input" value="normal" placeholder="normal, bold, etc.">
                     </div>
                     
+                    <div class="template-editor-form-group">
+                        <label class="template-editor-label" for="fieldFont">Font</label>
+                        <select id="fieldFont" class="form-select theme-input">
+                            <option value="">Default (montsrrat.otf)</option>
+                            {% for filename, display_name in available_fonts %}
+                            <option value="{{ filename }}">{{ display_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
                     <button type="submit" class="btn btn-gold w-100 mt-3">
                         <i class="fas fa-plus me-2"></i>
                         Add Field

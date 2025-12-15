@@ -15,18 +15,56 @@ logger = logging.getLogger(__name__)
 STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
 FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", STATIC_ROOT_DIR / "fonts"))
 
+
+def get_available_fonts() -> list[tuple[str, str]]:
+    """
+    Get list of available font files in the fonts directory.
+    Returns list of tuples: (filename, display_name)
+    Only returns .ttf and .otf files (PIL/Pillow compatible formats).
+    """
+    if not FONT_ROOT.exists():
+        return []
+    
+    fonts = []
+    for font_file in sorted(FONT_ROOT.glob("*")):
+        if font_file.is_file() and font_file.suffix.lower() in ('.ttf', '.otf'):
+            # Use filename without extension as display name
+            display_name = font_file.stem
+            fonts.append((font_file.name, display_name))
+    
+    return fonts
+
 DEFAULT_FONT_CANDIDATES = (
     getattr(settings, "TEMPLATE_EDITOR_DEFAULT_FONT", None),
-    str(FONT_ROOT / "YekanBakh.ttf"),  # Persian font
-    str(FONT_ROOT / "Morabba.ttf"),    # Persian font
+    str(FONT_ROOT / "montsrrat.otf"),  # Same font as tether banner
+    str(FONT_ROOT / "YekanBakh.ttf"),  # Persian font fallback
+    str(FONT_ROOT / "Morabba.ttf"),    # Persian font fallback
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
     "arial.ttf",
 )
 
 
-def _get_font(size: int, weight: str = 'normal') -> ImageFont.ImageFont:
-    """Get font with specified size and weight."""
+def _get_font(size: int, weight: str = 'normal', font_filename: str = None) -> ImageFont.ImageFont:
+    """
+    Get font with specified size and weight.
+    
+    Args:
+        size: Font size in pixels
+        weight: Font weight (not directly supported by PIL, kept for compatibility)
+        font_filename: Optional font filename (e.g., 'montsrrat.otf'). If provided, uses this font.
+                      If not provided, uses default font candidates.
+    """
+    # If specific font is requested, try to load it first
+    if font_filename:
+        font_path = FONT_ROOT / font_filename
+        if font_path.exists():
+            try:
+                return ImageFont.truetype(str(font_path), size=size)
+            except (OSError, IOError) as e:
+                logger.warning(f"Failed to load requested font '{font_filename}': {e}. Falling back to default.")
+    
+    # Fall back to default font candidates
     for path in DEFAULT_FONT_CANDIDATES:
         if not path:
             continue
@@ -150,9 +188,10 @@ def render_template(template_obj, dynamic_data_dict: Dict[str, Any]) -> Image.Im
         align = field_config.get('align', 'left')
         max_width = field_config.get('max_width')
         weight = field_config.get('font_weight', 'normal')
+        font_filename = field_config.get('font')  # Font filename from config
         
         # Load font
-        font = _get_font(size=size, weight=weight)
+        font = _get_font(size=size, weight=weight, font_filename=font_filename)
         
         # Parse color
         color_rgb = _parse_color(color)

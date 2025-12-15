@@ -36,6 +36,9 @@ class TemplateCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_edit'] = False
+        # Add available fonts list
+        from .utils import get_available_fonts
+        context['available_fonts'] = get_available_fonts()
         return context
 
 
@@ -80,6 +83,9 @@ class TemplateEditView(LoginRequiredMixin, UpdateView):
         context['is_edit'] = True
         # Security: Pass config dict directly - json_script filter will handle JSON encoding safely
         context['config'] = self.object.config if self.object.config else {}
+        # Add available fonts list
+        from .utils import get_available_fonts
+        context['available_fonts'] = get_available_fonts()
         return context
 
 
@@ -163,7 +169,8 @@ class PreviewView(LoginRequiredMixin, View):
                 
                 # Load font using utility function
                 from .utils import _get_font
-                font = _get_font(size)
+                font_filename = field_config.get('font')  # Get font filename if specified
+                font = _get_font(size, font_filename=font_filename)
                 
                 # Parse color
                 try:

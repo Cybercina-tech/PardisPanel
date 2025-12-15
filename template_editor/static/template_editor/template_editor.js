@@ -78,6 +78,11 @@
             font_weight: document.getElementById('fieldWeight').value || 'normal',
         };
         
+        const fontValue = document.getElementById('fieldFont').value;
+        if (fontValue) {
+            fieldConfig.font = fontValue;
+        }
+        
         const maxWidth = document.getElementById('fieldMaxWidth').value;
         if (maxWidth) {
             fieldConfig.max_width = parseInt(maxWidth);
@@ -94,6 +99,7 @@
         document.getElementById('fieldColor').value = '#000000';
         document.getElementById('fieldAlign').value = 'left';
         document.getElementById('fieldWeight').value = 'normal';
+        document.getElementById('fieldFont').value = '';
         
         // Update UI
         renderFieldsList();
@@ -154,6 +160,13 @@
                             <input type="number" class="form-control form-control-sm" value="${config.max_width || ''}" 
                                    onchange="updateField('${fieldName}', 'max_width', this.value)" placeholder="Auto">
                         </div>
+                        <div>
+                            <label>Font:</label>
+                            <select class="form-select form-select-sm" onchange="updateField('${fieldName}', 'font', this.value || null)">
+                                <option value="">Default</option>
+                                ${getFontOptions(config.font || '')}
+                            </select>
+                        </div>
                     </div>
                 </div>
             `;
@@ -176,6 +189,15 @@
             if (key === 'max_width' && !value) {
                 delete fields[fieldName].max_width;
                 // Debounce preview refresh
+                debouncePreview();
+                return;
+            }
+        }
+        
+        // Handle font field - empty string means use default (remove font key)
+        if (key === 'font') {
+            if (!value || value === '') {
+                delete fields[fieldName].font;
                 debouncePreview();
                 return;
             }
@@ -305,6 +327,25 @@
         .finally(() => {
             saveBtn.disabled = false;
         });
+    }
+
+    /**
+     * Generate font options HTML
+     */
+    function getFontOptions(selectedFont) {
+        // Get available fonts from the select element in the form
+        const fontSelect = document.getElementById('fieldFont');
+        if (!fontSelect) {
+            return '';
+        }
+        
+        let options = '';
+        for (let i = 0; i < fontSelect.options.length; i++) {
+            const option = fontSelect.options[i];
+            const isSelected = (option.value === selectedFont) ? 'selected' : '';
+            options += `<option value="${escapeHtml(option.value)}" ${isSelected}>${escapeHtml(option.text)}</option>`;
+        }
+        return options;
     }
 
     /**

@@ -29,8 +29,8 @@ OFFER_TEXT_POSITIONS = {
     "english_date": (410, 250),  # Moved slightly to the left
     "english_weekday": (580, 420),
     # Tether banner date fields
-    "tether_date": (1280, 290),  # Date format: "14 dec"
-    "tether_year": (1330, 410),  # Year: "2025"
+    "tether_date": (1280, 300),  # Date format: "14 dec"
+    "tether_year": (1305, 410),  # Year: "2025"
     # Updated coordinates for new banner
     "tether_sell_irr": (580, 1130),  # فروش تتر به تومن
     "tether_buy_irr": (1800, 1130),    # خرید تتر به تومن
@@ -50,7 +50,7 @@ FONT_FILES = {
     "tether_price": ("montsrrat.otf", 200),  # English font for Tether prices
     "working_hours": ("Morabba.ttf", 200),  # ساعات کاری
     # Tether banner date fonts (English)
-    "tether_date": ("montsrrat.otf", 130),  # Date format: "14 dec" - size 130
+    "tether_date": ("montsrrat.otf", 110),  # Date format: "14 dec" - size 110
     "tether_year": ("montsrrat.otf", 145),  # Year: "2025" - size 145
 }
 

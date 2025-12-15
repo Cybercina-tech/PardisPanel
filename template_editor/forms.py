@@ -128,4 +128,17 @@ class TextFieldConfigForm(forms.Form):
             'placeholder': 'Optional'
         })
     )
+    font = forms.ChoiceField(
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-select'
+        })
+    )
+    
+    def __init__(self, *args, **kwargs):
+        from .utils import get_available_fonts
+        super().__init__(*args, **kwargs)
+        fonts = get_available_fonts()
+        font_choices = [('', 'Default (montsrrat.otf)')] + [(filename, display_name) for filename, display_name in fonts]
+        self.fields['font'].choices = font_choices
 
