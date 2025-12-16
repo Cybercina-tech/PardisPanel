@@ -23,29 +23,30 @@ def sort_gbp_price_types(price_types):
     price_types_list = list(price_types)
     
     def get_sort_key(price_type):
-        name_lower = price_type.name.lower()
+        name = price_type.name
+        name_lower = name.lower()
         trade_type = price_type.trade_type.lower()
         
-        # Buy types
+        # Buy types - order: 1. خرید نقدی, 2. خرید حسابی
         if trade_type == 'buy':
-            # Check for خرید نقدی first (more specific - contains 'نقدی')
-            if 'نقدی' in price_type.name or 'cash' in name_lower:
+            # Check for خرید نقدی first (contains 'نقدی' or 'cash')
+            if 'نقدی' in name or 'cash' in name_lower:
                 return 1  # خرید نقدی
-            # Check for خرید حسابی
-            elif 'حسابی' in price_type.name or 'account' in name_lower:
+            # Check for خرید حسابی (contains 'حسابی', 'از حساب', or 'account')
+            elif 'حسابی' in name or 'از حساب' in name or 'account' in name_lower:
                 return 2  # خرید حسابی
             else:
                 return 10  # Other buy types
-        # Sell types
+        # Sell types - order: 3. فروش نقد, 4. فروش حسابی, 5. فروش رسمی
         elif trade_type == 'sell':
-            # Check for فروش نقد (contains 'نقد' but not 'نقدی')
-            if ('نقد' in price_type.name and 'نقدی' not in price_type.name) or 'cash' in name_lower:
+            # Check for فروش نقد/نقدی first (contains 'نقد' or 'cash')
+            if 'نقد' in name or 'cash' in name_lower:
                 return 3  # فروش نقد
-            # Check for فروش حسابی
-            elif 'حسابی' in price_type.name or 'account' in name_lower:
+            # Check for فروش حسابی (contains 'حسابی', 'از حساب', or 'account')
+            elif 'حسابی' in name or 'از حساب' in name or 'account' in name_lower:
                 return 4  # فروش حسابی
-            # Check for فروش رسمی
-            elif 'رسمی' in price_type.name or 'official' in name_lower:
+            # Check for فروش رسمی (contains 'رسمی' or 'official')
+            elif 'رسمی' in name or 'official' in name_lower:
                 return 5  # فروش رسمی
             else:
                 return 20  # Other sell types
