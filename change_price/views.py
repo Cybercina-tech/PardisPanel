@@ -28,20 +28,73 @@ def sort_gbp_price_types(price_types):
         
         # Buy types
         if trade_type == 'buy':
-            if 'نقدی' in price_type.name or 'cash' in name_lower or 'نقد' in price_type.name:
+            # Check for خرید نقدی first (more specific - contains 'نقدی')
+            if 'نقدی' in price_type.name or 'cash' in name_lower:
                 return 1  # خرید نقدی
+            # Check for خرید حسابی
             elif 'حسابی' in price_type.name or 'account' in name_lower:
                 return 2  # خرید حسابی
             else:
                 return 10  # Other buy types
         # Sell types
         elif trade_type == 'sell':
-            if 'نقد' in price_type.name or 'cash' in name_lower:
+            # Check for فروش نقد (contains 'نقد' but not 'نقدی')
+            if ('نقد' in price_type.name and 'نقدی' not in price_type.name) or 'cash' in name_lower:
                 return 3  # فروش نقد
+            # Check for فروش حسابی
             elif 'حسابی' in price_type.name or 'account' in name_lower:
                 return 4  # فروش حسابی
+            # Check for فروش رسمی
             elif 'رسمی' in price_type.name or 'official' in name_lower:
                 return 5  # فروش رسمی
+            else:
+                return 20  # Other sell types
+        else:
+            return 30  # Unknown types
+    
+    return sorted(price_types_list, key=get_sort_key)
+
+
+def sort_tether_price_types(price_types):
+    """
+    Sort price types for Tether category in specific order:
+    1. خرید تتر تومان (Buy Tether Toman/IRR)
+    2. فروش تتر تومان (Sell Tether Toman/IRR)
+    3. خرید تتر پوند (Buy Tether GBP)
+    4. فروش تتر پوند (Sell Tether GBP)
+    """
+    if not price_types:
+        return price_types
+    
+    price_types_list = list(price_types)
+    
+    def get_sort_key(price_type):
+        name_lower = price_type.name.lower()
+        trade_type = price_type.trade_type.lower()
+        
+        # Check target currency
+        target_code = getattr(price_type.target_currency, 'code', '').lower() if price_type.target_currency else ''
+        target_name = price_type.target_currency.name.lower() if price_type.target_currency else ''
+        has_toman = any(keyword in name_lower for keyword in ['تومان', 'تومن', 'toman', 'tmn']) or \
+                    any(keyword in target_code for keyword in ['irr', 'irt']) or \
+                    'تومان' in target_name or 'تومن' in target_name
+        has_gbp = any(keyword in name_lower for keyword in ['پوند', 'pound', 'gbp']) or \
+                  'gbp' in target_code or 'pound' in target_name or 'پوند' in target_name
+        
+        # Buy types
+        if trade_type == 'buy':
+            if has_toman:
+                return 1  # خرید تتر تومان
+            elif has_gbp:
+                return 3  # خرید تتر پوند
+            else:
+                return 10  # Other buy types
+        # Sell types
+        elif trade_type == 'sell':
+            if has_toman:
+                return 2  # فروش تتر تومان
+            elif has_gbp:
+                return 4  # فروش تتر پوند
             else:
                 return 20  # Other sell types
         else:
@@ -137,10 +190,12 @@ def update_category_prices(request, category_id):
     category = get_object_or_404(Category, id=category_id)
     price_types = PriceType.objects.filter(category=category)
     
-    # Sort price types for GBP/Pound category
+    # Sort price types based on category type
     category_name_lower = category.name.lower()
     if 'پوند' in category.name or 'pound' in category_name_lower or 'gbp' in category_name_lower:
         price_types = sort_gbp_price_types(price_types)
+    elif 'تتر' in category.name or 'tether' in category_name_lower or 'usdt' in category_name_lower:
+        price_types = sort_tether_price_types(price_types)
     
     # Get latest prices for all price types
     latest_prices = {

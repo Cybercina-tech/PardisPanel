@@ -50,7 +50,7 @@
                 <div class="card-body p-0">
                     <div class="price-list">
                         {% load change_price_tags %}
-                        {% for price_type in category.price_types.all|sort_gbp_price_types %}
+                        {% for price_type in category.price_types.all|sort_price_types_by_category:category.name %}
                         <div class="price-list-item border-light-gold">
                             <div class="price-item">
                                 <div class="price-info" dir="auto">
