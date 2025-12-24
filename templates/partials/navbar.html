@@ -56,53 +56,46 @@
             </ul>
 
             <!-- User Authentication Section -->
-            <ul class="navbar-nav user-section align-items-center">
+            <ul class="navbar-nav user-section align-items-center ms-lg-auto">
                 {% if user.is_authenticated %}
-                    <!-- User Info & Logout - Side by Side -->
+                    <!-- Professional User Profile & Logout Section -->
                     <li class="nav-item">
-                        <div class="user-actions-wrapper d-flex align-items-center gap-2">
-                            <div class="user-info d-flex align-items-center">
-                                <i class="bi bi-person-circle me-2 user-icon" style="color: var(--color-accent);"></i>
-                                <div class="user-details d-none d-md-block">
-                                    <div class="fw-semibold lh-1 user-name">
+                        <div class="user-profile-section d-flex align-items-center gap-3">
+                            <!-- User Profile Card -->
+                            <div class="user-profile-card d-flex align-items-center">
+                                <div class="user-avatar-wrapper">
+                                    <i class="bi bi-person-circle user-avatar-icon"></i>
+                                </div>
+                                <div class="user-info-content">
+                                    <div class="user-name-display">
                                         {% if user.get_full_name %}
                                             {{ user.get_full_name }}
                                         {% else %}
                                             {{ user.username }}
                                         {% endif %}
                                     </div>
-                                    <div class="small text-muted mt-1">
-                                        <span class="badge user-role-badge">
-                                            <i class="bi bi-crown me-1"></i>
-                                            {{ user.role|capfirst }}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="user-details-mobile d-md-none">
-                                    <div class="fw-semibold user-name-mobile">
-                                        {% if user.get_full_name %}
-                                            {{ user.get_full_name|truncatewords:2 }}
-                                        {% else %}
-                                            {{ user.username|truncatewords:1 }}
-                                        {% endif %}
+                                    <div class="user-role-display">
+                                        <i class="bi bi-shield-check me-1"></i>
+                                        <span>{{ user.role|capfirst }}</span>
                                     </div>
                                 </div>
                             </div>
-                            <a class="btn btn-muted btn-sm logout-btn" 
+                            
+                            <!-- Logout Button -->
+                            <a class="btn-logout-professional" 
                                href="{% url 'accounts:logout' %}"
-                               title="Logout">
-                                <i class="bi bi-box-arrow-right me-1"></i>
-                                <span class="d-none d-sm-inline">Logout</span>
-                                <span class="d-sm-none">Out</span>
+                               title="خروج از حساب کاربری">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Logout</span>
                             </a>
                         </div>
                     </li>
                 {% else %}
-                    <!-- Guest User Links -->
+                    <!-- Guest User Login Link -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                        <a class="nav-link btn-login-professional" href="{% url 'accounts:login' %}">
                             <i class="bi bi-box-arrow-in-right me-1"></i>
-                            Login
+                            <span>ورود</span>
                         </a>
                     </li>
                 {% endif %}
@@ -110,17 +103,41 @@
         </div>
     </div>
 </nav>
-    <script>
-        // Set active link based on current URL
-        // Note: Navbar scroll effect is handled by main.js
-        document.addEventListener('DOMContentLoaded', function() {
+<script>
+    // Set active link based on current URL
+    // Note: Navbar scroll effect is handled by main.js
+    document.addEventListener('DOMContentLoaded', function() {
+        function setActiveNavLink() {
             const currentPath = window.location.pathname;
-            const navLinks = document.querySelectorAll('.nav-link');
+            const navLinks = document.querySelectorAll('#mainNavbar .nav-link');
             
+            // Remove all active classes first
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            // Find and set active link
             navLinks.forEach(link => {
-                if (link.getAttribute('href') === currentPath) {
+                const href = link.getAttribute('href');
+                if (!href) return;
+                
+                // Exact match
+                if (href === currentPath) {
+                    link.classList.add('active');
+                    return;
+                }
+                
+                // Match for nested routes (e.g., /prices/update/ matches /prices/)
+                // But exclude root path
+                if (href !== '/' && currentPath.startsWith(href) && 
+                    (currentPath.length === href.length || currentPath[href.length] === '/')) {
                     link.classList.add('active');
                 }
             });
-        });
-    </script>
+        }
+        
+        // Set active on page load
+        setActiveNavLink();
+        
+        // Update active link on navigation (for SPA-like behavior if needed)
+        window.addEventListener('popstate', setActiveNavLink);
+    });
+</script>

@@ -32,10 +32,10 @@ OFFER_TEXT_POSITIONS = {
     "tether_date": (1280, 300),  # Date format: "14 dec"
     "tether_year": (1305, 410),  # Year: "2025"
     # Updated coordinates for new banner
-    "tether_sell_irr": (580, 1130),  # فروش تتر به تومن
-    "tether_buy_irr": (1800, 1130),    # خرید تتر به تومن
-    "tether_buy_gbp": (1860, 1900),    # خرید تتر به پوند
-    "tether_sell_gbp": (690, 1900),   # فروش تتر به پوند
+    "tether_sell_irr": (540, 1151),  # فروش تتر به تومن
+    "tether_buy_irr": (1750, 1150),    # خرید تتر به تومن
+    "tether_buy_gbp": (690, 1920),    # خرید تتر به پوند
+    "tether_sell_gbp": (1860, 1920),   # فروش تتر به پوند
     "working_hours": (1200, 2200),   # ساعات کاری
 }
 

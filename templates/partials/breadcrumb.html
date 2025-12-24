@@ -1,0 +1,35 @@
+{% comment %}
+Breadcrumb Component for Tailwind Pages
+Usage: {% include 'partials/breadcrumb.html' with items=breadcrumb_items %}
+items should be a list of dicts: [{'name': 'Home', 'url': '/dashboard/'}, {'name': 'Settings', 'url': None}]
+{% endcomment %}
+
+{% if items %}
+<nav class="breadcrumb-nav mb-6" aria-label="Breadcrumb">
+    <ol class="flex items-center space-x-2 rtl:space-x-reverse text-sm flex-wrap">
+        {% for item in items %}
+            <li class="flex items-center {% if not forloop.last %}text-gray-400{% else %}text-yellow-400 font-semibold{% endif %}">
+                {% if item.url and not forloop.last %}
+                    <a href="{{ item.url }}" class="hover:text-yellow-400 transition-colors duration-200 flex items-center space-x-2 rtl:space-x-reverse">
+                        {% if item.icon %}
+                            <i class="{{ item.icon }}"></i>
+                        {% endif %}
+                        <span>{{ item.name }}</span>
+                    </a>
+                {% else %}
+                    <span class="flex items-center space-x-2 rtl:space-x-reverse">
+                        {% if item.icon %}
+                            <i class="{{ item.icon }}"></i>
+                        {% endif %}
+                        <span>{{ item.name }}</span>
+                    </span>
+                {% endif %}
+                {% if not forloop.last %}
+                    <i class="fas fa-chevron-left rtl:fa-chevron-right text-xs mx-2 rtl:mx-2 text-gray-600"></i>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ol>
+</nav>
+{% endif %}
+

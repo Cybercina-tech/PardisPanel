@@ -1,0 +1,353 @@
+<!-- Tailwind Navbar - Modern & Professional -->
+<nav class="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl border-b shadow-2xl transition-all duration-300" id="tailwindNavbar" style="background: var(--color-black-navbar); border-color: rgba(255, 215, 0, 0.3);">
+    <div class="w-full px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+            <!-- Brand/Logo -->
+            <div class="flex-shrink-0">
+                <a href="{% url 'dashboard:dashboard2' %}" class="flex items-center space-x-3 rtl:space-x-reverse group">
+                    <div class="p-2.5 rounded-xl transition-all duration-300 border shadow-lg group-hover:scale-105" style="background: rgba(255, 215, 0, 0.15); border-color: rgba(255, 215, 0, 0.4);">
+                        <i class="fas fa-coins text-xl transition-transform duration-300 group-hover:rotate-12" style="color: var(--color-gold);"></i>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-xl font-bold leading-tight transition-all duration-300" style="color: var(--color-gold);">
+                            Paradis Exchange
+                        </span>
+                        <span class="text-xs text-gray-400 hidden sm:block font-medium">Premium Trading Platform</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Desktop Navigation - All links in one line -->
+            <div class="hidden lg:flex lg:items-center lg:flex-1 lg:justify-start lg:px-4 overflow-x-auto">
+                <div class="flex items-center space-x-1 rtl:space-x-reverse flex-nowrap">
+                    <a href="{% url 'change_price:dashboard' %}" class="tailwind-nav-link whitespace-nowrap !px-3">
+                        <i class="fas fa-dollar-sign text-base"></i>
+                        <span class="font-medium">Update Prices</span>
+                    </a>
+                    <a href="{% url 'special_price:dashboard' %}" class="tailwind-nav-link whitespace-nowrap !px-3">
+                        <i class="fas fa-star text-base"></i>
+                        <span class="font-medium">Special Prices</span>
+                    </a>
+                    <a href="{% url 'finalize:dashboard' %}" class="tailwind-nav-link whitespace-nowrap !px-3">
+                        <i class="fas fa-check-circle text-base"></i>
+                        <span class="font-medium">Finalize</span>
+                    </a>
+                    <a href="{% url 'category:category_dashboard' %}" class="tailwind-nav-link whitespace-nowrap !px-3">
+                        <i class="fas fa-tags text-base"></i>
+                        <span class="font-medium">Categories</span>
+                    </a>
+                    <a href="{% url 'analysis:dashboard' %}" class="tailwind-nav-link whitespace-nowrap !px-3">
+                        <i class="fas fa-chart-line text-base"></i>
+                        <span class="font-medium">Analysis</span>
+                    </a>
+                    <a href="{% url 'setting:settings' %}" class="tailwind-nav-link whitespace-nowrap !px-3">
+                        <i class="fas fa-cog text-base"></i>
+                        <span class="font-medium">Settings</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- User Section & Mobile Toggle -->
+            <div class="flex items-center space-x-4 rtl:space-x-reverse">
+                {% if user.is_authenticated %}
+                    <!-- Notifications (Desktop) - Optional -->
+                    <div class="hidden lg:flex items-center">
+                        <button type="button" 
+                                class="relative p-2.5 rounded-xl border border-transparent transition-all duration-300 group"
+                                style="color: var(--color-gold);"
+                                onmouseover="this.style.color='var(--color-gold-dark)'; this.style.backgroundColor='rgba(255, 215, 0, 0.1)'; this.style.borderColor='rgba(255, 215, 0, 0.3)';"
+                                onmouseout="this.style.color='var(--color-gold)'; this.style.backgroundColor='transparent'; this.style.borderColor='transparent';"
+                                aria-label="Notifications"
+                                id="notificationBtn">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span class="absolute -top-1 -right-1 rtl:left-0 rtl:right-auto w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 notification-badge" id="notificationBadge">
+                                0
+                            </span>
+                        </button>
+                    </div>
+
+                    <!-- User Info (Desktop) -->
+                    <div class="hidden md:flex items-center space-x-4 rtl:space-x-reverse">
+                        <div class="flex items-center space-x-3 rtl:space-x-reverse px-4 py-2.5 rounded-xl border shadow-lg transition-all duration-300" style="background: rgba(31, 31, 31, 0.6); border-color: rgba(255, 215, 0, 0.3);" onmouseover="this.style.borderColor='rgba(255, 215, 0, 0.5)';" onmouseout="this.style.borderColor='rgba(255, 215, 0, 0.3)';">
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center shadow-lg" style="background: rgba(255, 215, 0, 0.15); border-color: rgba(255, 215, 0, 0.5);">
+                                    <i class="fas fa-user text-sm" style="color: var(--color-gold);"></i>
+                                </div>
+                            </div>
+                            <div class="hidden lg:block">
+                                <div class="text-sm font-bold leading-tight" style="color: var(--color-white-soft);">
+                                    {% if user.get_full_name %}
+                                        {{ user.get_full_name|truncatewords:2 }}
+                                    {% else %}
+                                        {{ user.username }}
+                                    {% endif %}
+                                </div>
+                                {% if user.role %}
+                                    <div class="text-xs mt-0.5 font-medium" style="color: var(--color-gold);">
+                                        <i class="fas fa-crown text-[10px] mr-1"></i>
+                                        {{ user.get_role_display|default:user.role|capfirst }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <a href="{% url 'accounts:logout' %}" 
+                           class="flex items-center space-x-2.5 rtl:space-x-reverse px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-red-600/20 to-red-700/15 hover:from-red-600/30 hover:to-red-700/25 rounded-xl border border-red-500/40 hover:border-red-500/60 transition-all duration-300 shadow-lg hover:shadow-red-500/20">
+                            <i class="fas fa-sign-out-alt text-base"></i>
+                            <span class="hidden xl:inline">Logout</span>
+                        </a>
+                    </div>
+
+                    <!-- Mobile User Icon & Notifications -->
+                    <div class="md:hidden flex items-center space-x-2 rtl:space-x-reverse">
+                        <button type="button" 
+                                class="relative p-2 rounded-lg"
+                                style="color: var(--color-gold);"
+                                onmouseover="this.style.color='var(--color-gold-dark)';"
+                                onmouseout="this.style.color='var(--color-gold)';"
+                                aria-label="Notifications">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span class="absolute top-0 right-0 rtl:left-0 rtl:right-auto w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center notification-badge-mobile" style="display: none;">
+                                0
+                            </span>
+                        </button>
+                        <div class="w-10 h-10 rounded-full border-2 flex items-center justify-center shadow-lg" style="background: rgba(255, 215, 0, 0.15); border-color: rgba(255, 215, 0, 0.5);">
+                            <i class="fas fa-user text-sm" style="color: var(--color-gold);"></i>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" 
+                       class="flex items-center space-x-2.5 rtl:space-x-reverse px-4 py-2.5 text-sm font-semibold rounded-xl border transition-all duration-300 shadow-lg"
+                       style="color: var(--color-gold); background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.4);"
+                       onmouseover="this.style.color='var(--color-gold-dark)'; this.style.backgroundColor='rgba(255, 215, 0, 0.2)'; this.style.borderColor='rgba(255, 215, 0, 0.6)'; this.style.boxShadow='0 4px 12px rgba(255, 215, 0, 0.2)';"
+                       onmouseout="this.style.color='var(--color-gold)'; this.style.backgroundColor='rgba(255, 215, 0, 0.1)'; this.style.borderColor='rgba(255, 215, 0, 0.4)'; this.style.boxShadow='';">
+                        <i class="fas fa-sign-in-alt text-base"></i>
+                        <span class="hidden sm:inline">Login</span>
+                    </a>
+                {% endif %}
+
+                    <!-- Mobile Menu Toggle -->
+                    <button type="button" 
+                            id="mobileMenuToggle"
+                            class="lg:hidden inline-flex items-center justify-center p-3 rounded-xl border transition-all duration-300 shadow-lg focus:outline-none"
+                            style="color: var(--color-gold); border-color: rgba(255, 215, 0, 0.3);"
+                            onmouseover="this.style.color='var(--color-gold-dark)'; this.style.backgroundColor='rgba(255, 215, 0, 0.15)'; this.style.borderColor='rgba(255, 215, 0, 0.5)';"
+                            onmouseout="this.style.color='var(--color-gold)'; this.style.backgroundColor='transparent'; this.style.borderColor='rgba(255, 215, 0, 0.3)';"
+                            aria-expanded="false"
+                            aria-label="Toggle navigation">
+                        <i class="fas fa-bars text-xl" id="menuIcon"></i>
+                    </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="lg:hidden hidden border-t backdrop-blur-xl shadow-2xl transition-all duration-300 ease-in-out" style="border-color: rgba(255, 215, 0, 0.3); background: var(--color-black-navbar);">
+        <div class="px-4 py-5 space-y-2">
+            <a href="{% url 'change_price:dashboard' %}" class="mobile-nav-link">
+                <i class="fas fa-dollar-sign text-lg"></i>
+                <span class="font-medium">Update Prices</span>
+            </a>
+            <a href="{% url 'special_price:dashboard' %}" class="mobile-nav-link">
+                <i class="fas fa-star text-lg"></i>
+                <span class="font-medium">Special Prices</span>
+            </a>
+            <a href="{% url 'finalize:dashboard' %}" class="mobile-nav-link">
+                <i class="fas fa-check-circle text-lg"></i>
+                <span class="font-medium">Finalize</span>
+            </a>
+            <a href="{% url 'category:category_dashboard' %}" class="mobile-nav-link">
+                <i class="fas fa-tags text-lg"></i>
+                <span class="font-medium">Categories</span>
+            </a>
+            <a href="{% url 'analysis:dashboard' %}" class="mobile-nav-link">
+                <i class="fas fa-chart-line text-lg"></i>
+                <span class="font-medium">Analysis</span>
+            </a>
+            <a href="{% url 'setting:settings' %}" class="mobile-nav-link">
+                <i class="fas fa-cog text-lg"></i>
+                <span class="font-medium">Settings</span>
+            </a>
+            
+            {% if user.is_authenticated %}
+                <div class="pt-5 mt-5 border-t" style="border-color: rgba(255, 215, 0, 0.3);">
+                    <div class="px-4 py-3 mb-3 rounded-xl border" style="background: rgba(31, 31, 31, 0.6); border-color: rgba(255, 215, 0, 0.3);">
+                        <div class="text-sm font-bold mb-1" style="color: var(--color-white-soft);">
+                            {% if user.get_full_name %}
+                                {{ user.get_full_name }}
+                            {% else %}
+                                {{ user.username }}
+                            {% endif %}
+                        </div>
+                        {% if user.role %}
+                            <div class="text-xs font-medium" style="color: var(--color-gold);">
+                                <i class="fas fa-crown text-[10px] mr-1"></i>
+                                {{ user.get_role_display|default:user.role|capfirst }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'accounts:logout' %}" class="mobile-nav-link text-red-400 hover:text-red-300 bg-gradient-to-r from-red-600/20 to-red-700/15 hover:from-red-600/30 hover:to-red-700/25 border-red-500/40 hover:border-red-500/60">
+                        <i class="fas fa-sign-out-alt text-lg"></i>
+                        <span class="font-medium">Logout</span>
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<!-- Spacer to prevent content from going under fixed navbar -->
+<div class="h-20"></div>
+
+<!-- 
+    Note: Navbar styles are now separated:
+    - Tailwind @apply styles: static/src/input.css (compiled to output.css)
+    - Custom CSS styles: static/css/tailwind-custom.css
+-->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const navbar = document.getElementById('tailwindNavbar');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menuIcon = document.getElementById('menuIcon');
+    
+    // Navbar scroll effect
+    if (navbar) {
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 20) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    }
+    
+    // Mobile menu toggle
+    if (mobileMenuToggle && mobileMenu && menuIcon) {
+        mobileMenuToggle.addEventListener('click', function() {
+            const isOpen = mobileMenu.classList.toggle('open');
+            mobileMenu.classList.toggle('hidden');
+            
+            // Change icon
+            if (isOpen) {
+                menuIcon.classList.remove('fa-bars');
+                menuIcon.classList.add('fa-times');
+            } else {
+                menuIcon.classList.remove('fa-times');
+                menuIcon.classList.add('fa-bars');
+            }
+            
+            // Update aria-expanded
+            mobileMenuToggle.setAttribute('aria-expanded', isOpen);
+        });
+    }
+    
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(event) {
+        if (mobileMenu && mobileMenuToggle && menuIcon) {
+            const isClickInside = mobileMenu.contains(event.target) || mobileMenuToggle.contains(event.target);
+            
+            if (!isClickInside && mobileMenu.classList.contains('open')) {
+                mobileMenu.classList.remove('open');
+                mobileMenu.classList.add('hidden');
+                menuIcon.classList.remove('fa-times');
+                menuIcon.classList.add('fa-bars');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            }
+        }
+    });
+    
+    // Close mobile menu when clicking on a link
+    const mobileLinks = document.querySelectorAll('.mobile-nav-link');
+    mobileLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (mobileMenu && menuIcon && mobileMenuToggle) {
+                mobileMenu.classList.remove('open');
+                mobileMenu.classList.add('hidden');
+                menuIcon.classList.remove('fa-times');
+                menuIcon.classList.add('fa-bars');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
+            }
+        });
+    });
+    
+    // Set active nav link with improved detection
+    function setActiveNavLink() {
+        const currentPath = window.location.pathname;
+        const allNavLinks = document.querySelectorAll('.tailwind-nav-link, .mobile-nav-link');
+        
+        // Remove all active classes
+        allNavLinks.forEach(link => {
+            link.classList.remove('active');
+            link.setAttribute('aria-current', 'false');
+        });
+        
+        // Set active link with priority-based matching
+        let bestMatch = null;
+        let bestMatchLength = 0;
+        
+        allNavLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href) return;
+            
+            // Exact match (highest priority)
+            if (href === currentPath) {
+                link.classList.add('active');
+                link.setAttribute('aria-current', 'page');
+                bestMatch = link;
+                bestMatchLength = href.length;
+                return;
+            }
+            
+            // Match for nested routes (only if longer than previous match)
+            if (href !== '/' && currentPath.startsWith(href) && 
+                (currentPath.length === href.length || currentPath[href.length] === '/')) {
+                if (href.length > bestMatchLength) {
+                    if (bestMatch) {
+                        bestMatch.classList.remove('active');
+                        bestMatch.setAttribute('aria-current', 'false');
+                    }
+                    link.classList.add('active');
+                    link.setAttribute('aria-current', 'page');
+                    bestMatch = link;
+                    bestMatchLength = href.length;
+                }
+            }
+        });
+        
+        // Add visual feedback animation
+        const activeLink = document.querySelector('.tailwind-nav-link.active, .mobile-nav-link.active');
+        if (activeLink) {
+            activeLink.style.animation = 'none';
+            setTimeout(() => {
+                activeLink.style.animation = 'pulse 0.3s ease-out';
+            }, 10);
+        }
+    }
+    
+    // Set active on page load
+    setActiveNavLink();
+    
+    // Update active link on navigation
+    window.addEventListener('popstate', setActiveNavLink);
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            if (href !== '#' && document.querySelector(href)) {
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            }
+        });
+    });
+});
+</script>
+

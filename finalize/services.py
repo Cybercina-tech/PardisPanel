@@ -114,16 +114,38 @@ class ExternalAPIService:
         """
         # Get previous values from external API
         existing = ExternalAPIService.get_existing_rates() or {}
+        logger.info(f"Existing rates from API: {existing}")
+        logger.info(f"New rates to send: {rates}")
 
         full_rates: dict[str, float] = {}
         for key in RATE_KEYS:
             if key in rates:
-                full_rates[key] = float(rates[key])
+                # Always use new rate if available (even if it's 0 or 1)
+                rate_value = float(rates[key])
+                full_rates[key] = rate_value
+                logger.info(f"Using new rate for {key}: {full_rates[key]}")
             elif key in existing:
-                full_rates[key] = float(existing[key])
+                # Use existing rate from API if no new rate available
+                existing_value = float(existing[key])
+                full_rates[key] = existing_value
+                logger.info(f"Using existing rate from API for {key}: {full_rates[key]}")
             else:
                 # No new or previous value → fall back to 0
                 full_rates[key] = 0.0
+                logger.warning(f"No rate found for {key}, using 0.0")
+
+        # Special logging for USDT_SELL
+        if "USDT_SELL" in full_rates:
+            logger.info(
+                f"USDT_SELL final value: {full_rates['USDT_SELL']}, "
+                f"source: {'new' if 'USDT_SELL' in rates else 'existing' if 'USDT_SELL' in existing else 'default'}"
+            )
+        elif "USDT_SELL" not in full_rates:
+            logger.error(
+                f"USDT_SELL was not included in final rates! "
+                f"New rates: {rates.get('USDT_SELL', 'N/A')}, "
+                f"Existing rates: {existing.get('USDT_SELL', 'N/A')}"
+            )
 
         headers = {"Content-Type": "application/json"}
 
@@ -165,7 +187,21 @@ class ExternalAPIService:
                     getattr(price_type.target_currency, "code", "") or ""
                 ).upper()
                 trade_type = (getattr(price_type, "trade_type", "") or "").lower()
-                price_value = float(getattr(price_history, "price", 0))
+                # Handle DecimalField properly - convert to float
+                price_attr = getattr(price_history, "price", None)
+                if price_attr is None:
+                    price_value = 0.0
+                else:
+                    # Convert Decimal to float explicitly
+                    price_value = float(price_attr)
+                
+                # Log all USDT-related items for debugging
+                if source_code == "USDT" or target_code == "USDT":
+                    logger.info(
+                        f"Processing USDT item: source={source_code}, target={target_code}, "
+                        f"trade_type={trade_type}, price={price_value}, "
+                        f"price_type_name={getattr(price_type, 'name', 'N/A')}"
+                    )
             except Exception as exc:  # defensive
                 logger.warning(f"Failed to extract price data from item {item}: {exc}")
                 skipped.append(str(item))
@@ -175,11 +211,29 @@ class ExternalAPIService:
 
             # Main mapping: GBP / IRR and USDT / IRR
             pair = {source_code, target_code}
+            price_type_name = (getattr(price_type, "name", "") or "").lower()
 
             if pair == {"GBP", "IRR"} or pair == {"GBP", "IRT"}:
-                # چه GBP/IRR باشد چه IRR/GBP، فقط نوع معامله برای BUY/SELL مهم است
-                key = "GBP_BUY" if trade_type == "buy" else "GBP_SELL"
+                # برای پوند: فقط از "حسابی" (account) استفاده می‌کنیم، نه "نقدی" (cash)
+                # بررسی می‌کنیم که آیا "حسابی" یا "account" در نام price_type وجود دارد
+                is_account = "حسابی" in getattr(price_type, "name", "") or "account" in price_type_name
+                
+                if is_account:
+                    # چه GBP/IRR باشد چه IRR/GBP، فقط نوع معامله برای BUY/SELL مهم است
+                    key = "GBP_BUY" if trade_type == "buy" else "GBP_SELL"
+                    logger.info(
+                        f"GBP account price found: {key} = {price_value}, "
+                        f"price_type_name={getattr(price_type, 'name', 'N/A')}"
+                    )
+                else:
+                    # پوند نقدی را skip می‌کنیم
+                    skipped.append(
+                        f"GBP cash price skipped (only account prices are sent): "
+                        f"{source_code}/{target_code} {trade_type} - {getattr(price_type, 'name', 'N/A')}"
+                    )
+                    continue
             elif pair == {"USDT", "IRR"} or pair == {"USDT", "IRT"}:
+                # برای تتر: فقط به تومان (IRR) - همه قیمت‌های تتر به تومان ارسال می‌شوند
                 # چه USDT/IRR باشد چه IRR/USDT، فقط نوع معامله برای BUY/SELL مهم است
                 key = "USDT_BUY" if trade_type == "buy" else "USDT_SELL"
 
@@ -187,9 +241,19 @@ class ExternalAPIService:
                 skipped.append(f"{source_code}/{target_code} {trade_type}")
                 continue
 
+            # Log for debugging rates specifically
+            if key in ("USDT_BUY", "USDT_SELL", "GBP_BUY", "GBP_SELL"):
+                logger.info(
+                    f"{key} price extracted: source={source_code}, target={target_code}, "
+                    f"trade_type={trade_type}, price_value={price_value}, "
+                    f"price_type_name={getattr(price_type, 'name', 'N/A')}, "
+                    f"price_type_id={getattr(price_type, 'id', 'N/A')}"
+                )
+
             # Latest value wins if there are duplicates
             rates[key] = price_value
 
+        logger.info(f"Built rates dict: {rates}, skipped: {skipped}")
         return rates, skipped
     
     @staticmethod
@@ -225,6 +289,20 @@ class ExternalAPIService:
             dict: Summary of sent prices with success/failure status.
                   Structure kept compatible with existing callers.
         """
+        # Log input items for debugging
+        logger.info(f"send_finalized_prices called with {len(price_items)} items")
+        for idx, item in enumerate(price_items):
+            if isinstance(item, tuple) and len(item) == 2:
+                price_type, price_history = item
+                source_code = getattr(getattr(price_type, 'source_currency', None), 'code', 'N/A') if hasattr(price_type, 'source_currency') else 'N/A'
+                target_code = getattr(getattr(price_type, 'target_currency', None), 'code', 'N/A') if hasattr(price_type, 'target_currency') else 'N/A'
+                trade_type = getattr(price_type, 'trade_type', 'N/A')
+                price_value = getattr(price_history, 'price', 'N/A')
+                logger.info(
+                    f"  Item {idx}: {source_code}/{target_code} {trade_type} = {price_value} "
+                    f"(price_type: {getattr(price_type, 'name', 'N/A')})"
+                )
+        
         rates, skipped = ExternalAPIService._build_rates_from_items(price_items)
 
         results = {

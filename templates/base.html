@@ -17,6 +17,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Theme Styles - Must load after Font Awesome to properly set font-family -->
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <!-- Tailwind CSS - Load after custom styles to allow overrides -->
+    <link href="{% static 'dist/output.css' %}" rel="stylesheet">
     
     <!-- Theme Initialization Script (must be in head to prevent flash) -->
     <script>

@@ -1,0 +1,775 @@
+{% extends 'tailwind_base.html' %}
+{% load static %}
+{% load change_price_tags %}
+
+{% block title %}Paradis Exchange Dashboard{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-black py-4 sm:py-6 px-3 sm:px-4 md:px-6 lg:px-8" style="background: linear-gradient(135deg, #000000 0%, #0a0a0a 25%, #1a1a1a 50%, #0a0a0a 75%, #000000 100%);">
+    <!-- Header Section -->
+    <div class="max-w-7xl mx-auto mb-6 sm:mb-8 lg:mb-10">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div class="rtl:text-right ltr:text-left w-full lg:w-auto">
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 bg-clip-text text-transparent mb-1 sm:mb-2">
+                    Paradis Exchange Dashboard
+                </h1>
+                <p class="text-xs sm:text-sm text-gray-400">Monitor prices, bots, and system metrics</p>
+            </div>
+            <div class="flex flex-col rtl:items-start ltr:items-end rtl:text-left ltr:text-right space-y-1 bg-gradient-to-br from-yellow-900/20 to-transparent border border-yellow-500/30 rounded-lg px-3 sm:px-4 py-2 w-full lg:w-auto">
+                <div id="current-time" class="text-xs sm:text-sm font-semibold text-yellow-400"></div>
+                <div id="current-time-jalali" class="text-[10px] sm:text-xs text-yellow-500/80"></div>
+            </div>
+        </div>
+        <div class="h-px bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
+    </div>
+
+    <!-- Statistics Cards Grid -->
+    <div class="max-w-7xl mx-auto mb-6 sm:mb-8 lg:mb-10">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-4 sm:mb-5">
+            <!-- Highest Posted Price -->
+            <div class="group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-5 lg:p-6 border border-yellow-500/20 hover:border-yellow-500/30 cursor-pointer transform hover:-translate-y-1 sm:hover:-translate-y-0.5 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/0 group-hover:from-yellow-500/5 group-hover:to-transparent transition-all duration-300"></div>
+                <div class="relative flex rtl:flex-row-reverse items-start justify-between gap-3 sm:gap-4">
+                    <div class="flex-1 rtl:text-right ltr:text-left min-w-0">
+                        <p class="text-[10px] sm:text-xs font-medium text-gray-400 mb-1 sm:mb-2 group-hover:text-gray-300 transition-colors uppercase tracking-wider truncate">Highest Posted Price</p>
+                        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-1 transition-colors break-words">
+                            {% if highest_price %}
+                                {{ highest_price|floatformat:2 }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </h3>
+                        {% if highest_price_label %}
+                            <p class="text-[10px] sm:text-xs text-gray-500 group-hover:text-gray-400 transition-colors truncate">{{ highest_price_label }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="p-2 sm:p-3 bg-yellow-500/10 group-hover:bg-yellow-500/15 rounded-lg sm:rounded-xl transition-all duration-300 border border-yellow-500/20 group-hover:border-yellow-500/30 flex-shrink-0">
+                        <i class="fas fa-arrow-up text-yellow-400 text-lg sm:text-xl lg:text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 24h Price Change -->
+            <div class="group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-yellow-500/20 hover:border-yellow-500/30 cursor-pointer transform hover:-translate-y-0.5 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/0 group-hover:from-yellow-500/5 group-hover:to-transparent transition-all duration-300"></div>
+                <div class="relative flex rtl:flex-row-reverse items-start justify-between gap-4">
+                    <div class="flex-1 rtl:text-right ltr:text-left min-w-0">
+                        <p class="text-[10px] sm:text-xs font-medium text-gray-400 mb-1 sm:mb-2 group-hover:text-gray-300 transition-colors uppercase tracking-wider truncate">Avg 24h Price Change</p>
+                        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold mb-1">
+                            {% if avg_24h_change != 0 %}
+                                <span class="{% if avg_24h_change > 0 %}text-green-400{% elif avg_24h_change < 0 %}text-red-400{% else %}text-yellow-400{% endif %} transition-colors">
+                                    {{ avg_24h_change|floatformat:2 }}%
+                                </span>
+                            {% else %}
+                                <span class="text-yellow-400">0.00%</span>
+                            {% endif %}
+                        </h3>
+                        {% if biggest_change %}
+                            <p class="text-[10px] sm:text-xs text-gray-500 group-hover:text-gray-400 transition-colors truncate">Biggest: {{ biggest_change.name }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="p-2 sm:p-3 bg-yellow-500/10 group-hover:bg-yellow-500/15 rounded-lg sm:rounded-xl transition-all duration-300 border border-yellow-500/20 group-hover:border-yellow-500/30 flex-shrink-0">
+                        <i class="fas fa-chart-line text-yellow-400 text-lg sm:text-xl lg:text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Bots -->
+            <div class="group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-yellow-500/20 hover:border-yellow-500/30 cursor-pointer transform hover:-translate-y-0.5 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/0 group-hover:from-yellow-500/5 group-hover:to-transparent transition-all duration-300"></div>
+                <div class="relative flex rtl:flex-row-reverse items-start justify-between gap-4">
+                    <div class="flex-1 rtl:text-right ltr:text-left min-w-0">
+                        <p class="text-[10px] sm:text-xs font-medium text-gray-400 mb-1 sm:mb-2 group-hover:text-gray-300 transition-colors uppercase tracking-wider">Total Bots</p>
+                        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-1  transition-colors">{{ total_bots }}</h3>
+                        <p class="text-[10px] sm:text-xs text-gray-500 group-hover:text-gray-400 transition-colors">{{ active_bots }} active</p>
+                    </div>
+                    <div class="p-2 sm:p-3 bg-yellow-500/10 group-hover:bg-yellow-500/15 rounded-lg sm:rounded-xl transition-all duration-300 border border-yellow-500/20 group-hover:border-yellow-500/30 flex-shrink-0">
+                        <i class="fas fa-robot text-yellow-400 text-lg sm:text-xl lg:text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Channels -->
+            <div class="group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-yellow-500/20 hover:border-yellow-500/30 cursor-pointer transform hover:-translate-y-0.5 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/0 group-hover:from-yellow-500/5 group-hover:to-transparent transition-all duration-300"></div>
+                <div class="relative flex rtl:flex-row-reverse items-start justify-between gap-4">
+                    <div class="flex-1 rtl:text-right ltr:text-left min-w-0">
+                        <p class="text-[10px] sm:text-xs font-medium text-gray-400 mb-1 sm:mb-2 group-hover:text-gray-300 transition-colors uppercase tracking-wider">Total Channels</p>
+                        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-1  transition-colors">{{ total_channels }}</h3>
+                        <p class="text-[10px] sm:text-xs text-gray-500 group-hover:text-gray-400 transition-colors">{{ active_channels }} active</p>
+                    </div>
+                    <div class="p-2 sm:p-3 bg-yellow-500/10 group-hover:bg-yellow-500/15 rounded-lg sm:rounded-xl transition-all duration-300 border border-yellow-500/20 group-hover:border-yellow-500/30 flex-shrink-0">
+                        <i class="fas fa-broadcast-tower text-yellow-400 text-lg sm:text-xl lg:text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Metrics Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+            <!-- Price Types -->
+            <div class="group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-5 lg:p-6 border border-yellow-500/20 hover:border-yellow-500/30 cursor-pointer transform hover:-translate-y-1 sm:hover:-translate-y-0.5 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/0 group-hover:from-yellow-500/5 group-hover:to-transparent transition-all duration-300"></div>
+                <div class="relative flex rtl:flex-row-reverse items-start justify-between gap-3 sm:gap-4">
+                    <div class="flex-1 rtl:text-right ltr:text-left min-w-0">
+                        <p class="text-[10px] sm:text-xs font-medium text-gray-400 mb-1 sm:mb-2 group-hover:text-gray-300 transition-colors uppercase tracking-wider">Price Types</p>
+                        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-1  transition-colors">{{ total_price_types }}</h3>
+                        <p class="text-[10px] sm:text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Configured pairs</p>
+                    </div>
+                    <div class="p-2 sm:p-3 bg-yellow-500/10 group-hover:bg-yellow-500/15 rounded-lg sm:rounded-xl transition-all duration-300 border border-yellow-500/20 group-hover:border-yellow-500/30 flex-shrink-0">
+                        <i class="fas fa-tags text-yellow-400 text-lg sm:text-xl lg:text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Updates (24h) -->
+            <div class="group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-5 lg:p-6 border border-yellow-500/20 hover:border-yellow-500/30 cursor-pointer transform hover:-translate-y-1 sm:hover:-translate-y-0.5 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/0 group-hover:from-yellow-500/5 group-hover:to-transparent transition-all duration-300"></div>
+                <div class="relative flex rtl:flex-row-reverse items-start justify-between gap-3 sm:gap-4">
+                    <div class="flex-1 rtl:text-right ltr:text-left min-w-0">
+                        <p class="text-[10px] sm:text-xs font-medium text-gray-400 mb-1 sm:mb-2 group-hover:text-gray-300 transition-colors uppercase tracking-wider">Updates (24h)</p>
+                        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-1  transition-colors">{{ recent_updates }}</h3>
+                        <p class="text-[10px] sm:text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Recent price changes</p>
+                    </div>
+                    <div class="p-2 sm:p-3 bg-yellow-500/10 group-hover:bg-yellow-500/15 rounded-lg sm:rounded-xl transition-all duration-300 border border-yellow-500/20 group-hover:border-yellow-500/30 flex-shrink-0">
+                        <i class="fas fa-sync-alt text-yellow-400 text-lg sm:text-xl lg:text-2xl animate-spin-slow"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Updates -->
+            <div class="group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-5 lg:p-6 border border-yellow-500/20 hover:border-yellow-500/30 cursor-pointer transform hover:-translate-y-1 sm:hover:-translate-y-0.5 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/0 group-hover:from-yellow-500/5 group-hover:to-transparent transition-all duration-300"></div>
+                <div class="relative flex rtl:flex-row-reverse items-start justify-between gap-3 sm:gap-4">
+                    <div class="flex-1 rtl:text-right ltr:text-left min-w-0">
+                        <p class="text-[10px] sm:text-xs font-medium text-gray-400 mb-1 sm:mb-2 group-hover:text-gray-300 transition-colors uppercase tracking-wider">Total Updates</p>
+                        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-1  transition-colors">{{ total_price_updates }}</h3>
+                        <p class="text-[10px] sm:text-xs text-gray-500 group-hover:text-gray-400 transition-colors">All-time history</p>
+                    </div>
+                    <div class="p-2 sm:p-3 bg-yellow-500/10 group-hover:bg-yellow-500/15 rounded-lg sm:rounded-xl transition-all duration-300 border border-yellow-500/20 group-hover:border-yellow-500/30 flex-shrink-0">
+                        <i class="fas fa-history text-yellow-400 text-lg sm:text-xl lg:text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Last Update -->
+            <div class="group relative bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 sm:p-5 lg:p-6 border border-yellow-500/20 hover:border-yellow-500/30 cursor-pointer transform hover:-translate-y-1 sm:hover:-translate-y-0.5 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/0 group-hover:from-yellow-500/5 group-hover:to-transparent transition-all duration-300"></div>
+                <div class="relative flex rtl:flex-row-reverse items-start justify-between gap-3 sm:gap-4">
+                    <div class="flex-1 rtl:text-right ltr:text-left min-w-0">
+                        <p class="text-[10px] sm:text-xs font-medium text-gray-400 mb-1 sm:mb-2 group-hover:text-gray-300 transition-colors uppercase tracking-wider">Last Update</p>
+                        <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-400 mb-1  transition-colors">
+                            {% if latest_update_time %}
+                                {{ latest_update_time|date:"H:i" }}
+                                {% if latest_update_time|to_jalali:"time_only" %}
+                                    <span class="text-xs sm:text-sm font-normal text-yellow-500/80 rtl:mr-1 ltr:ml-1">({{ latest_update_time|to_jalali:"time_only" }})</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-gray-400 text-sm sm:text-base">Never</span>
+                            {% endif %}
+                        </h3>
+                        <p class="text-[10px] sm:text-xs text-gray-500 group-hover:text-gray-400 transition-colors break-words">
+                            {% if latest_update_time %}
+                                <span>{{ latest_update_time|date:"M d, Y" }}</span>
+                                {% if latest_update_time|to_jalali:"date_only" %}
+                                    <span class="rtl:mr-2 ltr:ml-2">/ {{ latest_update_time|to_jalali:"date_only" }}</span>
+                                {% endif %}
+                            {% else %}
+                                No updates yet
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="p-2 sm:p-3 bg-yellow-500/10 group-hover:bg-yellow-500/15 rounded-lg sm:rounded-xl transition-all duration-300 border border-yellow-500/20 group-hover:border-yellow-500/30 flex-shrink-0">
+                        <i class="fas fa-clock text-yellow-400 text-lg sm:text-xl lg:text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Section -->
+    <div class="max-w-7xl mx-auto mb-6 sm:mb-8 lg:mb-10">
+        <div class="bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl sm:rounded-2xl shadow-2xl border border-yellow-500/20 overflow-hidden">
+            <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 to-transparent">
+                <div class="flex rtl:flex-row-reverse items-center justify-between">
+                    <div class="rtl:text-right ltr:text-left">
+                        <h2 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent flex rtl:flex-row-reverse items-center gap-2 sm:gap-3">
+                            <i class="fas fa-folder text-yellow-400 text-lg sm:text-xl"></i>
+                            <span>Categories</span>
+                        </h2>
+                        <p class="text-xs sm:text-sm text-gray-400 mt-1">Manage price categories and update prices</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 sm:p-5 lg:p-6">
+                {% if categories %}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+                        {% for category in categories %}
+                        <div class="group relative bg-gradient-to-br from-black via-gray-900 to-black rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 border border-yellow-500/20 hover:border-yellow-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-xl cursor-pointer transform hover:-translate-y-1 overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/0 group-hover:from-yellow-500/5 group-hover:to-transparent transition-all duration-300"></div>
+                            <div class="relative text-center">
+                                <div class="mb-3 sm:mb-4">
+                                    <h3 class="category-name text-lg sm:text-xl font-bold text-yellow-400 mb-2  transition-colors break-words">{{ category.name }}</h3>
+                                    <div class="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent mx-auto mb-2 sm:mb-3"></div>
+                                </div>
+                                <p class="text-xs sm:text-sm text-gray-400 mb-4 sm:mb-5 group-hover:text-gray-300 transition-colors">
+                                    {{ category.price_types.count }} price type{{ category.price_types.count|pluralize }}
+                                </p>
+                                <a href="{% url 'change_price:update_category_prices' category.id %}" 
+                                   class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-500 hover:to-yellow-600 text-white text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-yellow-500/50 transform hover:scale-105 border border-yellow-400/30 hover:border-yellow-400/60 w-full sm:w-auto">
+                                    <i class="fas fa-edit rtl:ml-2 ltr:mr-2 text-xs sm:text-sm"></i>
+                                    <span>Update Prices</span>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-16">
+                        <i class="fas fa-folder-open text-5xl text-yellow-500/30 mb-4"></i>
+                        <p class="text-gray-400">No categories found.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Special Prices Section -->
+    {% if special_price_types %}
+    <div class="max-w-7xl mx-auto mb-6 sm:mb-8 lg:mb-10">
+        <div class="bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl sm:rounded-2xl shadow-2xl border border-yellow-500/20 overflow-hidden">
+            <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 to-transparent">
+                <div class="flex rtl:flex-row-reverse items-center justify-between">
+                    <div class="rtl:text-right ltr:text-left">
+                        <h2 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent flex rtl:flex-row-reverse items-center gap-2 sm:gap-3">
+                            <i class="fas fa-star text-yellow-400 text-lg sm:text-xl"></i>
+                            <span>Special Prices</span>
+                        </h2>
+                        <p class="text-xs sm:text-sm text-gray-400 mt-1">Manage special price types</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 sm:p-5 lg:p-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+                    {% for special_price_type in special_price_types %}
+                    <div class="group relative bg-gradient-to-br from-black via-gray-900 to-black rounded-lg sm:rounded-xl p-4 sm:p-5 lg:p-6 border border-yellow-500/20 hover:border-yellow-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-xl cursor-pointer transform hover:-translate-y-1 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/0 to-yellow-500/0 group-hover:from-yellow-500/5 group-hover:to-transparent transition-all duration-300"></div>
+                        <div class="relative text-center">
+                            <div class="mb-3 sm:mb-4">
+                                <h3 class="special-price-name text-lg sm:text-xl font-bold text-yellow-400 mb-2  transition-colors break-words">{{ special_price_type.name }}</h3>
+                                <div class="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent mx-auto mb-2 sm:mb-3"></div>
+                            </div>
+                            <p class="text-xs sm:text-sm text-gray-400 mb-2 group-hover:text-gray-300 transition-colors">
+                                {{ special_price_type.source_currency.code }} / {{ special_price_type.target_currency.code }}
+                            </p>
+                            <p class="mb-3 sm:mb-4">
+                                <span class="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 group-hover:bg-yellow-500/25 group-hover:border-yellow-500/35 transition-colors">
+                                    {{ special_price_type.get_trade_type_display }}
+                                </span>
+                            </p>
+                            {% with latest_price=special_price_type.special_price_histories.first %}
+                            {% if latest_price %}
+                            <div class="mb-4 sm:mb-5">
+                                <p class="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-2 transition-colors break-words">
+                                    {{ latest_price.price|floatformat:2 }}
+                                </p>
+                                <p class="text-[10px] sm:text-xs text-gray-400 group-hover:text-gray-300 transition-colors break-words">
+                                    Last update: {{ latest_price.updated_at|date:"M d, Y H:i" }}
+                                </p>
+                            </div>
+                            {% else %}
+                            <p class="text-xs sm:text-sm text-gray-400 mb-4 sm:mb-5 group-hover:text-gray-300 transition-colors">No price history</p>
+                            {% endif %}
+                            {% endwith %}
+                            <a href="{% url 'special_price:update_price' special_price_type.id %}" 
+                               class="inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-yellow-600 to-yellow-700 hover:from-yellow-500 hover:to-yellow-600 text-white text-xs sm:text-sm font-semibold rounded-lg sm:rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-yellow-500/50 transform hover:scale-105 border border-yellow-400/30 hover:border-yellow-400/60 w-full sm:w-auto">
+                                <i class="fas fa-edit rtl:ml-2 ltr:mr-2 text-xs sm:text-sm"></i>
+                                <span>Update Price</span>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Charts & Analytics Section -->
+    <div class="max-w-7xl mx-auto mb-6 sm:mb-8 lg:mb-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+            <!-- Price Trends Chart (24h) -->
+            <div class="lg:col-span-2 bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl sm:rounded-2xl shadow-lg border border-yellow-500/20 overflow-hidden">
+                <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 to-transparent">
+                    <div class="flex rtl:flex-row-reverse items-center justify-between">
+                        <div class="rtl:text-right ltr:text-left">
+                            <h2 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent flex rtl:flex-row-reverse items-center gap-2 sm:gap-3">
+                                <i class="fas fa-chart-line text-yellow-400 text-lg sm:text-xl"></i>
+                                <span>24h Price Trends</span>
+                            </h2>
+                            <p class="text-xs sm:text-sm text-gray-400 mt-1">Real-time price movements</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 sm:p-5 lg:p-6">
+                    <canvas id="priceTrendsChart" class="w-full" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+
+            <!-- Category Comparison Chart -->
+            <div class="bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl sm:rounded-2xl shadow-lg border border-yellow-500/20 overflow-hidden">
+                <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 to-transparent">
+                    <div class="flex rtl:flex-row-reverse items-center justify-between">
+                        <div class="rtl:text-right ltr:text-left">
+                            <h2 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent flex rtl:flex-row-reverse items-center gap-2 sm:gap-3">
+                                <i class="fas fa-chart-pie text-yellow-400 text-lg sm:text-xl"></i>
+                                <span>Categories</span>
+                            </h2>
+                            <p class="text-xs sm:text-sm text-gray-400 mt-1">Average prices</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 sm:p-5 lg:p-6">
+                    <canvas id="categoryChart" class="w-full" style="max-height: 400px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Frequency & Recent Updates Section -->
+    <div class="max-w-7xl mx-auto mb-6 sm:mb-8 lg:mb-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
+            <!-- Update Frequency Chart -->
+            <div class="bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl sm:rounded-2xl shadow-lg border border-yellow-500/20 overflow-hidden">
+                <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 to-transparent">
+                    <div class="flex rtl:flex-row-reverse items-center justify-between">
+                        <div class="rtl:text-right ltr:text-left">
+                            <h2 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent flex rtl:flex-row-reverse items-center gap-2 sm:gap-3">
+                                <i class="fas fa-chart-bar text-yellow-400 text-lg sm:text-xl"></i>
+                                <span>Update Frequency</span>
+                            </h2>
+                            <p class="text-xs sm:text-sm text-gray-400 mt-1">Last 7 days</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 sm:p-5 lg:p-6">
+                    <canvas id="updateFrequencyChart" class="w-full" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Updates Timeline -->
+            <div class="bg-gradient-to-br from-gray-900 via-black to-gray-900 rounded-xl sm:rounded-2xl shadow-lg border border-yellow-500/20 overflow-hidden">
+                <div class="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-b border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 to-transparent">
+                    <div class="flex rtl:flex-row-reverse items-center justify-between">
+                        <div class="rtl:text-right ltr:text-left">
+                            <h2 class="text-xl sm:text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent flex rtl:flex-row-reverse items-center gap-2 sm:gap-3">
+                                <i class="fas fa-clock text-yellow-400 text-lg sm:text-xl"></i>
+                                <span>Recent Updates</span>
+                            </h2>
+                            <p class="text-xs sm:text-sm text-gray-400 mt-1">Latest price changes</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 sm:p-5 lg:p-6">
+                    <div id="recentUpdatesList" class="space-y-3 max-h-[300px] overflow-y-auto">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.min.js" crossorigin="anonymous"></script>
+
+<!-- Chart Data from Django -->
+{{ chart_data_24h_json|json_script:"chart-data-24h" }}
+{{ category_avg_prices_json|json_script:"category-avg-prices" }}
+{{ update_frequency_json|json_script:"update-frequency" }}
+{{ recent_updates_json|json_script:"recent-updates" }}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Chart.js theme colors
+    const chartColors = {
+        gold: '#fbbf24',
+        goldLight: '#fcd34d',
+        goldDark: '#d97706',
+        bgDark: '#000000',
+        textLight: 'rgba(255, 255, 255, 0.8)',
+        textMuted: 'rgba(255, 255, 255, 0.5)',
+        gridColor: 'rgba(251, 191, 36, 0.1)',
+    };
+
+    // Chart.js default configuration
+    Chart.defaults.color = chartColors.textLight;
+    Chart.defaults.borderColor = chartColors.gridColor;
+    Chart.defaults.backgroundColor = chartColors.bgDark;
+
+    // 1. Price Trends Chart (24h)
+    const chart24hElement = document.getElementById('chart-data-24h');
+    if (chart24hElement && typeof Chart !== 'undefined') {
+        try {
+            const chart24hData = JSON.parse(chart24hElement.textContent);
+            const ctx = document.getElementById('priceTrendsChart');
+            
+            if (ctx && chart24hData && chart24hData.length > 0) {
+                // Color palette for multiple lines
+                const colorPalette = [
+                    '#fbbf24', '#f59e0b', '#d97706', '#fcd34d',
+                    '#eab308', '#ca8a04', '#a16207', '#854d0e'
+                ];
+                
+                const datasets = chart24hData.slice(0, 8).map((item, index) => {
+                    return {
+                        label: item.label,
+                        data: item.data.map(point => ({
+                            x: new Date(point.x),
+                            y: point.y
+                        })),
+                        borderColor: colorPalette[index % colorPalette.length],
+                        backgroundColor: colorPalette[index % colorPalette.length] + '20',
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                    };
+                });
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: { datasets: datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: chartColors.textLight,
+                                    font: { size: 11 },
+                                    padding: 12,
+                                    usePointStyle: true,
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                titleColor: chartColors.gold,
+                                bodyColor: chartColors.textLight,
+                                borderColor: chartColors.gold,
+                                borderWidth: 1,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y.toLocaleString('en-US', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        });
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'hour',
+                                    displayFormats: {
+                                        hour: 'HH:mm'
+                                    }
+                                },
+                                grid: {
+                                    color: chartColors.gridColor,
+                                },
+                                ticks: {
+                                    color: chartColors.textMuted,
+                                    maxTicksLimit: 8,
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: chartColors.gridColor,
+                                },
+                                ticks: {
+                                    color: chartColors.textMuted,
+                                    callback: function(value) {
+                                        return value.toLocaleString('en-US', {
+                                            minimumFractionDigits: 0,
+                                            maximumFractionDigits: 0
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading price trends chart:', error);
+        }
+    }
+
+    // 2. Category Comparison Chart
+    const categoryElement = document.getElementById('category-avg-prices');
+    if (categoryElement && typeof Chart !== 'undefined') {
+        try {
+            const categoryData = JSON.parse(categoryElement.textContent);
+            const ctx = document.getElementById('categoryChart');
+            
+            if (ctx && categoryData && categoryData.length > 0) {
+                const labels = categoryData.map(item => item.name);
+                const data = categoryData.map(item => item.avg_price);
+                
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: [
+                                '#fbbf24', '#f59e0b', '#d97706', '#fcd34d',
+                                '#eab308', '#ca8a04', '#a16207', '#854d0e'
+                            ].slice(0, labels.length),
+                            borderColor: '#000000',
+                            borderWidth: 2,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: chartColors.textLight,
+                                    font: { size: 11 },
+                                    padding: 12,
+                                    usePointStyle: true,
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                titleColor: chartColors.gold,
+                                bodyColor: chartColors.textLight,
+                                borderColor: chartColors.gold,
+                                borderWidth: 1,
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.parsed || 0;
+                                        return label + ': ' + value.toLocaleString('en-US', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading category chart:', error);
+        }
+    }
+
+    // 3. Update Frequency Chart
+    const frequencyElement = document.getElementById('update-frequency');
+    if (frequencyElement && typeof Chart !== 'undefined') {
+        try {
+            const frequencyData = JSON.parse(frequencyElement.textContent);
+            const ctx = document.getElementById('updateFrequencyChart');
+            
+            if (ctx && frequencyData && frequencyData.length > 0) {
+                const labels = frequencyData.map(item => {
+                    const date = new Date(item.date);
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                });
+                const data = frequencyData.map(item => item.count);
+                
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Updates',
+                            data: data,
+                            backgroundColor: '#fbbf24',
+                            borderColor: '#f59e0b',
+                            borderWidth: 1,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                titleColor: chartColors.gold,
+                                bodyColor: chartColors.textLight,
+                                borderColor: chartColors.gold,
+                                borderWidth: 1,
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: chartColors.gridColor,
+                                },
+                                ticks: {
+                                    color: chartColors.textMuted,
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: chartColors.gridColor,
+                                },
+                                ticks: {
+                                    color: chartColors.textMuted,
+                                    stepSize: 1,
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error loading update frequency chart:', error);
+        }
+    }
+
+    // 4. Recent Updates Timeline
+    const updatesElement = document.getElementById('recent-updates');
+    if (updatesElement) {
+        try {
+            const updatesData = JSON.parse(updatesElement.textContent);
+            const container = document.getElementById('recentUpdatesList');
+            
+            if (container && updatesData && updatesData.length > 0) {
+                container.innerHTML = updatesData.map(update => {
+                    const date = new Date(update.created_at);
+                    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    
+                    return `
+                        <div class="flex items-start gap-3 p-3 bg-black/30 rounded-lg border border-yellow-500/10 hover:border-yellow-500/30 transition-colors">
+                            <div class="flex-shrink-0 mt-1">
+                                <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between gap-2 mb-1">
+                                    <span class="text-sm font-semibold text-yellow-400 truncate">${update.price_type}</span>
+                                    <span class="text-xs text-gray-400 whitespace-nowrap">${timeStr}</span>
+                                </div>
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-xs text-gray-300">${update.category}</span>
+                                    <span class="text-sm font-bold text-white">${parseFloat(update.price).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else if (container) {
+                container.innerHTML = '<p class="text-center text-gray-400 py-4">No recent updates</p>';
+            }
+        } catch (error) {
+            console.error('Error loading recent updates:', error);
+        }
+    }
+});
+</script>
+
+<!-- Jalaali Date Converter -->
+<script src="https://unpkg.com/jalaali-js@1.1.0/jalaali.js"></script>
+<script>
+    function gregorianToJalali(gy, gm, gd) {
+        var g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        var jy = (gy <= 1600) ? 0 : 979;
+        gy -= (gy <= 1600) ? 621 : 1600;
+        var gy2 = (gm > 2) ? (gy + 1) : gy;
+        var days = (365 * gy) + (parseInt((gy2 + 3) / 4)) - (parseInt((gy2 + 99) / 100)) + 
+                   (parseInt((gy2 + 399) / 400)) - 80 + gd + g_d_m[gm - 1];
+        jy += 33 * (parseInt(days / 12053));
+        days %= 12053;
+        jy += 4 * (parseInt(days / 1461));
+        days %= 1461;
+        if (days > 365) {
+            jy += parseInt((days - 1) / 365);
+            days = (days - 1) % 365;
+        }
+        var jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
+        var jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+        return {jy: jy, jm: jm, jd: jd};
+    }
+    
+    function updateTime() {
+        try {
+            const now = new Date();
+            
+            const timeString = now.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const englishElement = document.getElementById('current-time');
+            if (englishElement) {
+                englishElement.textContent = timeString;
+            }
+            
+            const tehranOffset = 3.5 * 60 * 60 * 1000;
+            const utcTime = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+            const tehranTime = new Date(utcTime + tehranOffset);
+            
+            const year = tehranTime.getFullYear();
+            const month = tehranTime.getMonth() + 1;
+            const day = tehranTime.getDate();
+            
+            let jalali;
+            if (typeof jalaali !== 'undefined' && jalaali.toJalaali) {
+                jalali = jalaali.toJalaali(year, month, day);
+            } else {
+                jalali = gregorianToJalali(year, month, day);
+            }
+            
+            const persianMonths = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+            const monthName = persianMonths[jalali.jm - 1];
+            
+            const hours = String(tehranTime.getHours()).padStart(2, '0');
+            const minutes = String(tehranTime.getMinutes()).padStart(2, '0');
+            const seconds = String(tehranTime.getSeconds()).padStart(2, '0');
+            const jalaliTime = `${jalali.jd} ${monthName} ${jalali.jy}، ${hours}:${minutes}:${seconds}`;
+            
+            const jalaliElement = document.getElementById('current-time-jalali');
+            if (jalaliElement) {
+                jalaliElement.textContent = jalaliTime;
+            }
+        } catch (error) {
+            console.error('Error updating time:', error);
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+    } else {
+        updateTime();
+        setInterval(updateTime, 1000);
+    }
+</script>
+{% endblock %}

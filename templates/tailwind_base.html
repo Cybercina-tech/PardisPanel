@@ -1,0 +1,72 @@
+{% comment %}
+Tailwind Base Template
+=====================
+This base template is specifically designed for pages using Tailwind CSS with a luxury black & gold theme.
+
+Features:
+- Luxury black background with gold accents
+- Professional navbar with navigation
+- Unified component styles (buttons, cards, forms, tables, alerts)
+- RTL/LTR support
+- Responsive design
+- Custom scrollbar styling
+- Tailwind CSS integration
+
+Usage:
+  {% extends 'tailwind_base.html' %}
+  
+Available CSS classes:
+- .btn-luxury, .btn-luxury-outline
+- .card-luxury
+- .input-luxury
+- .table-luxury
+- .alert-luxury-* (success, error, warning, info)
+- .badge-luxury-* (gold, success, danger)
+- .text-gold, .text-gold-light, .text-gold-dark
+- .bg-gold-transparent, .border-gold
+{% endcomment %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Paradis Exchange{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+    
+    <!-- Bootstrap CSS (minimal for compatibility) -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Tailwind CSS (Compiled) -->
+    <link href="{% static 'dist/output.css' %}" rel="stylesheet">
+    
+    <!-- Tailwind Custom CSS (Separate from Tailwind utilities) -->
+    <link href="{% static 'css/tailwind-custom.css' %}" rel="stylesheet">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="text-white" style="background: var(--color-black-base);">
+    <!-- Tailwind Navbar -->
+    {% include 'partials/tailwind_navbar.html' %}
+
+    <!-- Main Content Container -->
+    <div class="min-h-screen">
+        {% block content %}
+        {% endblock %}
+    </div>
+    
+    <!-- Tailwind Footer -->
+    {% include 'partials/tailwind_footer.html' %}
+    
+    <!-- Bootstrap JS (minimal for compatibility) -->
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

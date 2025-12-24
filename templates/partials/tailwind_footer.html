@@ -1,0 +1,245 @@
+{% comment %}
+Tailwind Footer - Modern & Professional
+========================================
+A professional footer component designed with Tailwind CSS using gold & black theme.
+{% endcomment %}
+
+<footer class="tailwind-footer" style="background: var(--color-black-footer); border-top: 1px solid rgba(255, 215, 0, 0.2);">
+    <div class="w-full px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <div class="max-w-7xl mx-auto">
+            <!-- Main Footer Content -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-12">
+                <!-- Brand & About Section -->
+                <div class="lg:col-span-1">
+                    <div class="flex items-start space-x-3 rtl:space-x-reverse mb-6">
+                        <div class="p-2.5 rounded-xl border shadow-lg" style="background: rgba(255, 215, 0, 0.15); border-color: rgba(255, 215, 0, 0.4);">
+                            <i class="fas fa-coins text-xl" style="color: var(--color-gold);"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2" style="color: var(--color-gold);">Paradis Exchange</h3>
+                            <p class="text-sm mb-4" style="color: var(--color-gray-light);">
+                                Premium Trading Platform for modern cryptocurrency exchanges.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Social Media Links -->
+                    <div class="flex items-center space-x-4 rtl:space-x-reverse">
+                        <a href="#" 
+                           class="w-10 h-10 rounded-lg border flex items-center justify-center transition-all duration-300 hover:scale-110"
+                           style="background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3); color: var(--color-gold);"
+                           onmouseover="this.style.backgroundColor='rgba(255, 215, 0, 0.2)'; this.style.borderColor='rgba(255, 215, 0, 0.5)';"
+                           onmouseout="this.style.backgroundColor='rgba(255, 215, 0, 0.1)'; this.style.borderColor='rgba(255, 215, 0, 0.3)';"
+                           aria-label="Twitter">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" 
+                           class="w-10 h-10 rounded-lg border flex items-center justify-center transition-all duration-300 hover:scale-110"
+                           style="background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3); color: var(--color-gold);"
+                           onmouseover="this.style.backgroundColor='rgba(255, 215, 0, 0.2)'; this.style.borderColor='rgba(255, 215, 0, 0.5)';"
+                           onmouseout="this.style.backgroundColor='rgba(255, 215, 0, 0.1)'; this.style.borderColor='rgba(255, 215, 0, 0.3)';"
+                           aria-label="LinkedIn">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" 
+                           class="w-10 h-10 rounded-lg border flex items-center justify-center transition-all duration-300 hover:scale-110"
+                           style="background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3); color: var(--color-gold);"
+                           onmouseover="this.style.backgroundColor='rgba(255, 215, 0, 0.2)'; this.style.borderColor='rgba(255, 215, 0, 0.5)';"
+                           onmouseout="this.style.backgroundColor='rgba(255, 215, 0, 0.1)'; this.style.borderColor='rgba(255, 215, 0, 0.3)';"
+                           aria-label="Telegram">
+                            <i class="fab fa-telegram-plane"></i>
+                        </a>
+                        <a href="#" 
+                           class="w-10 h-10 rounded-lg border flex items-center justify-center transition-all duration-300 hover:scale-110"
+                           style="background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3); color: var(--color-gold);"
+                           onmouseover="this.style.backgroundColor='rgba(255, 215, 0, 0.2)'; this.style.borderColor='rgba(255, 215, 0, 0.5)';"
+                           onmouseout="this.style.backgroundColor='rgba(255, 215, 0, 0.1)'; this.style.borderColor='rgba(255, 215, 0, 0.3)';"
+                           aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links Section -->
+                <div>
+                    <h4 class="text-lg font-bold mb-6" style="color: var(--color-gold);">Quick Links</h4>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="{% url 'dashboard:dashboard2' %}" 
+                               class="text-sm transition-all duration-300 flex items-center space-x-2 rtl:space-x-reverse group"
+                               style="color: var(--color-gray-light);"
+                               onmouseover="this.style.color='var(--color-gold)';"
+                               onmouseout="this.style.color='var(--color-gray-light)';">
+                                <i class="fas fa-home text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'change_price:dashboard' %}" 
+                               class="text-sm transition-all duration-300 flex items-center space-x-2 rtl:space-x-reverse group"
+                               style="color: var(--color-gray-light);"
+                               onmouseover="this.style.color='var(--color-gold)';"
+                               onmouseout="this.style.color='var(--color-gray-light)';">
+                                <i class="fas fa-dollar-sign text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                                <span>Update Prices</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'special_price:dashboard' %}" 
+                               class="text-sm transition-all duration-300 flex items-center space-x-2 rtl:space-x-reverse group"
+                               style="color: var(--color-gray-light);"
+                               onmouseover="this.style.color='var(--color-gold)';"
+                               onmouseout="this.style.color='var(--color-gray-light)';">
+                                <i class="fas fa-star text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                                <span>Special Prices</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'category:category_dashboard' %}" 
+                               class="text-sm transition-all duration-300 flex items-center space-x-2 rtl:space-x-reverse group"
+                               style="color: var(--color-gray-light);"
+                               onmouseover="this.style.color='var(--color-gold)';"
+                               onmouseout="this.style.color='var(--color-gray-light)';">
+                                <i class="fas fa-tags text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                                <span>Categories</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'analysis:dashboard' %}" 
+                               class="text-sm transition-all duration-300 flex items-center space-x-2 rtl:space-x-reverse group"
+                               style="color: var(--color-gray-light);"
+                               onmouseover="this.style.color='var(--color-gold)';"
+                               onmouseout="this.style.color='var(--color-gray-light)';">
+                                <i class="fas fa-chart-line text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                                <span>Analysis</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Contact & Support Section -->
+                <div>
+                    <h4 class="text-lg font-bold mb-6" style="color: var(--color-gold);">Contact & Support</h4>
+                    <ul class="space-y-4">
+                        <li class="flex items-start space-x-3 rtl:space-x-reverse">
+                            <i class="fas fa-envelope mt-1" style="color: var(--color-gold);"></i>
+                            <div>
+                                <p class="text-xs mb-1" style="color: var(--color-gray-light);">Email</p>
+                                <a href="mailto:info@paradisexchange.com" 
+                                   class="text-sm transition-all duration-300"
+                                   style="color: var(--color-gray-light);"
+                                   onmouseover="this.style.color='var(--color-gold)';"
+                                   onmouseout="this.style.color='var(--color-gray-light)';">
+                                    info@paradisexchange.com
+                                </a>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3 rtl:space-x-reverse">
+                            <i class="fas fa-phone mt-1" style="color: var(--color-gold);"></i>
+                            <div>
+                                <p class="text-xs mb-1" style="color: var(--color-gray-light);">Phone</p>
+                                <a href="tel:+441234567890" 
+                                   class="text-sm transition-all duration-300"
+                                   style="color: var(--color-gray-light);"
+                                   onmouseover="this.style.color='var(--color-gold)';"
+                                   onmouseout="this.style.color='var(--color-gray-light)';">
+                                    +44 1234 567 890
+                                </a>
+                            </div>
+                        </li>
+                        <li class="flex items-start space-x-3 rtl:space-x-reverse">
+                            <i class="fas fa-map-marker-alt mt-1" style="color: var(--color-gold);"></i>
+                            <div>
+                                <p class="text-xs mb-1" style="color: var(--color-gray-light);">Address</p>
+                                <p class="text-sm" style="color: var(--color-gray-light);">
+                                    London, United Kingdom
+                                </p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Legal & Resources Section -->
+                <div>
+                    <h4 class="text-lg font-bold mb-6" style="color: var(--color-gold);">Legal & Resources</h4>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="#" 
+                               class="text-sm transition-all duration-300 flex items-center space-x-2 rtl:space-x-reverse group"
+                               style="color: var(--color-gray-light);"
+                               onmouseover="this.style.color='var(--color-gold)';"
+                               onmouseout="this.style.color='var(--color-gray-light)';">
+                                <i class="fas fa-shield-alt text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                                <span>Privacy Policy</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" 
+                               class="text-sm transition-all duration-300 flex items-center space-x-2 rtl:space-x-reverse group"
+                               style="color: var(--color-gray-light);"
+                               onmouseover="this.style.color='var(--color-gold)';"
+                               onmouseout="this.style.color='var(--color-gray-light)';">
+                                <i class="fas fa-file-contract text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                                <span>Terms of Service</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" 
+                               class="text-sm transition-all duration-300 flex items-center space-x-2 rtl:space-x-reverse group"
+                               style="color: var(--color-gray-light);"
+                               onmouseover="this.style.color='var(--color-gold)';"
+                               onmouseout="this.style.color='var(--color-gray-light)';">
+                                <i class="fas fa-cookie text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                                <span>Cookie Policy</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'setting:settings' %}" 
+                               class="text-sm transition-all duration-300 flex items-center space-x-2 rtl:space-x-reverse group"
+                               style="color: var(--color-gray-light);"
+                               onmouseover="this.style.color='var(--color-gold)';"
+                               onmouseout="this.style.color='var(--color-gray-light)';">
+                                <i class="fas fa-cog text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300"></i>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="h-px mb-8" style="background: linear-gradient(90deg, transparent 0%, rgba(255, 215, 0, 0.3) 50%, transparent 100%);"></div>
+
+            <!-- Footer Bottom -->
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <!-- Copyright -->
+                <div class="text-sm text-center md:text-left" style="color: var(--color-gray-light);">
+                    <p class="flex items-center justify-center md:justify-start space-x-2 rtl:space-x-reverse">
+                        <i class="fas fa-copyright text-xs"></i>
+                        <span>{% now "Y" %} Paradis Exchange. All rights reserved.</span>
+                    </p>
+                </div>
+
+                <!-- Date & Language -->
+                <div class="flex flex-col sm:flex-row items-center gap-4">
+                    <div class="text-sm flex items-center space-x-2 rtl:space-x-reverse" style="color: var(--color-gray-light);">
+                        <i class="fas fa-clock text-xs" style="color: var(--color-gold);"></i>
+                        <span>{% now "F j, Y" %}</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                        <span class="text-sm" style="color: var(--color-gray-light);">Language:</span>
+                        <select class="text-sm px-3 py-1.5 rounded-lg border transition-all duration-300 focus:outline-none focus:ring-2"
+                                style="background: var(--color-black-card); border-color: rgba(255, 215, 0, 0.3); color: var(--color-white-soft);"
+                                onfocus="this.style.borderColor='rgba(255, 215, 0, 0.6)'; this.style.boxShadow='0 0 0 3px rgba(255, 215, 0, 0.1)';"
+                                onblur="this.style.borderColor='rgba(255, 215, 0, 0.3)'; this.style.boxShadow='';">
+                            <option value="en" selected>English</option>
+                            <option value="fa">فارسی</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+

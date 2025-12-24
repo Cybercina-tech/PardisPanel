@@ -15,6 +15,9 @@ def settings_view(request):
     Main settings view that displays all settings sections.
     Includes Telegram bot and channel management, and message sending.
     """
+    # Get active section from query parameter, default to 'general'
+    active_section = request.GET.get('section', 'general')
+    
     # Initialize forms
     telegram_form = SendMessageForm(request.POST or None)
     bot_form = TelegramBotForm(request.POST or None)
@@ -93,6 +96,7 @@ def settings_view(request):
         'channel_form': channel_form,
         'bots': bots,
         'channels': channels,
+        'active_section': active_section,
     }
     
     return render(request, "setting/settings.html", context)
