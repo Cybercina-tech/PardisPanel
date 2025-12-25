@@ -1199,8 +1199,21 @@ html[data-theme="light"] .nav-link:focus-visible {
 }
 
 /* Navbar Collapse Animation */
+/* Override Tailwind's collapse class that sets visibility: collapse */
 .navbar-collapse {
     transition: all 0.3s ease-in-out;
+    visibility: visible !important;
+    display: block !important;
+}
+
+/* Override Tailwind's .collapse class for Bootstrap navbar */
+.collapse:not(.show) {
+    display: none;
+}
+
+.collapse.show {
+    display: block !important;
+    visibility: visible !important;
 }
 
 /* Ensure navbar collapse is visible on large screens */
@@ -1210,6 +1223,7 @@ html[data-theme="light"] .nav-link:focus-visible {
         flex-basis: auto !important;
         flex-grow: 1 !important;
         align-items: center !important;
+        visibility: visible !important;
     }
 }
 
@@ -1218,10 +1232,12 @@ html[data-theme="light"] .nav-link:focus-visible {
         margin-top: 1rem;
         padding-top: 0.5rem;
         border-top: 1px solid var(--color-border-soft);
+        visibility: visible !important;
     }
     
     .navbar-collapse.show {
         animation: slideDown 0.3s ease-out;
+        visibility: visible !important;
     }
     
     @keyframes slideDown {

@@ -22,7 +22,7 @@ FONT_ROOT = Path(
 )
 
 # Constants for special GBP templates
-SPECIAL_GBP_TEMPLATE_POSITION = (520, 1030)
+SPECIAL_GBP_TEMPLATE_POSITION = (480, 1040)
 SPECIAL_GBP_TEMPLATE_FONT = ("montsrrat.otf", 130)
 SPECIAL_GBP_TEMPLATES = (
     "special_buy_cash_GBP.jpg",
