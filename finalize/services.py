@@ -45,6 +45,9 @@ class ExternalAPIService:
         }
         headers = {"Content-Type": "application/json"}
 
+        logger.info(f"🔄 Attempting to send {currency} = {rate} to {EXTERNAL_API_URL}")
+        logger.info(f"   Payload: {payload}")
+
         try:
             response = requests.post(
                 EXTERNAL_API_URL,
@@ -52,19 +55,39 @@ class ExternalAPIService:
                 headers=headers,
                 timeout=10,  # مطابق t.py
             )
+            
+            logger.info(f"   Response status: {response.status_code}")
+            logger.info(f"   Response headers: {dict(response.headers)}")
+            
             response.raise_for_status()
+            
             # بعضی نسخه‌ها چیزی برنمی‌گردانند، پس json لازم نیست حتماً باشد
             try:
                 result = response.json()
+                logger.info(f"   Response JSON: {result}")
             except ValueError:
                 result = {"raw": response.text}
-            logger.info(f"Successfully sent {currency} rate: {rate}")
+                logger.info(f"   Response text: {response.text[:200]}")
+            
+            logger.info(f"✅ Successfully sent {currency} rate: {rate}")
             return result
+            
+        except requests.exceptions.Timeout as e:
+            logger.error(f"❌ Timeout error sending {currency} rate {rate}: {e}")
+            return None
+        except requests.exceptions.ConnectionError as e:
+            logger.error(f"❌ Connection error sending {currency} rate {rate}: {e}")
+            return None
+        except requests.exceptions.HTTPError as e:
+            logger.error(f"❌ HTTP error sending {currency} rate {rate}: {e}")
+            logger.error(f"   Response status: {e.response.status_code if e.response else 'N/A'}")
+            logger.error(f"   Response text: {e.response.text[:500] if e.response else 'N/A'}")
+            return None
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error sending {currency} rate {rate}: {e}")
+            logger.error(f"❌ Request error sending {currency} rate {rate}: {e}")
             return None
         except Exception as e:
-            logger.error(f"Unexpected error sending {currency}: {e}")
+            logger.error(f"❌ Unexpected error sending {currency}: {e}", exc_info=True)
             return None
 
     # -------- Helpers for reading existing rates (برای fallback) --------
@@ -153,18 +176,23 @@ class ExternalAPIService:
         # ارسال هر 4 قیمت به صورت جداگانه - دقیقاً مطابق t.py
         # برای هر قیمت یک درخواست POST جداگانه با payload:
         # {"currency": "GBP_BUY", "rate": 163000, "api_key": "..."}
+        logger.info(f"📤 Starting to send {len(full_rates)} rates to API...")
         results = {"sent": [], "failed": []}
+        
         for key, value in full_rates.items():
+            logger.info(f"📨 Sending {key} = {value}...")
             # ارسال هر قیمت به صورت جداگانه (مثل t.py)
             resp = ExternalAPIService.send_request(key, value)
             if resp is not None:
                 results["sent"].append(
                     {"currency": key, "rate": value, "response": resp}
                 )
-                logger.info(f"Successfully sent {key} = {value}")
+                logger.info(f"✅ Successfully sent {key} = {value}")
             else:
                 results["failed"].append({"currency": key, "rate": value})
-                logger.error(f"Failed to send {key} = {value}")
+                logger.error(f"❌ Failed to send {key} = {value}")
+        
+        logger.info(f"📊 API send summary: {len(results['sent'])} sent, {len(results['failed'])} failed")
 
         return results
 
