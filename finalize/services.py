@@ -34,8 +34,8 @@ class ExternalAPIService:
     @staticmethod
     def send_request(currency: str, rate: float):
         """
-        رفتار مطابق data.py:
-        POST به همان URL با بدنه:
+        ارسال قیمت به API خارجی - دقیقاً مطابق t.py:
+        POST به URL با بدنه:
         {"currency": "<CODE>", "rate": <float>, "api_key": "<KEY>"}.
         """
         payload = {
@@ -50,7 +50,7 @@ class ExternalAPIService:
                 EXTERNAL_API_URL,
                 json=payload,
                 headers=headers,
-                timeout=30,
+                timeout=10,  # مطابق t.py
             )
             response.raise_for_status()
             # بعضی نسخه‌ها چیزی برنمی‌گردانند، پس json لازم نیست حتماً باشد
@@ -106,17 +106,20 @@ class ExternalAPIService:
     @staticmethod
     def send_rates_payload(rates: dict):
         """
-        Send all GBP / USDT rates in a single payload.
-        Always sends 4 keys (GBP_BUY, GBP_SELL, USDT_BUY, USDT_SELL):
+        ارسال هر 4 قیمت به صورت جداگانه - دقیقاً مطابق t.py:
+        همیشه هر 4 کلید (GBP_BUY, GBP_SELL, USDT_BUY, USDT_SELL) را می‌فرستد.
         - اگر برای یک کلید قیمت جدید داریم: همان را می‌فرستیم
         - اگر نداریم، مقدار قبلی را از API می‌خوانیم
         - اگر هیچ مقداری وجود نداشته باشد، آن کلید را با مقدار 0 می‌فرستیم
+        
+        هر قیمت به صورت جداگانه با یک درخواست POST ارسال می‌شود (مثل t.py).
         """
         # Get previous values from external API
         existing = ExternalAPIService.get_existing_rates() or {}
         logger.info(f"Existing rates from API: {existing}")
         logger.info(f"New rates to send: {rates}")
 
+        # همیشه هر 4 قیمت را آماده می‌کنیم
         full_rates: dict[str, float] = {}
         for key in RATE_KEYS:
             if key in rates:
@@ -147,18 +150,21 @@ class ExternalAPIService:
                 f"Existing rates: {existing.get('USDT_SELL', 'N/A')}"
             )
 
-        headers = {"Content-Type": "application/json"}
-
-        # مطابق data.py برای هر کلید یک درخواست جداگانه بفرستیم
+        # ارسال هر 4 قیمت به صورت جداگانه - دقیقاً مطابق t.py
+        # برای هر قیمت یک درخواست POST جداگانه با payload:
+        # {"currency": "GBP_BUY", "rate": 163000, "api_key": "..."}
         results = {"sent": [], "failed": []}
         for key, value in full_rates.items():
+            # ارسال هر قیمت به صورت جداگانه (مثل t.py)
             resp = ExternalAPIService.send_request(key, value)
             if resp is not None:
                 results["sent"].append(
                     {"currency": key, "rate": value, "response": resp}
                 )
+                logger.info(f"Successfully sent {key} = {value}")
             else:
                 results["failed"].append({"currency": key, "rate": value})
+                logger.error(f"Failed to send {key} = {value}")
 
         return results
 
