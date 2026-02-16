@@ -100,11 +100,10 @@ FARSI_WEEKDAYS = {
 
 PERSIAN_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
 
-# Contact information
+# Contact information (Maria removed - Sogand in slot 2)
 CONTACT_INFO = {
     "Mr. Mahdi": "+447533544249",
-    "Ms. Maria": "+447399990340",
-    "Ms. Sogand": "+447777238863",
+    "Ms. Sogand": "+447399990340",
     "Ms. Kianian": "+989121894230",  # Financial Manager
 }
 
@@ -139,11 +138,8 @@ LEGACY_FINAL_BUTTONS = [
     [
         {
             "text": "ارتباط با امور مشتریان ۲",
-            "url": "https://wa.me/447399990340",
+            "url": "https://wa.me/447399990340",  # Sogand
         }
-    ],
-    [
-        {"text": "ارتباط با امور مشتریان ۳", "url": "https://wa.me/447777238863"},
     ],
     [
         {"text": "مدیر مالی", "url": "https://wa.me/989121894230"},
@@ -617,10 +613,8 @@ class PricePublisherService:
             "📞 تماس با ما:\n"
             "1️⃣ Mr.Mahdi\n"
             f"📱 <a href=\"https://wa.me/447533544249\">+44 7533 544249</a>\n"
-            "2️⃣Ms.Maria\n"
+            "2️⃣ Ms.Sogand\n"
             f"📱 <a href=\"https://wa.me/447399990340\">+44 7399 990340</a>\n"
-            "3️⃣ Ms.Sogand\n"
-            f"📱 <a href=\"https://wa.me/447777238863\">+44 7777 238 863</a>\n"
             "👤 Ms.Kianian\n"
             f"📱 <a href=\"https://wa.me/989121894230\">+98 912 189 4230</a>\n\n"
             "📍 آدرس دفتر:\n"
@@ -650,10 +644,8 @@ class PricePublisherService:
             "📞 تماس با ما:\n"
             "1️⃣ Mr.Mahdi\n"
             f"📱 <a href=\"https://wa.me/447533544249\">+44 7533 544249</a>\n"
-            "2️⃣Ms.Maria\n"
+            "2️⃣ Ms.Sogand\n"
             f"📱 <a href=\"https://wa.me/447399990340\">+44 7399 990340</a>\n"
-            "3️⃣ Ms.Sogand\n"
-            f"📱 <a href=\"https://wa.me/447777238863\">+44 7777 238 863</a>\n"
             "👤 Ms.Kianian\n"
             f"📱 <a href=\"https://wa.me/989121894230\">+98 912 189 4230</a>\n\n"
             "📍 آدرس دفتر:\n"

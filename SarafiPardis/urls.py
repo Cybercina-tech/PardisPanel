@@ -30,7 +30,7 @@ urlpatterns = [
     path('favicon.ico', views.favicon_view, name='favicon'),
     path('', include('dashboard.urls')),
     path('landingpage/', include('landing.urls', namespace='landing')),
-    path('landing/', RedirectView.as_view(url='/landingpage/', permanent=True)),  # Backward compatibility
+    path('landing/', RedirectView.as_view(pattern_name='landing:home', permanent=True)),
     path("category/", include("category.urls", namespace="category")),
     path("", include("accounts.urls", namespace="accounts")),
     path("prices/", include("change_price.urls", namespace="change_price")),
