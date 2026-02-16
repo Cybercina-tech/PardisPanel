@@ -42,7 +42,8 @@
   - اگر وجود نداشته باشد، آن قیمت skip می‌شود
   
 - **برای تتر (USDT)**: فقط قیمت‌های به تومان (IRR) ارسال می‌شوند
-  - جفت ارز باید `USDT/IRR` یا `IRR/USDT` باشد
+  - جفت ارز باید `USDT/IRR` یا `USDT/IRT` باشد
+  - **قیمت‌های تتر به پوند (USDT/GBP) ارسال نمی‌شوند**
   
 - فقط قیمت‌های مربوط به جفت ارزهای `GBP/IRR` (یا `GBP/IRT`) و `USDT/IRR` (یا `USDT/IRT`) ارسال می‌شوند
 - قیمت‌های سایر ارزها (مثل USD, EUR و غیره) نادیده گرفته می‌شوند
@@ -147,14 +148,10 @@ elif pair == {"USDT", "IRR"} or pair == {"USDT", "IRT"}:
 
 ### 3. ارسال قیمت‌ها
 
-تابع `send_rates_payload()` چهار قیمت را ارسال می‌کند:
-
-1. **خواندن قیمت‌های موجود**: ابتدا قیمت‌های فعلی از API خوانده می‌شوند
-2. **ترکیب قیمت‌ها**: 
-   - اگر قیمت جدید برای یک کلید وجود دارد، از آن استفاده می‌شود
-   - اگر قیمت جدید وجود ندارد، از قیمت موجود در API استفاده می‌شود
-   - اگر هیچ کدام وجود ندارد، مقدار 0 استفاده می‌شود
-3. **ارسال جداگانه**: برای هر یک از چهار کلید، یک درخواست POST جداگانه ارسال می‌شود
+سیستم **فقط** قیمت‌های استخراج‌شده از `price_items` را ارسال می‌کند:
+- بدون خواندن از API یا دیتابیس
+- بدون fallback به مقادیر قبلی
+- برای هر کلید استخراج‌شده، یک درخواست POST جداگانه
 
 ### 4. مثال جریان کار
 
@@ -171,27 +168,11 @@ elif pair == {"USDT", "IRR"} or pair == {"USDT", "IRT"}:
      "USDT_SELL": 150000.0
    }
    ↓
-4. send_rates_payload() خواندن قیمت‌های موجود:
-   {
-     "GBP_BUY": 163000,
-     "GBP_SELL": 172000,
-     "USDT_BUY": 125000,  # قدیمی
-     "USDT_SELL": 149000   # قدیمی
-   }
-   ↓
-5. ترکیب:
-   {
-     "GBP_BUY": 163000,      # از existing
-     "GBP_SELL": 172000,     # از existing
-     "USDT_BUY": 126000,     # از new (overwrite)
-     "USDT_SELL": 150000     # از new (overwrite)
-   }
-   ↓
-6. ارسال 4 درخواست POST:
-   POST /rates {"currency": "GBP_BUY", "rate": 163000, ...}
-   POST /rates {"currency": "GBP_SELL", "rate": 172000, ...}
+4. ارسال فقط همان مقادیر استخراج‌شده (2 درخواست POST):
    POST /rates {"currency": "USDT_BUY", "rate": 126000, ...}
    POST /rates {"currency": "USDT_SELL", "rate": 150000, ...}
+
+(قیمت‌های USDT/GBP ارسال نمی‌شوند - فقط USDT/IRR)
 ```
 
 ## تنظیمات
@@ -208,51 +189,16 @@ export EXTERNAL_API_URL="https://sarafipardis.co.uk/wp-json/pardis/v1/rates"
 export EXTERNAL_API_KEY="your-api-key-here"
 ```
 
-### تنظیمات پیش‌فرض
-
-اگر متغیرهای محیطی تنظیم نشده باشند، از مقادیر پیش‌فرض استفاده می‌شود:
+### تنظیمات Django (settings.py)
 
 ```python
-EXTERNAL_API_URL = "https://sarafipardis.co.uk/wp-json/pardis/v1/rates"
-EXTERNAL_API_KEY = "PX9k7mN2qR8vL4jH6wE3tY1uI5oP0aS9dF7gK2mN8xZ4cV6bQ1wE3rT5yU8iO0pL"
+EXTERNAL_API_URL = os.environ.get('EXTERNAL_API_URL', 'https://sarafipardis.co.uk/wp-json/pardis/v1/rates')
+EXTERNAL_API_KEY = os.environ.get('EXTERNAL_API_KEY', '')
 ```
+
+**مهم:** API Key را از طریق متغیر محیطی `EXTERNAL_API_KEY` تنظیم کنید. مقدار پیش‌فرض خالی است.
 
 ## مثال‌های استفاده
-
-### استفاده مستقیم از سرویس
-
-```python
-from finalize.services import ExternalAPIService
-
-# ارسال قیمت خرید تتر
-result = ExternalAPIService.send_usdt_buy(126000.0)
-
-# ارسال قیمت فروش تتر
-result = ExternalAPIService.send_usdt_sell(150000.0)
-
-# ارسال قیمت خرید پوند
-result = ExternalAPIService.send_gbp_buy(163000.0)
-
-# ارسال قیمت فروش پوند
-result = ExternalAPIService.send_gbp_sell(172000.0)
-```
-
-### ارسال همه قیمت‌ها
-
-```python
-from finalize.services import ExternalAPIService
-
-# ساخت dict قیمت‌ها
-rates = {
-    "GBP_BUY": 163000.0,
-    "GBP_SELL": 172000.0,
-    "USDT_BUY": 126000.0,
-    "USDT_SELL": 150000.0
-}
-
-# ارسال
-results = ExternalAPIService.send_rates_payload(rates)
-```
 
 ### استفاده در View
 
@@ -284,14 +230,10 @@ if results.get("failed"):
 
 ```python
 # لاگ‌های مهم:
-logger.info("send_finalized_prices called with X items")
-logger.info("Processing USDT item: source=USDT, target=IRR, trade_type=sell, price=150000")
-logger.info("USDT_SELL price extracted: ...")
-logger.info("Built rates dict: {...}, skipped: [...]")
-logger.info("Existing rates from API: {...}")
-logger.info("New rates to send: {...}")
-logger.info("Using new rate for USDT_SELL: 150000.0")
-logger.info("Successfully sent USDT_SELL rate: 150000")
+logger.info("Extracted USDT_SELL = 150000 from USDT/IRR sell")
+logger.info("Rates to send: {...}")
+logger.info("Sent USDT_SELL = 150000 successfully")
+logger.info("External API: N sent, M failed")
 ```
 
 ### مشکلات رایج
@@ -323,14 +265,6 @@ logger.info("Successfully sent USDT_SELL rate: 150000")
 - بررسی صحت API Key
 - بررسی دسترسی به اینترنت و URL API
 
-#### 3. قیمت‌های قدیمی overwrite نمی‌شوند
-
-**علت**: قیمت جدید در `rates` نیست و از `existing` استفاده می‌شود.
-
-**راه‌حل**:
-- بررسی کنید که قیمت جدید در `price_items` است
-- بررسی کنید که جفت ارز و `trade_type` به درستی تشخیص داده می‌شوند
-
 ### تست
 
 برای تست ارسال قیمت‌ها، می‌توانید از تست‌های نوشته شده استفاده کنید:
@@ -345,27 +279,26 @@ python manage.py test finalize.tests.ExternalAPIServiceTest.test_send_usdt_sell_
 
 ## نکات مهم
 
-1. **ارسال جداگانه**: برای هر یک از چهار قیمت، یک درخواست POST جداگانه ارسال می‌شود (نه یک درخواست با همه قیمت‌ها)
+1. **ارسال جداگانه**: برای هر یک از چهار قیمت، یک درخواست POST جداگانه ارسال می‌شود
 
-2. **Fallback به قیمت‌های موجود**: اگر قیمت جدید برای یک کلید وجود ندارد، از قیمت موجود در API استفاده می‌شود
+2. **بدون fallback**: فقط قیمت‌های استخراج‌شده از `price_items` ارسال می‌شوند؛ بدون خواندن از API یا دیتابیس
 
-3. **Timeout**: timeout برای درخواست‌ها 30 ثانیه است
+3. **Timeout**: 10 ثانیه برای هر درخواست
 
-4. **Error Handling**: اگر ارسال یک قیمت با خطا مواجه شود، سایر قیمت‌ها همچنان ارسال می‌شوند
+4. **Error Handling**: اگر ارسال یک قیمت با خطا مواجه شود، سایر قیمت‌ها همچنان ارسال می‌شوند و خطا با stack trace کامل لاگ می‌شود
 
-5. **Logging**: همه عملیات لاگ می‌شوند، بنابراین می‌توانید روند ارسال را ردیابی کنید
+5. **USDT/GBP ارسال نمی‌شود**: فقط تتر به تومان (USDT/IRR یا USDT/IRT)
 
 ## ساختار کد
 
 ```
 finalize/
-├── services.py          # کلاس ExternalAPIService
-│   ├── send_request()           # ارسال یک قیمت
-│   ├── get_existing_rates()     # خواندن قیمت‌های موجود
-│   ├── send_rates_payload()     # ارسال چهار قیمت
-│   ├── _build_rates_from_items() # استخراج قیمت‌ها
-│   └── send_finalized_prices()  # ارسال قیمت‌های finalized
-└── views.py             # استفاده از سرویس در views
+├── services.py
+│   ├── _build_rates_from_items()  # استخراج از price_items
+│   ├── _send_one_rate()           # ارسال یک POST
+│   ├── ExternalAPIService.send_finalized_prices()
+│   └── ExternalAPIService.send_finalized_special_prices()
+└── views.py
 ```
 
 ## پشتیبانی

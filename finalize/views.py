@@ -258,7 +258,6 @@ def finalize_category(request, category_id):
             api_results = ExternalAPIService.send_finalized_prices(price_items)
             sent_count = len(api_results.get("sent", []))
             failed_count = len(api_results.get("failed", []))
-            skipped_count = len(api_results.get("skipped", []))
             
             api_sent_successfully = sent_count > 0 and failed_count == 0
 
@@ -269,9 +268,9 @@ def finalize_category(request, category_id):
                 )
                 # Log each sent rate
                 for sent_item in api_results.get("sent", []):
-                    payload = sent_item.get("payload", {})
-                    for key, value in payload.items():
-                        logger.info(f"  → Sent {key} = {value}")
+                    currency = sent_item.get("currency", "N/A")
+                    rate = sent_item.get("rate", "N/A")
+                    logger.info(f"  → Sent {currency} = {rate}")
             
             if failed_count > 0:
                 logger.warning(
@@ -280,10 +279,9 @@ def finalize_category(request, category_id):
                 )
                 # Log each failed rate
                 for failed_item in api_results.get("failed", []):
-                    logger.warning(f"  → Failed: {failed_item}")
-
-            if skipped_count > 0:
-                logger.info(f"⊘ Skipped {skipped_count} price(s) (not GBP/USDT): {api_results.get('skipped', [])}")
+                    currency = failed_item.get("currency", "N/A")
+                    rate = failed_item.get("rate", "N/A")
+                    logger.warning(f"  → Failed: {currency} = {rate}")
 
             # Structured log into system log table
             external_log_level = "INFO" if failed_count == 0 else "WARNING"
@@ -291,7 +289,7 @@ def finalize_category(request, category_id):
                 level=external_log_level,
                 message=f"External rates sync for category: {category.name}",
                 details=(
-                    f"Sent: {sent_count}, Failed: {failed_count}, Skipped: {skipped_count}. "
+                    f"Sent: {sent_count}, Failed: {failed_count}. "
                     f"Success: {api_sent_successfully}"
                 ),
                 user=request.user,
@@ -309,9 +307,14 @@ def finalize_category(request, category_id):
                     f'برخی قیمت‌ها به API خارجی ارسال شدند ({sent_count} موفق، {failed_count} ناموفق)'
                 )
             else:
+                skipped_items = api_results.get("skipped", [])
+                logger.warning(
+                    "No rates sent for category %s. Skipped: %s",
+                    category.name, skipped_items
+                )
                 messages.warning(
                     request,
-                    f'هیچ قیمت GBP/USDT برای ارسال به API پیدا نشد'
+                    f'هیچ قیمت GBP/USDT برای ارسال به API پیدا نشد (skipped: {len(skipped_items)})'
                 )
                 
         except Exception as exc:

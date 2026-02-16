@@ -18,6 +18,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 
 from . import views
 
@@ -29,7 +30,7 @@ urlpatterns = [
     path('favicon.ico', views.favicon_view, name='favicon'),
     path('', include('dashboard.urls')),
     path('landingpage/', include('landing.urls', namespace='landing')),
-    path('landing/', include('landing.urls', namespace='landing')),  # Keep for backward compatibility
+    path('landing/', RedirectView.as_view(url='/landingpage/', permanent=True)),  # Backward compatibility
     path("category/", include("category.urls", namespace="category")),
     path("", include("accounts.urls", namespace="accounts")),
     path("prices/", include("change_price.urls", namespace="change_price")),

@@ -142,6 +142,18 @@ LOGIN_REDIRECT_URL = '/dashboard/'
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
+# -----------------------------
+# External API (sarafipardis.co.uk rates)
+# -----------------------------
+EXTERNAL_API_URL = os.environ.get(
+    'EXTERNAL_API_URL',
+    'https://sarafipardis.co.uk/wp-json/pardis/v1/rates'
+)
+EXTERNAL_API_KEY = os.environ.get(
+    'EXTERNAL_API_KEY',
+    'PX9k7mN2qR8vL4jH6wE3tY1uI5oP0aS9dF7gK2mN8xZ4cV6bQ1wE3rT5yU8iO0pL'
+)
+
 # Security settings
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
