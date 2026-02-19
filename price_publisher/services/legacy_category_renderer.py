@@ -281,10 +281,10 @@ def _get_rotating_background():
 
 def _load_fonts():
     fonts = {
-        "farsi_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 110),
-        "farsi_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 80),
-        "eng_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 110),
-        "eng_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 80),
+        "farsi_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh_farsi_thin.ttf"), 110),
+        "farsi_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh_farsi_thin.ttf"), 80),
+        "eng_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh_farsi_thin.ttf"), 110),
+        "eng_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh_farsi_thin.ttf"), 80),
         "stop": ImageFont.truetype(str(FONT_ROOT / "Morabba.ttf"), 115),
         "call": ImageFont.truetype(str(FONT_ROOT / "Morabba.ttf"), 100),
     }
