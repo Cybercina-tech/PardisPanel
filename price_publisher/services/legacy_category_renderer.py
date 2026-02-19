@@ -309,9 +309,7 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     today_en = now.strftime("%A")
 
     jalali = jdatetime.datetime.fromgregorian(datetime=now)
-    farsi_date_str = _to_farsi_digits(
-        f"{jalali.day} {_farsi_month(jalali.month)} {jalali.year}"
-    )
+    farsi_date_str = f"{jalali.day} {_farsi_month(jalali.month)} {jalali.year}"
     farsi_weekday = FARSI_WEEKDAYS.get(today_en, "")
 
     # Persian date + weekday in top-right box
