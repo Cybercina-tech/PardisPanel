@@ -22,11 +22,13 @@ from setting.utils import log_finalize_event, log_telegram_event
 def sort_gbp_price_types(price_types):
     """
     Sort price types for GBP/Pound category in specific order:
-    1. خرید نقدی (Buy Cash)
-    2. خرید حسابی (Buy Account)
-    3. فروش نقد (Sell Cash)
-    4. فروش حسابی (Sell Account)
+    1. خرید از حساب (Buy Account)
+    2. خرید نقدی (Buy Cash)
+    3. فروش از حساب (Sell Account)
+    4. فروش نقدی (Sell Cash)
     5. فروش رسمی (Sell Official)
+    6. لیر (Lira)
+    7. درهم (Dirham)
     """
     if not price_types:
         return price_types
@@ -35,22 +37,29 @@ def sort_gbp_price_types(price_types):
     
     def get_sort_key(price_type):
         name_lower = price_type.name.lower()
+        slug_lower = (price_type.slug or "").lower()
         trade_type = price_type.trade_type.lower()
+        
+        # Lira and Dirham always last
+        if 'لیر' in price_type.name or slug_lower == 'lira':
+            return 6
+        if 'درهم' in price_type.name or slug_lower == 'dirham':
+            return 7
         
         # Buy types
         if trade_type == 'buy':
-            if 'نقدی' in price_type.name or 'cash' in name_lower or 'نقد' in price_type.name:
-                return 1  # خرید نقدی
-            elif 'حسابی' in price_type.name or 'account' in name_lower:
-                return 2  # خرید حسابی
+            if 'حساب' in price_type.name or 'account' in name_lower:
+                return 1  # خرید از حساب
+            elif 'نقدی' in price_type.name or 'cash' in name_lower or 'نقد' in price_type.name:
+                return 2  # خرید نقدی
             else:
                 return 10  # Other buy types
         # Sell types
         elif trade_type == 'sell':
-            if 'نقد' in price_type.name or 'cash' in name_lower:
-                return 3  # فروش نقد
-            elif 'حسابی' in price_type.name or 'account' in name_lower:
-                return 4  # فروش حسابی
+            if 'حساب' in price_type.name or 'account' in name_lower:
+                return 3  # فروش از حساب
+            elif 'نقد' in price_type.name or 'cash' in name_lower:
+                return 4  # فروش نقدی
             elif 'رسمی' in price_type.name or 'official' in name_lower:
                 return 5  # فروش رسمی
             else:

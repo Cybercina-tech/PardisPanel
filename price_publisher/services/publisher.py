@@ -637,7 +637,7 @@ class PricePublisherService:
         office_address = "Office A, 708A High Road, North Finchley, N12 9QL"
         
         caption = (
-            "💷 خرید و فروش پوند (GBP)\n"
+            "💷 خرید و فروش پوند (GBP) | لیر | درهم\n"
             "💰 نقدی و حسابی\n\n"
             "━━━━━━━━━━━\n"
             "💬 کارشناسان ما همواره پاسخ‌گوی شما هستند.\n"

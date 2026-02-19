@@ -37,6 +37,8 @@ PRICE_POSITIONS = {
     "sell_from_account": (630, 1580),
     "cash_sales_price": (630, 1920),
     "official_sale_price": (630, 2260),
+    "lira": (630, 2780),
+    "dirham": (630, 3120),
 }
 
 STOP_POSITIONS = {
@@ -45,6 +47,8 @@ STOP_POSITIONS = {
     "sell_from_account": (530, 1580),
     "cash_sales_price": (530, 1940),
     "official_sale_price": (530, 2280),
+    "lira": (530, 2780),
+    "dirham": (530, 3120),
 }
 
 CALL_POSITIONS = {
@@ -53,6 +57,8 @@ CALL_POSITIONS = {
     "sell_from_account": (530, 1580),
     "cash_sales_price": (530, 1940),
     "official_sale_price": (530, 2280),
+    "lira": (530, 2780),
+    "dirham": (530, 3120),
 }
 
 LAYOUT_ORDER = [
@@ -61,6 +67,8 @@ LAYOUT_ORDER = [
     "sell_from_account",
     "cash_sales_price",
     "official_sale_price",
+    "lira",
+    "dirham",
 ]
 
 PRICE_TYPE_ALIASES = {
@@ -103,6 +111,18 @@ PRICE_TYPE_ALIASES = {
         "نرخ_رسمی",
         "فروش_پوند_رسمی",
         "فروش_رسمی_پوند",
+    },
+    "lira": {
+        "lira",
+        "لیر",
+        "turkish_lira",
+        "try",
+    },
+    "dirham": {
+        "dirham",
+        "درهم",
+        "uae_dirham",
+        "aed",
     },
 }
 
@@ -224,11 +244,11 @@ def _resolve_background_for_category(category) -> Path:
 def _get_rotating_background():
     """
     Get the next rotating background from price_theme folder.
-    Cycles through all PNG files (1.png, 2.png, 3.png, etc.) in order.
+    Cycles through all image files (1.jpg, 2.jpg, etc.) in order.
     """
     price_theme_dir = IMAGE_ROOT / "price_theme"
     files = sorted(
-        price_theme_dir.glob("*.png"),
+        [f for ext in ("*.png", "*.jpg", "*.jpeg") for f in price_theme_dir.glob(ext)],
         key=lambda path: int(path.stem) if path.stem.isdigit() else float('inf'),
     )
     if not files:
