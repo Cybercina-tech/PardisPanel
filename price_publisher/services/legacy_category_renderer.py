@@ -315,11 +315,11 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     # Persian date + weekday in top-right box
     _draw_centered(
         draw_ctx, _reshape_rtl(farsi_date_str), fonts["farsi_date"],
-        *DATE_BOX_POSITIONS["farsi_date"],
+        *DATE_BOX_POSITIONS["farsi_date"], fill="black",
     )
     _draw_centered(
         draw_ctx, _reshape_rtl(farsi_weekday), fonts["farsi_weekday"],
-        *DATE_BOX_POSITIONS["farsi_weekday"],
+        *DATE_BOX_POSITIONS["farsi_weekday"], fill="black",
     )
 
     # English date + weekday in top-left box
@@ -328,11 +328,11 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     eng_date_str = f"{eng_day} {now.strftime('%b')} {eng_year}"
     _draw_centered(
         draw_ctx, eng_date_str, fonts["eng_date"],
-        *DATE_BOX_POSITIONS["eng_date"],
+        *DATE_BOX_POSITIONS["eng_date"], fill="black",
     )
     _draw_centered(
         draw_ctx, now.strftime("%A"), fonts["eng_weekday"],
-        *DATE_BOX_POSITIONS["eng_weekday"],
+        *DATE_BOX_POSITIONS["eng_weekday"], fill="black",
     )
 
 
@@ -408,7 +408,7 @@ def _format_price_value(value) -> str:
     except Exception:
         integer_value = int(decimal_value)
     formatted = f"{integer_value:,}"
-    return _to_english_digits(formatted)  # Convert to English digits for GBP/USDT prices
+    return _to_farsi_digits(formatted)
 
 
 def _draw_centered(draw_ctx, text, font, cx, cy, fill="white"):
