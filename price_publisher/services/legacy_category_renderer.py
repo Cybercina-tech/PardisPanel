@@ -18,7 +18,7 @@ try:
 except Exception:  # pragma: no cover - optional dependency during migrations/tests
     PriceThemeState = None
 
-USE_ARABIC_RESHAPER = True
+USE_ARABIC_RESHAPER = False
 
 try:
     import arabic_reshaper
