@@ -18,27 +18,32 @@ try:
 except Exception:  # pragma: no cover - optional dependency during migrations/tests
     PriceThemeState = None
 
+USE_ARABIC_RESHAPER = True
+
+try:
+    import arabic_reshaper
+    from bidi.algorithm import get_display
+except ImportError:
+    USE_ARABIC_RESHAPER = False
+
 from price_publisher.services.image_renderer import RenderedPriceImage
 
 # Coordinates derived from the legacy pic_generator implementation
-WEEKDAY_POSITIONS = {
-    "Saturday": ((1920, 410), (610, 420)),
-    "Sunday": ((1870, 410), (650, 420)),
-    "Monday": ((1900, 430), (650, 430)),
-    "Tuesday": ((1900, 420), (640, 415)),  # Updated position for Tuesday: x=1900, y=420
-    "Wednesday": ((1870, 405), (580, 420)),
-    "Thursday": ((1870, 410), (610, 425)),
-    "Friday": ((1965, 420), (680, 425)),
+DATE_BOX_POSITIONS = {
+    "farsi_date": (2290, 290),
+    "farsi_weekday": (2150, 470),
+    "eng_date": (690, 290),
+    "eng_weekday": (730, 470),
 }
 
 PRICE_POSITIONS = {
-    "buy_from_account": (630, 680),
-    "cash_purchase_price": (630, 1030),
-    "sell_from_account": (630, 1580),
-    "cash_sales_price": (630, 1920),
-    "official_sale_price": (630, 2260),
-    "lira": (630, 2780),
-    "dirham": (630, 3120),
+    "buy_from_account": (760, 680),
+    "cash_purchase_price": (760, 1030),
+    "sell_from_account": (760, 1580),
+    "cash_sales_price": (760, 1920),
+    "official_sale_price": (760, 2260),
+    "lira": (760, 2773),
+    "dirham": (760, 3135),
 }
 
 STOP_POSITIONS = {
@@ -48,7 +53,7 @@ STOP_POSITIONS = {
     "cash_sales_price": (530, 1940),
     "official_sale_price": (530, 2280),
     "lira": (530, 2780),
-    "dirham": (530, 3120),
+    "dirham": (530, 3131),
 }
 
 CALL_POSITIONS = {
@@ -58,7 +63,7 @@ CALL_POSITIONS = {
     "cash_sales_price": (530, 1940),
     "official_sale_price": (530, 2280),
     "lira": (530, 2780),
-    "dirham": (530, 3120),
+    "dirham": (530, 3131),
 }
 
 LAYOUT_ORDER = [
@@ -190,7 +195,7 @@ def render_category_board(
             target_position,
             display_text,
             font=fonts[font_key],
-            fill=(0, 0, 0),
+            fill="white",
         )
 
     buffer = io.BytesIO()
@@ -276,41 +281,25 @@ def _get_rotating_background():
 
 def _load_fonts():
     fonts = {
-        "farsi_big": ImageFont.truetype(
-            str(FONT_ROOT / "YekanBakh.ttf"), 80
-        ),  # weekday fa
-        "farsi_big_tuesday": ImageFont.truetype(
-            str(FONT_ROOT / "YekanBakh.ttf"), 100
-        ),  # weekday fa for Tuesday - size 100
-        "farsi_num": ImageFont.truetype(
-            str(FONT_ROOT / "YekanBakh.ttf"), 100
-        ),  # date fa
-        "eng_big": ImageFont.truetype(
-            str(FONT_ROOT / "montsrrat.otf"), 100
-        ),  # date en - Changed to English font
-        "eng_small": ImageFont.truetype(
-            str(FONT_ROOT / "montsrrat.otf"), 85
-        ),  # weekday en - Changed to English font
-        "stop": ImageFont.truetype(
-            str(FONT_ROOT / "Morabba.ttf"), 115
-        ),  # توقف خرید/فروش
-        "call": ImageFont.truetype(
-            str(FONT_ROOT / "Morabba.ttf"), 100
-        ),  # تماس بگیرید
+        "farsi_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 110),
+        "farsi_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 80),
+        "eng_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 110),
+        "eng_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 80),
+        "stop": ImageFont.truetype(str(FONT_ROOT / "Morabba.ttf"), 115),
+        "call": ImageFont.truetype(str(FONT_ROOT / "Morabba.ttf"), 100),
     }
     
-    # Load price font - Changed to English font for GBP/USDT prices
-    price_font_path = FONT_ROOT / "montsrrat.otf"
+    price_font_path = FONT_ROOT / "Kalameh.ttf"
     if not price_font_path.exists():
         raise FileNotFoundError(
             f"Font file not found: {price_font_path}. "
             f"Please ensure the font file exists in the fonts directory."
         )
     try:
-        fonts["price"] = ImageFont.truetype(str(price_font_path), 135)
+        fonts["price"] = ImageFont.truetype(str(price_font_path), 132)
     except OSError as e:
         raise OSError(
-            f"Failed to load font 'montsrrat.otf': {e}"
+            f"Failed to load font 'Kalameh.ttf': {e}"
         ) from e
     
     return fonts
@@ -318,45 +307,34 @@ def _load_fonts():
 
 def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     today_en = now.strftime("%A")
-    farsi_weekday_pos, eng_weekday_pos = WEEKDAY_POSITIONS.get(
-        today_en, ((1920, 410), (610, 420))
-    )
 
     jalali = jdatetime.datetime.fromgregorian(datetime=now)
     farsi_date_str = _to_farsi_digits(
-        f"{jalali.day}{_farsi_month(jalali.month)}{jalali.year}"
+        f"{jalali.day} {_farsi_month(jalali.month)} {jalali.year}"
     )
-    draw_ctx.text(
-        (1900, 255),
-        farsi_date_str,
-        font=fonts["farsi_num"],
-        fill="white",
-    )
-
     farsi_weekday = FARSI_WEEKDAYS.get(today_en, "")
-    # Use size 100 font for Tuesday, otherwise use default size 80
-    weekday_font = fonts.get("farsi_big_tuesday", fonts["farsi_big"]) if today_en == "Tuesday" else fonts["farsi_big"]
-    draw_ctx.text(
-        farsi_weekday_pos,
-        farsi_weekday,
-        font=weekday_font,
-        fill="white",
+
+    # Persian date + weekday in top-right box
+    _draw_centered(
+        draw_ctx, _reshape_rtl(farsi_date_str), fonts["farsi_date"],
+        *DATE_BOX_POSITIONS["farsi_date"],
+    )
+    _draw_centered(
+        draw_ctx, _reshape_rtl(farsi_weekday), fonts["farsi_weekday"],
+        *DATE_BOX_POSITIONS["farsi_weekday"],
     )
 
+    # English date + weekday in top-left box
     eng_day = _to_english_digits(str(now.day))
     eng_year = _to_english_digits(str(now.year))
     eng_date_str = f"{eng_day} {now.strftime('%b')} {eng_year}"
-    draw_ctx.text(
-        (390, 230),
-        eng_date_str,
-        font=fonts["eng_big"],
-        fill="white",
+    _draw_centered(
+        draw_ctx, eng_date_str, fonts["eng_date"],
+        *DATE_BOX_POSITIONS["eng_date"],
     )
-    draw_ctx.text(
-        eng_weekday_pos,
-        now.strftime("%A"),
-        font=fonts["eng_small"],
-        fill="white",
+    _draw_centered(
+        draw_ctx, now.strftime("%A"), fonts["eng_weekday"],
+        *DATE_BOX_POSITIONS["eng_weekday"],
     )
 
 
@@ -433,6 +411,19 @@ def _format_price_value(value) -> str:
         integer_value = int(decimal_value)
     formatted = f"{integer_value:,}"
     return _to_english_digits(formatted)  # Convert to English digits for GBP/USDT prices
+
+
+def _draw_centered(draw_ctx, text, font, cx, cy, fill="white"):
+    bbox = draw_ctx.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+    draw_ctx.text((cx - tw / 2, cy - th / 2), text, font=font, fill=fill)
+
+
+def _reshape_rtl(text: str) -> str:
+    if USE_ARABIC_RESHAPER:
+        return get_display(arabic_reshaper.reshape(text))
+    return text
 
 
 def _to_farsi_digits(value: str) -> str:

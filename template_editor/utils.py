@@ -36,6 +36,7 @@ def get_available_fonts() -> list[tuple[str, str]]:
 
 DEFAULT_FONT_CANDIDATES = (
     getattr(settings, "TEMPLATE_EDITOR_DEFAULT_FONT", None),
+    str(FONT_ROOT / "Kalameh.ttf"),    # Kalameh - Persian & English
     str(FONT_ROOT / "montsrrat.otf"),  # Same font as tether banner
     str(FONT_ROOT / "YekanBakh.ttf"),  # Persian font fallback
     str(FONT_ROOT / "Morabba.ttf"),    # Persian font fallback

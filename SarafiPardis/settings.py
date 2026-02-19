@@ -123,7 +123,7 @@ MEDIA_ROOT = BASE_DIR / 'public' / 'media'
 # -----------------------------
 # Template & Rendering extras
 # -----------------------------
-TEMPLATE_EDITOR_DEFAULT_FONT = str(BASE_DIR / 'static' / 'fonts' / 'YekanBakh.ttf')
+TEMPLATE_EDITOR_DEFAULT_FONT = str(BASE_DIR / 'static' / 'fonts' / 'Kalameh.ttf')
 PRICE_RENDERER_FONT_ROOT = BASE_DIR / 'static' / 'fonts'
 LEGACY_CATEGORY_BACKGROUNDS = {
     "pound": "price_theme/1.png",
