@@ -281,10 +281,10 @@ def _get_rotating_background():
 
 def _load_fonts():
     fonts = {
-        "farsi_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh_farsi_thin.ttf"), 110),
-        "farsi_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh_farsi_thin.ttf"), 80),
-        "eng_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh_farsi_thin.ttf"), 110),
-        "eng_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh_farsi_thin.ttf"), 80),
+        "farsi_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 110),
+        "farsi_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 80),
+        "eng_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 110),
+        "eng_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 80),
         "stop": ImageFont.truetype(str(FONT_ROOT / "Morabba.ttf"), 115),
         "call": ImageFont.truetype(str(FONT_ROOT / "Morabba.ttf"), 100),
     }
@@ -315,11 +315,11 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     # Persian date + weekday in top-right box
     _draw_centered(
         draw_ctx, _reshape_rtl(farsi_date_str), fonts["farsi_date"],
-        *DATE_BOX_POSITIONS["farsi_date"], fill="black",
+        *DATE_BOX_POSITIONS["farsi_date"], fill="white",
     )
     _draw_centered(
         draw_ctx, _reshape_rtl(farsi_weekday), fonts["farsi_weekday"],
-        *DATE_BOX_POSITIONS["farsi_weekday"], fill="black",
+        *DATE_BOX_POSITIONS["farsi_weekday"], fill="white",
     )
 
     # English date + weekday in top-left box
@@ -328,11 +328,11 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     eng_date_str = f"{eng_day} {now.strftime('%b')} {eng_year}"
     _draw_centered(
         draw_ctx, eng_date_str, fonts["eng_date"],
-        *DATE_BOX_POSITIONS["eng_date"], fill="black",
+        *DATE_BOX_POSITIONS["eng_date"], fill="white",
     )
     _draw_centered(
         draw_ctx, now.strftime("%A"), fonts["eng_weekday"],
-        *DATE_BOX_POSITIONS["eng_weekday"], fill="black",
+        *DATE_BOX_POSITIONS["eng_weekday"], fill="white",
     )
 
 
