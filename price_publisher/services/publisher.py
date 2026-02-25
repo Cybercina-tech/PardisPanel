@@ -82,23 +82,12 @@ TEMPLATE_TYPE_MAP = {
     "special_sell_account_GBP.jpg": (True, True),
 }
 
-# Persian date constants
-FARSI_MONTHS = [
-    "", "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
-    "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند"
-]
-
-FARSI_WEEKDAYS = {
-    "Saturday": "شنبه",
-    "Sunday": "یکشنبه",
-    "Monday": "دوشنبه",
-    "Tuesday": "سه‌شنبه",
-    "Wednesday": "چهارشنبه",
-    "Thursday": "پنجشنبه",
-    "Friday": "جمعه",
-}
-
-PERSIAN_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
+from core.formatting import (
+    FARSI_MONTHS,
+    FARSI_WEEKDAYS,
+    PERSIAN_DIGITS,
+    format_price_dynamic,
+)
 
 # Contact information (Maria removed - Sogand in slot 2)
 CONTACT_INFO = {
@@ -406,7 +395,7 @@ class PricePublisherService:
 
     @staticmethod
     def _format_price(price) -> str:
-        return f"{price:,.2f}"
+        return format_price_dynamic(price)
 
     @staticmethod
     def _prepare_stream(stream: io.BytesIO, fallback_name: str) -> io.BytesIO:

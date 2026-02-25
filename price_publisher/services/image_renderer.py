@@ -305,7 +305,7 @@ class PriceImageRenderer:
             # Convert to BytesIO
             rgb_image = image.convert("RGB")  # Telegram prefers JPEG/PNG without alpha
             stream = io.BytesIO()
-            rgb_image.save(stream, format="PNG", optimize=True)
+            rgb_image.save(stream, format="PNG")
             stream.seek(0)
 
             return RenderedPriceImage(stream=stream, width=self.width, height=height)

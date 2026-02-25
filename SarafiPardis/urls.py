@@ -42,6 +42,7 @@ urlpatterns = [
     path("template-editor/", include("template_editor.frontend_urls", namespace="template_editor_frontend")),
     path("api/", include("template_editor.urls", namespace="template_editor")),
     path("analysis/", include("analysis.urls", namespace="analysis")),
+    path("instagram/", include("instagram_banner.urls", namespace="instagram_banner")),
 ]
 
 if settings.DEBUG:

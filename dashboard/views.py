@@ -6,6 +6,7 @@ from category.models import Category, PriceType
 from change_price.models import PriceHistory
 from telegram_app.models import TelegramBot, TelegramChannel
 from special_price.models import SpecialPriceType, SpecialPriceHistory
+from core.sorting import sort_categories
 
 
 def home(request):
@@ -90,7 +91,7 @@ def home(request):
     ).select_related('source_currency', 'target_currency').all()
     
     context = {
-        'categories': categories,
+        'categories': sort_categories(categories),
         'special_price_types': special_price_types,
         # Metrics for cards
         'highest_price': highest_price,
@@ -273,7 +274,7 @@ def dashboard2(request):
     update_frequency.reverse()  # Oldest first
     
     context = {
-        'categories': categories,
+        'categories': sort_categories(categories),
         'special_price_types': special_price_types,
         # Metrics for cards
         'highest_price': highest_price,

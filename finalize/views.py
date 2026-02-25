@@ -17,57 +17,7 @@ from price_publisher.services.publisher import (
 from .models import Finalization, FinalizedPriceHistory, SpecialPriceFinalization
 from .services import ExternalAPIService
 from setting.utils import log_finalize_event, log_telegram_event
-
-
-def sort_gbp_price_types(price_types):
-    """
-    Sort price types for GBP/Pound category in specific order:
-    1. خرید از حساب (Buy Account)
-    2. خرید نقدی (Buy Cash)
-    3. فروش از حساب (Sell Account)
-    4. فروش نقدی (Sell Cash)
-    5. فروش رسمی (Sell Official)
-    6. لیر (Lira)
-    7. درهم (Dirham)
-    """
-    if not price_types:
-        return price_types
-    
-    price_types_list = list(price_types)
-    
-    def get_sort_key(price_type):
-        name_lower = price_type.name.lower()
-        slug_lower = (price_type.slug or "").lower()
-        trade_type = price_type.trade_type.lower()
-        
-        # Lira and Dirham always last
-        if 'لیر' in price_type.name or slug_lower == 'lira':
-            return 6
-        if 'درهم' in price_type.name or slug_lower == 'dirham':
-            return 7
-        
-        # Buy types
-        if trade_type == 'buy':
-            if 'حساب' in price_type.name or 'account' in name_lower:
-                return 1  # خرید از حساب
-            elif 'نقدی' in price_type.name or 'cash' in name_lower or 'نقد' in price_type.name:
-                return 2  # خرید نقدی
-            else:
-                return 10  # Other buy types
-        # Sell types
-        elif trade_type == 'sell':
-            if 'حساب' in price_type.name or 'account' in name_lower:
-                return 3  # فروش از حساب
-            elif 'نقد' in price_type.name or 'cash' in name_lower:
-                return 4  # فروش نقدی
-            elif 'رسمی' in price_type.name or 'official' in name_lower:
-                return 5  # فروش رسمی
-            else:
-                return 20  # Other sell types
-        else:
-            return 30  # Unknown types
-    
-    return sorted(price_types_list, key=get_sort_key)
+from core.sorting import sort_gbp_price_types, sort_categories
 
 logger = logging.getLogger(__name__)
 
@@ -158,10 +108,18 @@ def finalize_dashboard(request):
                     'special_price_history': latest_price
                 })
     
+    sorted_categories = sort_categories(categories)
+
+    # Re-order pending_by_category to match sorted category order
+    sorted_pending = {}
+    for cat in sorted_categories:
+        if cat in pending_by_category:
+            sorted_pending[cat] = pending_by_category[cat]
+
     context = {
-        'categories': categories,
-        'pending_by_category': pending_by_category,
-        'has_pending': len(pending_by_category) > 0,
+        'categories': sorted_categories,
+        'pending_by_category': sorted_pending,
+        'has_pending': len(sorted_pending) > 0,
         'pending_special_prices': pending_special_prices,
         'has_pending_special': len(pending_special_prices) > 0,
         'special_price_types': special_price_types,

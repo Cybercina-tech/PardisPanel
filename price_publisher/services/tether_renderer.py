@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import functools
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Iterable, Optional, Tuple
@@ -54,18 +55,14 @@ FONT_FILES = {
     "tether_year": ("montsrrat.otf", 145),  # Year: "2025" - size 145
 }
 
-FARSI_WEEKDAYS = {
-    "Saturday": "شنبه",
-    "Sunday": "یکشنبه",
-    "Monday": "دوشنبه",
-    "Tuesday": "سه‌شنبه",
-    "Wednesday": "چهارشنبه",
-    "Thursday": "پنجشنبه",
-    "Friday": "جمعه",
-}
-
-FARSI_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
-EN_DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+from core.formatting import (
+    FARSI_WEEKDAYS,
+    FARSI_DIGITS,
+    EN_DIGITS,
+    to_farsi_digits as _to_farsi_digits,
+    to_english_digits as _to_english_digits,
+    farsi_month as _farsi_month,
+)
 
 TETHER_LAYOUT_ORDER = [
     "tether_buy_irr",
@@ -151,7 +148,7 @@ def render_tether_board(
             f"Tether offer background missing at {background_path}."
         )
 
-    image = Image.open(background_path).convert("RGBA")
+    image = _open_background(background_path).copy()
     draw_ctx = ImageDraw.Draw(image)
     fonts = _load_fonts()
 
@@ -174,11 +171,20 @@ def render_tether_board(
 
     buffer = io.BytesIO()
     buffer.name = "tether_prices.png"
-    image.convert("RGB").save(buffer, format="PNG", optimize=True)
+    image.convert("RGB").save(buffer, format="PNG")
     buffer.seek(0)
     return RenderedPriceImage(stream=buffer, width=image.width, height=image.height)
 
 
+@functools.lru_cache(maxsize=4)
+def _open_background(path: Path) -> Image.Image:
+    """Cache opened background images to avoid repeated disk I/O."""
+    img = Image.open(path).convert("RGBA")
+    img.load()
+    return img
+
+
+@functools.lru_cache(maxsize=1)
 def _load_fonts():
     fonts = {}
     for key, (filename, size) in FONT_FILES.items():
@@ -368,32 +374,5 @@ def _format_history_value(price_history, key: str) -> str:
     return text  # فقط عدد قیمت با فرمت عددی
 
 
-def _to_farsi_digits(value: str) -> str:
-    return str(value).translate(FARSI_DIGITS)
-
-
-def _to_english_digits(value: str) -> str:
-    return str(value).translate(EN_DIGITS)
-
-
-def _farsi_month(index: int) -> str:
-    months = [
-        "",
-        "فروردین",
-        "اردیبهشت",
-        "خرداد",
-        "تیر",
-        "مرداد",
-        "شهریور",
-        "مهر",
-        "آبان",
-        "آذر",
-        "دی",
-        "بهمن",
-        "اسفند",
-    ]
-    if 0 <= index < len(months):
-        return months[index]
-    return ""
 
 

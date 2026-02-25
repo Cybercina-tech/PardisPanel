@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Instagram Banner Generator{% endblock %}
+
+{% block extra_head %}
+<style>
+    .ig-card {
+        border: 1px solid var(--border-color, #dee2e6);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: box-shadow .2s;
+    }
+    .ig-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,.12); }
+
+    .preview-wrapper {
+        position: relative;
+        background: var(--card-bg, #f8f9fa);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 260px;
+        overflow: hidden;
+    }
+    .preview-wrapper img {
+        max-width: 100%;
+        max-height: 480px;
+        object-fit: contain;
+        border-radius: 6px;
+    }
+    .preview-placeholder {
+        color: var(--text-muted, #6c757d);
+        text-align: center;
+        padding: 3rem 1rem;
+    }
+    .preview-placeholder i { font-size: 3rem; opacity: .4; }
+
+    .spinner-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+        border-radius: 6px;
+    }
+    .spinner-overlay.active { display: flex; }
+
+    .format-badge {
+        display: inline-block;
+        font-size: .7rem;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        letter-spacing: .5px;
+    }
+    .badge-story { background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; }
+    .badge-post  { background: linear-gradient(135deg, #405de6, #5851db, #833ab4); color: #fff; }
+
+    .btn-generate {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: transform .15s, box-shadow .15s;
+    }
+    .btn-generate:active { transform: scale(.97); }
+    .btn-generate-story { background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; }
+    .btn-generate-post  { background: linear-gradient(135deg, #405de6, #5851db, #833ab4); color: #fff; }
+    .btn-generate-story:hover, .btn-generate-post:hover { box-shadow: 0 4px 14px rgba(0,0,0,.25); color: #fff; }
+
+    .btn-download {
+        border-radius: 8px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h1 class="h3 mb-1"><i class="bi bi-instagram me-2"></i>Instagram Banner Generator</h1>
+                <p class="text-muted mb-0">Generate Story (1080 &times; 1920) and Post (1080 &times; 1080) banners with live prices.</p>
+            </div>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<!-- Category Selector -->
+<div class="row mb-4">
+    <div class="col-md-6 col-lg-4">
+        <label for="categorySelect" class="form-label fw-semibold">
+            <i class="bi bi-tags me-1"></i> Select Category
+        </label>
+        <select id="categorySelect" class="form-select">
+            <option value="">-- choose category --</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<!-- Preview Cards -->
+<div class="row g-4" id="previewArea" style="display:none;">
+    <!-- Story Card -->
+    <div class="col-md-6">
+        <div class="ig-card">
+            <div class="card-header d-flex justify-content-between align-items-center px-3 py-2">
+                <span class="fw-semibold"><i class="bi bi-phone me-1"></i> Story <span class="format-badge badge-story">1080 &times; 1920</span></span>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-generate btn-generate-story" onclick="generatePreview('story')">
+                        <i class="bi bi-arrow-repeat me-1"></i> Generate
+                    </button>
+                    <a id="downloadStory" href="#" class="btn btn-sm btn-outline-success btn-download d-none">
+                        <i class="bi bi-download me-1"></i> Download
+                    </a>
+                </div>
+            </div>
+            <div class="preview-wrapper" id="storyPreviewWrapper">
+                <div class="spinner-overlay" id="storySpinner">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Generating...</span>
+                    </div>
+                </div>
+                <div class="preview-placeholder" id="storyPlaceholder">
+                    <i class="bi bi-image"></i>
+                    <p class="mt-2 mb-0">Click <strong>Generate</strong> to preview</p>
+                </div>
+                <img id="storyImg" src="" alt="Story preview" class="d-none">
+            </div>
+        </div>
+    </div>
+
+    <!-- Post Card -->
+    <div class="col-md-6">
+        <div class="ig-card">
+            <div class="card-header d-flex justify-content-between align-items-center px-3 py-2">
+                <span class="fw-semibold"><i class="bi bi-grid-3x3 me-1"></i> Post <span class="format-badge badge-post">1080 &times; 1080</span></span>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-generate btn-generate-post" onclick="generatePreview('post')">
+                        <i class="bi bi-arrow-repeat me-1"></i> Generate
+                    </button>
+                    <a id="downloadPost" href="#" class="btn btn-sm btn-outline-success btn-download d-none">
+                        <i class="bi bi-download me-1"></i> Download
+                    </a>
+                </div>
+            </div>
+            <div class="preview-wrapper" id="postPreviewWrapper">
+                <div class="spinner-overlay" id="postSpinner">
+                    <div class="spinner-border text-light" role="status">
+                        <span class="visually-hidden">Generating...</span>
+                    </div>
+                </div>
+                <div class="preview-placeholder" id="postPlaceholder">
+                    <i class="bi bi-image"></i>
+                    <p class="mt-2 mb-0">Click <strong>Generate</strong> to preview</p>
+                </div>
+                <img id="postImg" src="" alt="Post preview" class="d-none">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Both -->
+<div class="row mt-4" id="bulkActions" style="display:none;">
+    <div class="col-12 text-center">
+        <button class="btn btn-lg btn-generate btn-generate-story me-2" onclick="generateBoth()">
+            <i class="bi bi-stars me-1"></i> Generate Both
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+    const BASE_URL = "{% url 'instagram_banner:generator' %}";
+    const catSelect  = document.getElementById('categorySelect');
+    const previewArea = document.getElementById('previewArea');
+    const bulkActions = document.getElementById('bulkActions');
+
+    catSelect.addEventListener('change', function() {
+        const show = !!this.value;
+        previewArea.style.display = show ? '' : 'none';
+        bulkActions.style.display = show ? '' : 'none';
+        if (show) resetPreviews();
+    });
+
+    function resetPreviews() {
+        ['story', 'post'].forEach(function(fmt) {
+            var cap = fmt.charAt(0).toUpperCase() + fmt.slice(1);
+            document.getElementById(fmt + 'Img').classList.add('d-none');
+            document.getElementById(fmt + 'Img').src = '';
+            document.getElementById(fmt + 'Placeholder').classList.remove('d-none');
+            document.getElementById('download' + cap).classList.add('d-none');
+        });
+    }
+
+    window.generatePreview = function(fmt) {
+        var catId = catSelect.value;
+        if (!catId) return;
+
+        var cap = fmt.charAt(0).toUpperCase() + fmt.slice(1);
+        var spinner = document.getElementById(fmt + 'Spinner');
+        var img     = document.getElementById(fmt + 'Img');
+        var ph      = document.getElementById(fmt + 'Placeholder');
+        var dlBtn   = document.getElementById('download' + cap);
+
+        spinner.classList.add('active');
+        ph.classList.add('d-none');
+
+        var previewUrl  = BASE_URL + 'preview/' + catId + '/' + fmt + '/';
+        var downloadUrl = BASE_URL + 'download/' + catId + '/' + fmt + '/';
+
+        fetch(previewUrl)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                spinner.classList.remove('active');
+                if (data.error) {
+                    ph.classList.remove('d-none');
+                    ph.querySelector('p').textContent = data.error;
+                    return;
+                }
+                img.src = data.image;
+                img.classList.remove('d-none');
+                dlBtn.href = downloadUrl;
+                dlBtn.classList.remove('d-none');
+            })
+            .catch(function() {
+                spinner.classList.remove('active');
+                ph.classList.remove('d-none');
+                ph.querySelector('p').textContent = 'Error generating preview.';
+            });
+    };
+
+    window.generateBoth = function() {
+        generatePreview('story');
+        generatePreview('post');
+    };
+})();
+</script>
+{% endblock %}

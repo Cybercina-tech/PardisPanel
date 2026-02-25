@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import functools
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -60,18 +61,14 @@ FONT_DEFINITIONS = {
     "special_sell_account_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
 }
 
-FARSI_WEEKDAYS = {
-    "Saturday": "شنبه",
-    "Sunday": "یکشنبه",
-    "Monday": "دوشنبه",
-    "Tuesday": "سه‌شنبه",
-    "Wednesday": "چهارشنبه",
-    "Thursday": "پنجشنبه",
-    "Friday": "جمعه",
-}
-
-FARSI_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
-EN_DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+from core.formatting import (
+    FARSI_WEEKDAYS,
+    FARSI_DIGITS,
+    EN_DIGITS,
+    to_farsi_digits as _to_farsi_digits,
+    to_english_digits as _to_english_digits,
+    farsi_month as _farsi_month,
+)
 
 
 def normalize_identifier(value: str) -> str:
@@ -227,7 +224,7 @@ def render_special_offer_board(
             f"Offer background missing at {background_path.relative_to(settings.BASE_DIR)}."
         )
 
-    image = Image.open(background_path).convert("RGBA")
+    image = _open_background(background_path).copy()
     draw_ctx = ImageDraw.Draw(image)
     fonts = _load_fonts()
 
@@ -266,9 +263,17 @@ def render_special_offer_board(
 
     buffer = io.BytesIO()
     buffer.name = template.background
-    image.convert("RGB").save(buffer, format="PNG", optimize=True)
+    image.convert("RGB").save(buffer, format="PNG")
     buffer.seek(0)
     return RenderedPriceImage(stream=buffer, width=image.width, height=image.height)
+
+
+@functools.lru_cache(maxsize=8)
+def _open_background(path: Path) -> Image.Image:
+    """Cache opened background images to avoid repeated disk I/O."""
+    img = Image.open(path).convert("RGBA")
+    img.load()
+    return img
 
 
 def _resolve_template(special_price_type) -> Optional[SpecialOfferTemplate]:
@@ -292,6 +297,7 @@ def _collect_identifiers(special_price_type) -> set[str]:
     return {value for value in values if value}
 
 
+@functools.lru_cache(maxsize=1)
 def _load_fonts():
     fonts = {}
     for key, (filename, size) in FONT_DEFINITIONS.items():
@@ -385,33 +391,6 @@ def _extract_timestamp(price_history):
     )
 
 
-def _to_farsi_digits(value: str) -> str:
-    return str(value).translate(FARSI_DIGITS)
-
-
-def _to_english_digits(value: str) -> str:
-    return str(value).translate(EN_DIGITS)
-
-
-def _farsi_month(index: int) -> str:
-    months = [
-        "",
-        "فروردین",
-        "اردیبهشت",
-        "خرداد",
-        "تیر",
-        "مرداد",
-        "شهریور",
-        "مهر",
-        "آبان",
-        "آذر",
-        "دی",
-        "بهمن",
-        "اسفند",
-    ]
-    if 0 <= index < len(months):
-        return months[index]
-    return ""
 
 
 def _is_special_gbp_template(background: str) -> bool:

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'template_editor',
     'analysis',
     'landing',
+    'instagram_banner',
     # third-party apps
     'rest_framework',
 

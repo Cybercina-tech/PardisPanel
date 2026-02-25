@@ -4,6 +4,7 @@ Sends exactly four rates: GBP_BUY, GBP_SELL, USDT_BUY, USDT_SELL.
 Uses values from price_items directly — no DB read, no API fetch.
 """
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 from django.conf import settings
 
@@ -153,15 +154,23 @@ class ExternalAPIService:
         sent = []
         failed = []
 
-        for key in RATE_KEYS:
-            if key not in rates:
-                continue
-            value = rates[key]
-            ok = _send_one_rate(key, value)
-            if ok:
-                sent.append({"currency": key, "rate": value})
-            else:
-                failed.append({"currency": key, "rate": value})
+        items_to_send = [(k, rates[k]) for k in RATE_KEYS if k in rates]
+
+        with ThreadPoolExecutor(max_workers=len(items_to_send) or 1) as executor:
+            futures = {
+                executor.submit(_send_one_rate, key, value): (key, value)
+                for key, value in items_to_send
+            }
+            for future in as_completed(futures):
+                key, value = futures[future]
+                try:
+                    ok = future.result()
+                except Exception:
+                    ok = False
+                if ok:
+                    sent.append({"currency": key, "rate": value})
+                else:
+                    failed.append({"currency": key, "rate": value})
 
         logger.info("External API: %d sent, %d failed", len(sent), len(failed))
         return {"sent": sent, "failed": failed, "skipped": skipped}

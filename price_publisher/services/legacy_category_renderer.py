@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import functools
 from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
@@ -131,18 +132,14 @@ PRICE_TYPE_ALIASES = {
     },
 }
 
-FARSI_WEEKDAYS = {
-    "Saturday": "شنبه",
-    "Sunday": "یکشنبه",
-    "Monday": "دوشنبه",
-    "Tuesday": "سه‌شنبه",
-    "Wednesday": "چهارشنبه",
-    "Thursday": "پنجشنبه",
-    "Friday": "جمعه",
-}
-
-FARSI_DIGITS = str.maketrans("0123456789", "۰۱۲۳۴۵۶۷۸۹")
-EN_DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+from core.formatting import (
+    FARSI_WEEKDAYS,
+    FARSI_DIGITS,
+    EN_DIGITS,
+    to_farsi_digits as _to_farsi_digits,
+    to_english_digits as _to_english_digits,
+    farsi_month as _farsi_month,
+)
 
 STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
 IMAGE_ROOT = STATIC_ROOT_DIR / "img"
@@ -166,7 +163,7 @@ def render_category_board(
     timestamp,
 ) -> RenderedPriceImage:
     background_path = _resolve_background_for_category(category)
-    image = Image.open(background_path).convert("RGBA")
+    image = _open_background(background_path).copy()
     draw_ctx = ImageDraw.Draw(image)
 
     fonts = _load_fonts()
@@ -200,9 +197,17 @@ def render_category_board(
 
     buffer = io.BytesIO()
     buffer.name = "prices.png"
-    image.convert("RGB").save(buffer, format="PNG", optimize=True)
+    image.convert("RGB").save(buffer, format="PNG")
     buffer.seek(0)
     return RenderedPriceImage(stream=buffer, width=image.width, height=image.height)
+
+
+@functools.lru_cache(maxsize=8)
+def _open_background(path: Path) -> Image.Image:
+    """Cache opened background images to avoid repeated disk I/O."""
+    img = Image.open(path).convert("RGBA")
+    img.load()
+    return img
 
 
 def _resolve_background_for_category(category) -> Path:
@@ -246,16 +251,23 @@ def _resolve_background_for_category(category) -> Path:
     )
 
 
+@functools.lru_cache(maxsize=1)
+def _list_theme_files():
+    """Cache the sorted list of theme background files (invalidated on restart)."""
+    price_theme_dir = IMAGE_ROOT / "price_theme"
+    return sorted(
+        [f for ext in ("*.png", "*.jpg", "*.jpeg") for f in price_theme_dir.glob(ext)],
+        key=lambda path: int(path.stem) if path.stem.isdigit() else float('inf'),
+    )
+
+
 def _get_rotating_background():
     """
     Get the next rotating background from price_theme folder.
     Cycles through all image files (1.jpg, 2.jpg, etc.) in order.
+    Uses UPDATE without SELECT FOR UPDATE to avoid row-level locks.
     """
-    price_theme_dir = IMAGE_ROOT / "price_theme"
-    files = sorted(
-        [f for ext in ("*.png", "*.jpg", "*.jpeg") for f in price_theme_dir.glob(ext)],
-        key=lambda path: int(path.stem) if path.stem.isdigit() else float('inf'),
-    )
+    files = _list_theme_files()
     if not files:
         return None
 
@@ -263,22 +275,20 @@ def _get_rotating_background():
         return files[0]
 
     try:
-        with transaction.atomic():
-            state, _ = PriceThemeState.objects.select_for_update().get_or_create(
-                key="price_theme",
-                defaults={"last_index": 0},
-            )
-            # Use current index, then increment for next time
-            current_index = state.last_index % len(files)
-            next_index = (state.last_index + 1) % len(files)
-            state.last_index = next_index
-            state.save(update_fields=["last_index", "updated_at"])
+        state, created = PriceThemeState.objects.get_or_create(
+            key="price_theme",
+            defaults={"last_index": 0},
+        )
+        current_index = state.last_index % len(files)
+        next_index = (current_index + 1) % len(files)
+        PriceThemeState.objects.filter(pk=state.pk).update(last_index=next_index)
     except Exception:
         return files[0]
 
     return files[current_index]
 
 
+@functools.lru_cache(maxsize=1)
 def _load_fonts():
     fonts = {
         "farsi_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 110),
@@ -402,13 +412,8 @@ def _resolve_display_value(
 
 
 def _format_price_value(value) -> str:
-    decimal_value = Decimal(value)
-    try:
-        integer_value = int(decimal_value.quantize(Decimal("1")))
-    except Exception:
-        integer_value = int(decimal_value)
-    formatted = f"{integer_value:,}"
-    return _to_farsi_digits(formatted)
+    from core.formatting import format_price_dynamic
+    return format_price_dynamic(value)
 
 
 def _draw_centered(draw_ctx, text, font, cx, cy, fill="white"):
@@ -424,32 +429,5 @@ def _reshape_rtl(text: str) -> str:
     return text
 
 
-def _to_farsi_digits(value: str) -> str:
-    return str(value).translate(FARSI_DIGITS)
-
-
-def _to_english_digits(value: str) -> str:
-    return str(value).translate(EN_DIGITS)
-
-
-def _farsi_month(month_index: int) -> str:
-    months = [
-        "",
-        "فروردین",
-        "اردیبهشت",
-        "خرداد",
-        "تیر",
-        "مرداد",
-        "شهریور",
-        "مهر",
-        "آبان",
-        "آذر",
-        "دی",
-        "بهمن",
-        "اسفند",
-    ]
-    if 0 <= month_index < len(months):
-        return months[month_index]
-    return ""
 
 

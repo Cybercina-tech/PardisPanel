@@ -4,141 +4,17 @@ from datetime import datetime
 import pytz
 import re
 
+from core.sorting import (
+    sort_gbp_price_types,
+    sort_tether_price_types,
+    sort_price_types_by_category,
+)
+
 register = template.Library()
 
-
-@register.filter
-def sort_gbp_price_types(price_types):
-    """
-    Sort price types for GBP/Pound category in specific order:
-    1. خرید نقدی (Buy Cash)
-    2. خرید حسابی (Buy Account)
-    3. فروش نقد (Sell Cash)
-    4. فروش حسابی (Sell Account)
-    5. فروش رسمی (Sell Official)
-    
-    Usage: {{ category.price_types.all|sort_gbp_price_types }}
-    """
-    if not price_types:
-        return price_types
-    
-    # Convert to list if it's a queryset
-    price_types_list = list(price_types)
-    
-    # Define order based on trade_type and name patterns
-    def get_sort_key(price_type):
-        name = price_type.name
-        name_lower = name.lower()
-        trade_type = price_type.trade_type.lower()
-        
-        # Buy types - order: 1. خرید نقدی, 2. خرید حسابی
-        if trade_type == 'buy':
-            # Check for خرید نقدی first (contains 'نقدی' or 'cash')
-            if 'نقدی' in name or 'cash' in name_lower:
-                return 1  # خرید نقدی
-            # Check for خرید حسابی (contains 'حسابی', 'از حساب', or 'account')
-            elif 'حسابی' in name or 'از حساب' in name or 'account' in name_lower:
-                return 2  # خرید حسابی
-            else:
-                return 10  # Other buy types
-        # Sell types - order: 3. فروش نقد, 4. فروش حسابی, 5. فروش رسمی
-        elif trade_type == 'sell':
-            # Check for فروش نقد/نقدی first (contains 'نقد' or 'cash')
-            if 'نقد' in name or 'cash' in name_lower:
-                return 3  # فروش نقد
-            # Check for فروش حسابی (contains 'حسابی', 'از حساب', or 'account')
-            elif 'حسابی' in name or 'از حساب' in name or 'account' in name_lower:
-                return 4  # فروش حسابی
-            # Check for فروش رسمی (contains 'رسمی' or 'official')
-            elif 'رسمی' in name or 'official' in name_lower:
-                return 5  # فروش رسمی
-            else:
-                return 20  # Other sell types
-        else:
-            return 30  # Unknown types
-    
-    # Sort by the key
-    sorted_list = sorted(price_types_list, key=get_sort_key)
-    
-    return sorted_list
-
-
-@register.filter
-def sort_tether_price_types(price_types):
-    """
-    Sort price types for Tether category in specific order:
-    1. خرید تتر تومان (Buy Tether Toman/IRR)
-    2. فروش تتر تومان (Sell Tether Toman/IRR)
-    3. خرید تتر پوند (Buy Tether GBP)
-    4. فروش تتر پوند (Sell Tether GBP)
-    
-    Usage: {{ category.price_types.all|sort_tether_price_types }}
-    """
-    if not price_types:
-        return price_types
-    
-    # Convert to list if it's a queryset
-    price_types_list = list(price_types)
-    
-    def get_sort_key(price_type):
-        name_lower = price_type.name.lower()
-        trade_type = price_type.trade_type.lower()
-        
-        # Check target currency
-        target_code = getattr(price_type.target_currency, 'code', '').lower() if price_type.target_currency else ''
-        target_name = price_type.target_currency.name.lower() if price_type.target_currency else ''
-        has_toman = any(keyword in name_lower for keyword in ['تومان', 'تومن', 'toman', 'tmn']) or \
-                    any(keyword in target_code for keyword in ['irr', 'irt']) or \
-                    'تومان' in target_name or 'تومن' in target_name
-        has_gbp = any(keyword in name_lower for keyword in ['پوند', 'pound', 'gbp']) or \
-                  'gbp' in target_code or 'pound' in target_name or 'پوند' in target_name
-        
-        # Buy types
-        if trade_type == 'buy':
-            if has_toman:
-                return 1  # خرید تتر تومان
-            elif has_gbp:
-                return 3  # خرید تتر پوند
-            else:
-                return 10  # Other buy types
-        # Sell types
-        elif trade_type == 'sell':
-            if has_toman:
-                return 2  # فروش تتر تومان
-            elif has_gbp:
-                return 4  # فروش تتر پوند
-            else:
-                return 20  # Other sell types
-        else:
-            return 30  # Unknown types
-    
-    # Sort by the key
-    sorted_list = sorted(price_types_list, key=get_sort_key)
-    
-    return sorted_list
-
-
-@register.filter
-def sort_price_types_by_category(price_types, category_name):
-    """
-    Sort price types based on category type.
-    For Tether categories: uses sort_tether_price_types
-    For GBP categories: uses sort_gbp_price_types
-    Otherwise: returns unsorted
-    
-    Usage: {{ price_types|sort_price_types_by_category:category.name }}
-    """
-    if not price_types or not category_name:
-        return price_types
-    
-    category_name_lower = category_name.lower()
-    
-    if 'تتر' in category_name or 'tether' in category_name_lower or 'usdt' in category_name_lower:
-        return sort_tether_price_types(price_types)
-    elif 'پوند' in category_name or 'pound' in category_name_lower or 'gbp' in category_name_lower:
-        return sort_gbp_price_types(price_types)
-    else:
-        return price_types
+register.filter("sort_gbp_price_types", sort_gbp_price_types)
+register.filter("sort_tether_price_types", sort_tether_price_types)
+register.filter("sort_price_types_by_category", sort_price_types_by_category)
 
 
 @register.filter
