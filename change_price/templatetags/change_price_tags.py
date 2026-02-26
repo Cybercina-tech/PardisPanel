@@ -9,12 +9,25 @@ from core.sorting import (
     sort_tether_price_types,
     sort_price_types_by_category,
 )
+from core.formatting import format_price_dynamic
 
 register = template.Library()
 
 register.filter("sort_gbp_price_types", sort_gbp_price_types)
 register.filter("sort_tether_price_types", sort_tether_price_types)
 register.filter("sort_price_types_by_category", sort_price_types_by_category)
+
+
+@register.filter
+def smart_number(value):
+    """
+    Format number: show decimals only when the number has a fractional part.
+    E.g. 217000.00 -> 217,000  |  217000.50 -> 217,000.5
+    Usage: {{ value|smart_number }}
+    """
+    if value is None:
+        return ""
+    return format_price_dynamic(value)
 
 
 @register.filter

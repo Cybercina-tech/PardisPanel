@@ -11,6 +11,7 @@ from django.utils.translation import gettext_lazy as _
 
 from template_editor.models import Template
 from template_editor.utils import render_template
+from core.formatting import format_price_dynamic
 
 from .models import SpecialPriceHistory, SpecialPriceType
 
@@ -96,11 +97,11 @@ class SpecialPriceHistoryAdmin(admin.ModelAdmin):
             pair = f"{obj.special_price_type.source_currency.code}/{obj.special_price_type.target_currency.code}"
             return format_html(
                 '<span class="price-value">Cash: {} / Account: {}</span> <small>{}</small>',
-                f"{cash:,.2f}" if cash is not None else "—",
-                f"{account:,.2f}" if account is not None else "—",
+                format_price_dynamic(cash) if cash is not None else "—",
+                format_price_dynamic(account) if account is not None else "—",
                 pair,
             )
-        value = f"{obj.price:,.2f}"
+        value = format_price_dynamic(obj.price)
         pair = f"{obj.special_price_type.source_currency.code}/{obj.special_price_type.target_currency.code}"
         return format_html('<span class="price-value">{}</span> <small>{}</small>', value, pair)
 
@@ -126,7 +127,7 @@ class SpecialPriceHistoryAdmin(admin.ModelAdmin):
             BADGE_STYLE,
             color,
             icon=icon,
-            value=f"{delta:,.2f}"
+            value=format_price_dynamic(abs(delta)) if delta >= 0 else "-" + format_price_dynamic(abs(delta))
         )
 
     trend_indicator.short_description = _("Change")
@@ -143,7 +144,9 @@ class SpecialPriceHistoryAdmin(admin.ModelAdmin):
         if previous is None:
             return _("No previous price.")
         delta = obj.price - previous
-        return f"Previous: {previous:,.2f} · Δ {delta:+,.2f}"
+        prev_str = format_price_dynamic(previous)
+        delta_str = ("+" if delta >= 0 else "-") + format_price_dynamic(abs(delta))
+        return f"Previous: {prev_str} · Δ {delta_str}"
 
     previous_price_display.short_description = _("Previous price")
 
@@ -202,9 +205,7 @@ class SpecialPriceHistoryAdmin(admin.ModelAdmin):
             cash = entry.cash_price if entry.cash_price is not None else entry.price
             account = entry.account_price if entry.account_price is not None else entry.price
             pair = f"{entry.special_price_type.source_currency.code}/{entry.special_price_type.target_currency.code}"
-            return f"Cash: {cash:,.2f} / Account: {account:,.2f} {pair}"
-        value = entry.price
-        if isinstance(value, Decimal):
-            value = f"{value:,.2f}"
+            return f"Cash: {format_price_dynamic(cash)} / Account: {format_price_dynamic(account)} {pair}"
+        value = format_price_dynamic(entry.price)
         pair = f"{entry.special_price_type.source_currency.code}/{entry.special_price_type.target_currency.code}"
         return f"{value} {pair}"

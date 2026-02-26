@@ -34,7 +34,7 @@
                         <p class="text-[10px] sm:text-xs font-medium text-gray-400 mb-1 sm:mb-2 group-hover:text-gray-300 transition-colors uppercase tracking-wider truncate">Highest Posted Price</p>
                         <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-1 transition-colors break-words">
                             {% if highest_price %}
-                                {{ highest_price|floatformat:2 }}
+                                {{ highest_price|smart_number }}
                             {% else %}
                                 N/A
                             {% endif %}
@@ -58,10 +58,10 @@
                         <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold mb-1">
                             {% if avg_24h_change != 0 %}
                                 <span class="{% if avg_24h_change > 0 %}text-green-400{% elif avg_24h_change < 0 %}text-red-400{% else %}text-yellow-400{% endif %} transition-colors">
-                                    {{ avg_24h_change|floatformat:2 }}%
+                                    {{ avg_24h_change|smart_number }}%
                                 </span>
                             {% else %}
-                                <span class="text-yellow-400">0.00%</span>
+                                <span class="text-yellow-400">0%</span>
                             {% endif %}
                         </h3>
                         {% if biggest_change %}
@@ -272,14 +272,14 @@
                             <div class="mb-4 sm:mb-5">
                                 {% if special_price_type.is_double_price %}
                                 <p class="text-lg sm:text-xl font-bold text-yellow-400 mb-1 transition-colors break-words">
-                                    <i class="fas fa-wallet text-warning me-1"></i>نقدی: {{ latest_price.cash_price|default:latest_price.price|floatformat:2 }}
+                                    <i class="fas fa-wallet text-warning me-1"></i>نقدی: {{ latest_price.cash_price|default:latest_price.price|smart_number }}
                                 </p>
                                 <p class="text-lg sm:text-xl font-bold text-yellow-400 mb-2 transition-colors break-words">
-                                    <i class="fas fa-credit-card text-info me-1"></i>حسابی: {{ latest_price.account_price|default:latest_price.price|floatformat:2 }}
+                                    <i class="fas fa-credit-card text-info me-1"></i>حسابی: {{ latest_price.account_price|default:latest_price.price|smart_number }}
                                 </p>
                                 {% else %}
                                 <p class="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-400 mb-2 transition-colors break-words">
-                                    {{ latest_price.price|floatformat:2 }}
+                                    {{ latest_price.price|smart_number }}
                                 </p>
                                 {% endif %}
                                 <p class="text-[10px] sm:text-xs text-gray-400 group-hover:text-gray-300 transition-colors break-words">

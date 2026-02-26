@@ -58,7 +58,7 @@
                                             {{ item.price_type.get_trade_type_display }}
                                         </span>
                                     </td>
-                                    <td class="text-gold fw-bold">{{ item.price_history.price|floatformat:2 }}</td>
+                                    <td class="text-gold fw-bold">{{ item.price_history.price|smart_number }}</td>
                                     <td class="text-white-50 small">
                                         <div class="dual-date">
                                             <span>{{ item.price_history.updated_at|date:"M d, Y H:i" }}</span>

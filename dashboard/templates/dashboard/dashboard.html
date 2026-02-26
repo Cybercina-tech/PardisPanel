@@ -30,7 +30,7 @@
                         <div class="flex-grow-1">
                             <h4 class="card-title mb-1">
                                 {% if highest_price %}
-                                    {{ highest_price|floatformat:2 }}
+                                    {{ highest_price|smart_number }}
                                 {% else %}
                                     N/A
                                 {% endif %}
@@ -57,10 +57,10 @@
                             <h4 class="card-title mb-1">
                                 {% if avg_24h_change != 0 %}
                                     <span class="{% if avg_24h_change > 0 %}text-success{% elif avg_24h_change < 0 %}text-danger{% endif %}">
-                                        {{ avg_24h_change|floatformat:2 }}%
+                                        {{ avg_24h_change|smart_number }}%
                                     </span>
                                 {% else %}
-                                    <span class="text-white-50">0.00%</span>
+                                    <span class="text-white-50">0%</span>
                                 {% endif %}
                             </h4>
                             <p class="card-text mb-0">Avg 24h Price Change</p>
@@ -273,7 +273,7 @@
                                     {% with latest_price=special_price_type.special_price_histories.first %}
                                     {% if latest_price %}
                                     <p class="card-text mb-2">
-                                        <span class="text-gold fw-bold">{{ latest_price.price|floatformat:2 }}</span>
+                                        <span class="text-gold fw-bold">{{ latest_price.price|smart_number }}</span>
                                     </p>
                                     <p class="card-text text-white-50 small mb-3">
                                         <small>Last update: {{ latest_price.updated_at|date:"M d, Y H:i" }}</small>

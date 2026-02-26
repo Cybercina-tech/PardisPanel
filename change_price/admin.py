@@ -1,5 +1,4 @@
 import io
-from decimal import Decimal
 
 from django.contrib import admin, messages
 from django.db.models import F, Window
@@ -11,6 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 from template_editor.models import Template
 from template_editor.utils import render_template
+from core.formatting import format_price_dynamic
 
 from .models import PriceHistory
 
@@ -92,7 +92,7 @@ class PriceHistoryAdmin(admin.ModelAdmin):
     category_badge.short_description = _("Category")
 
     def formatted_price(self, obj):
-        value = f"{obj.price:,.2f}"
+        value = format_price_dynamic(obj.price)
         currency = f"{obj.price_type.source_currency.code}/{obj.price_type.target_currency.code}"
         return format_html('<span class="price-value">{}</span> <small>{}</small>', value, currency)
 
@@ -118,7 +118,7 @@ class PriceHistoryAdmin(admin.ModelAdmin):
             BADGE_STYLE,
             color,
             icon=icon,
-            value=f"{delta:,.2f}",
+            value=format_price_dynamic(abs(delta)) if delta >= 0 else "-" + format_price_dynamic(abs(delta)),
         )
 
     trend_indicator.short_description = _("Change")
@@ -136,7 +136,9 @@ class PriceHistoryAdmin(admin.ModelAdmin):
         if previous is None:
             return _("No previous price.")
         delta = obj.price - previous
-        return f"Previous: {previous:,.2f} · Δ {delta:+,.2f}"
+        prev_str = format_price_dynamic(previous)
+        delta_str = ("+" if delta >= 0 else "-") + format_price_dynamic(abs(delta))
+        return f"Previous: {prev_str} · Δ {delta_str}"
 
     previous_price_display.short_description = _("Previous price")
 
@@ -219,9 +221,7 @@ class PriceHistoryAdmin(admin.ModelAdmin):
         return payload
 
     def _format_price(self, entry: PriceHistory) -> str:
-        value = entry.price
-        if isinstance(value, Decimal):
-            value = f"{value:,.2f}"
+        value = format_price_dynamic(entry.price)
         source = entry.price_type.source_currency.code
         target = entry.price_type.target_currency.code
         return f"{value} {source}/{target}"

@@ -65,7 +65,7 @@
                                                 {{ item.price_type.get_trade_type_display }}
                                             </span>
                                         </td>
-                                        <td class="text-gold fw-bold">{{ item.price_history.price|floatformat:2 }}</td>
+                                        <td class="text-gold fw-bold">{{ item.price_history.price|smart_number }}</td>
                                         <td class="text-white-50 small">
                                             <div class="dual-date">
                                                 <span>{{ item.price_history.updated_at|date:"M d, Y H:i" }}</span>
@@ -136,10 +136,10 @@
                                     </td>
                                     <td class="text-gold fw-bold">
                                         {% if item.special_price_type.is_double_price %}
-                                        <i class="fas fa-wallet text-warning me-1"></i>{{ item.special_price_history.cash_price|default:item.special_price_history.price|floatformat:2 }}
-                                        / <i class="fas fa-credit-card text-info me-1"></i>{{ item.special_price_history.account_price|default:item.special_price_history.price|floatformat:2 }}
+                                        <i class="fas fa-wallet text-warning me-1"></i>{{ item.special_price_history.cash_price|default:item.special_price_history.price|smart_number }}
+                                        / <i class="fas fa-credit-card text-info me-1"></i>{{ item.special_price_history.account_price|default:item.special_price_history.price|smart_number }}
                                         {% else %}
-                                        {{ item.special_price_history.price|floatformat:2 }}
+                                        {{ item.special_price_history.price|smart_number }}
                                         {% endif %}
                                     </td>
                                     <td class="text-white-50 small">
@@ -249,14 +249,14 @@
                                     {% if latest_price %}
                                     {% if special_price_type.is_double_price %}
                                     <p class="card-text mb-1">
-                                        <i class="fas fa-wallet text-warning me-1"></i><span class="text-gold fw-bold">{{ latest_price.cash_price|default:latest_price.price|floatformat:2 }}</span>
+                                        <i class="fas fa-wallet text-warning me-1"></i><span class="text-gold fw-bold">{{ latest_price.cash_price|default:latest_price.price|smart_number }}</span>
                                     </p>
                                     <p class="card-text mb-2">
-                                        <i class="fas fa-credit-card text-info me-1"></i><span class="text-gold fw-bold">{{ latest_price.account_price|default:latest_price.price|floatformat:2 }}</span>
+                                        <i class="fas fa-credit-card text-info me-1"></i><span class="text-gold fw-bold">{{ latest_price.account_price|default:latest_price.price|smart_number }}</span>
                                     </p>
                                     {% else %}
                                     <p class="card-text mb-2">
-                                        <span class="text-gold fw-bold">{{ latest_price.price|floatformat:2 }}</span>
+                                        <span class="text-gold fw-bold">{{ latest_price.price|smart_number }}</span>
                                     </p>
                                     {% endif %}
                                     <p class="card-text text-white-50 small mb-3">

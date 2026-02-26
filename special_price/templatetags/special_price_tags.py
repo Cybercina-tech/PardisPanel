@@ -3,10 +3,21 @@ from django.utils import timezone
 from datetime import datetime
 import pytz
 
+from core.formatting import format_price_dynamic
+
 register = template.Library()
 
+
 @register.filter
-def get_item(dictionary, key):
+def smart_number(value):
+    """
+    Format number: show decimals only when the number has a fractional part.
+    E.g. 217000.00 -> 217,000  |  217000.50 -> 217,000.5
+    Usage: {{ value|smart_number }}
+    """
+    if value is None:
+        return ""
+    return format_price_dynamic(value)
     """
     Get an item from a dictionary using its key.
     Usage: {{ my_dict|get_item:key_variable }}

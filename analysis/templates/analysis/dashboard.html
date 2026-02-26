@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load change_price_tags %}
 
 {% block title %}Analysis Hub - Sarafi Pardis Panel{% endblock %}
 
@@ -210,7 +211,7 @@
                                     <span class="trend-chip {% if mover.change_percent > 0 %}up{% elif mover.change_percent < 0 %}down{% else %}flat{% endif %}">
                                         <i class="fas {% if mover.change_percent > 0 %}fa-arrow-trend-up{% elif mover.change_percent < 0 %}fa-arrow-trend-down{% else %}fa-minus{% endif %}"></i>
                                         {% if mover.change_percent is not None %}
-                                            {{ mover.change_percent|floatformat:2 }}%
+                                            {{ mover.change_percent|smart_number }}%
                                         {% else %}
                                             —
                                         {% endif %}
@@ -311,13 +312,13 @@
                             <span class="trend-chip {% if card.change_percent > 0 %}up{% elif card.change_percent < 0 %}down{% else %}flat{% endif %}">
                                 <i class="fas {% if card.change_percent > 0 %}fa-arrow-up-right{% elif card.change_percent < 0 %}fa-arrow-down-right{% else %}fa-minus{% endif %}"></i>
                                 {% if card.change_percent is not None %}
-                                    {{ card.change_percent|floatformat:2 }}%
+                                    {{ card.change_percent|smart_number }}%
                                 {% else %}
                                     —
                                 {% endif %}
                             </span>
                         </div>
-                        <div class="price-metric text-gold">{{ card.latest_price|floatformat:2 }}</div>
+                        <div class="price-metric text-gold">{{ card.latest_price|smart_number }}</div>
                         <div class="d-flex justify-content-between align-items-center mt-3">
                             <small class="text-white-50">Last update</small>
                             <small class="text-white-50">{{ card.timestamp|timesince }} ago</small>
@@ -355,13 +356,13 @@
                             <span class="trend-chip {% if card.change_percent > 0 %}up{% elif card.change_percent < 0 %}down{% else %}flat{% endif %}">
                                 <i class="fas {% if card.change_percent > 0 %}fa-arrow-up-right{% elif card.change_percent < 0 %}fa-arrow-down-right{% else %}fa-minus{% endif %}"></i>
                                 {% if card.change_percent is not None %}
-                                    {{ card.change_percent|floatformat:2 }}%
+                                    {{ card.change_percent|smart_number }}%
                                 {% else %}
                                     —
                                 {% endif %}
                             </span>
                         </div>
-                        <div class="price-metric text-gold">{{ card.latest_price|floatformat:2 }}</div>
+                        <div class="price-metric text-gold">{{ card.latest_price|smart_number }}</div>
                         <div class="d-flex justify-content-between align-items-center mt-3">
                             <small class="text-white-50">Last update</small>
                             <small class="text-white-50">{{ card.timestamp|timesince }} ago</small>
