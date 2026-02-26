@@ -1,0 +1,13 @@
+{
+  "name": "pardis-panel-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tailwind CSS build for Sarafi Pardis Panel",
+  "scripts": {
+    "build-css": "tailwindcss -i ./src/input.css -o ../static/dist/output.css --minify",
+    "watch-css": "tailwindcss -i ./src/input.css -o ../static/dist/output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.1"
+  }
+}

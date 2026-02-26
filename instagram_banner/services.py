@@ -1,50 +1,44 @@
 """
-Instagram Banner Generator service.
-
-Renders currency price boards for Instagram Story (1080x1920) and Post (1080x1080)
-by reusing the existing Telegram banner rendering pipeline and scaling the output.
+Service to generate Instagram-ready banners from existing Telegram price boards.
+Produces Story (1080x1920) and Post (1080x1080) variants. The whole image always fits
+(no cropping); any empty space is filled with a dark background; optional inset for spacing.
 """
 from __future__ import annotations
 
 import io
-import functools
-from pathlib import Path
 from typing import Iterable, Tuple
 
-from django.conf import settings
 from django.utils import timezone
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 from price_publisher.services.image_renderer import RenderedPriceImage
 from price_publisher.services.legacy_category_renderer import (
-    supports_category as is_gbp_category,
     render_category_board,
+    supports_category,
 )
 from price_publisher.services.tether_renderer import (
-    supports_tether_category as is_tether_category,
     render_tether_board,
+    supports_tether_category,
 )
 
 STORY_SIZE = (1080, 1920)
 POST_SIZE = (1080, 1080)
-
-STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
-FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", STATIC_ROOT_DIR / "fonts"))
-
-
-@functools.lru_cache(maxsize=4)
-def _load_branding_font(size: int) -> ImageFont.FreeTypeFont:
-    for name in ("Kalameh.ttf", "Morabba.ttf"):
-        path = FONT_ROOT / name
-        if path.exists():
-            return ImageFont.truetype(str(path), size)
-    return ImageFont.load_default()
+# Inset from canvas edges so content has breathing room (more spacing)
+CANVAS_INSET = 32
+# Dark fill for empty areas (matches luxury black theme)
+FILL_COLOR = (13, 13, 13)
 
 
-def _get_telegram_image(category, price_items, timestamp) -> RenderedPriceImage:
-    """Render the standard Telegram board for a category."""
-    if is_tether_category(category):
+def _render_board(category, price_items, timestamp) -> RenderedPriceImage:
+    """Re-use the existing Telegram renderers to produce the raw board."""
+    if supports_tether_category(category):
         return render_tether_board(
+            category=category,
+            price_items=price_items,
+            timestamp=timestamp,
+        )
+    if supports_category(category):
+        return render_category_board(
             category=category,
             price_items=price_items,
             timestamp=timestamp,
@@ -56,97 +50,122 @@ def _get_telegram_image(category, price_items, timestamp) -> RenderedPriceImage:
     )
 
 
-def _telegram_image_to_pil(rendered: RenderedPriceImage) -> Image.Image:
-    rendered.stream.seek(0)
-    return Image.open(rendered.stream).convert("RGBA")
-
-
-def _fit_to_canvas(source: Image.Image, canvas_size: tuple[int, int]) -> Image.Image:
+def _fit_to_canvas(
+    source: Image.Image,
+    canvas_w: int,
+    canvas_h: int,
+    *,
+    inset: int = CANVAS_INSET,
+) -> Image.Image:
     """
-    Scale and centre-crop the source onto a canvas of the given size.
-    Preserves the full width, crops top/bottom symmetrically if needed,
-    or pads with dark background if the source is too short.
+    Place the entire source image onto a canvas of the requested size.
+    The whole image always fits (no cropping). Uses an inset from edges for spacing.
+    Any empty space is filled with a dark, solid background so the image looks complete.
     """
-    cw, ch = canvas_size
-    sw, sh = source.size
+    src_w, src_h = source.size
+    resample = Image.Resampling.LANCZOS if hasattr(Image, "Resampling") else Image.LANCZOS
 
-    scale = cw / sw
-    new_w = cw
-    new_h = int(sh * scale)
+    # Inner content area (with spacing from edges)
+    inner_left = inset
+    inner_top = inset
+    inner_right = canvas_w - inset
+    inner_bottom = canvas_h - inset
+    inner_w = max(1, inner_right - inner_left)
+    inner_h = max(1, inner_bottom - inner_top)
 
-    scaled = source.resize((new_w, new_h), Image.LANCZOS)
+    # Scale so the entire image fits inside the inner area
+    scale = min(inner_w / src_w, inner_h / src_h)
+    new_w = int(src_w * scale)
+    new_h = int(src_h * scale)
+    scaled = source.resize((new_w, new_h), resample)
 
-    canvas = Image.new("RGBA", canvas_size, (15, 15, 20, 255))
+    # Build canvas: dark fill everywhere so empty space is filled
+    bg = Image.new("RGB", (canvas_w, canvas_h), FILL_COLOR)
 
-    if new_h >= ch:
-        top = (new_h - ch) // 2
-        cropped = scaled.crop((0, top, cw, top + ch))
-        canvas.paste(cropped, (0, 0))
-    else:
-        y_offset = (ch - new_h) // 2
-        canvas.paste(scaled, (0, y_offset))
+    # Optional: subtle blurred background in content area for depth (keep fill visible at edges)
+    blurred = source.resize((inner_w, inner_h), resample)
+    blurred = blurred.filter(ImageFilter.GaussianBlur(radius=40))
+    overlay = Image.new("RGBA", (inner_w, inner_h), (0, 0, 0, 180))
+    blurred = blurred.convert("RGBA")
+    blurred = Image.alpha_composite(blurred, overlay)
+    blurred = blurred.convert("RGB")
+    bg.paste(blurred, (inner_left, inner_top))
 
-    return canvas
+    # Center the scaled image in the inner area
+    x_offset = inner_left + (inner_w - new_w) // 2
+    y_offset = inner_top + (inner_h - new_h) // 2
+    bg.paste(scaled, (x_offset, y_offset))
+
+    return bg
 
 
-def _add_branding_bar(image: Image.Image, bar_height: int = 80) -> Image.Image:
-    """Add a slim branding bar at the bottom with the exchange name."""
-    draw = ImageDraw.Draw(image)
-    w, h = image.size
+def _add_branding(img: Image.Image, category_name: str) -> Image.Image:
+    """Add a subtle branded footer bar at the bottom."""
+    draw = ImageDraw.Draw(img)
+    w, h = img.size
+    bar_h = 60
+    draw.rectangle([(0, h - bar_h), (w, h)], fill=(0, 0, 0, 180) if img.mode == "RGBA" else (20, 20, 20))
 
-    draw.rectangle([(0, h - bar_height), (w, h)], fill=(15, 15, 20, 230))
+    try:
+        from pathlib import Path
+        from django.conf import settings
+        font_root = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", Path(settings.BASE_DIR) / "static" / "fonts"))
+        font_path = font_root / "Kalameh.ttf"
+        font = ImageFont.truetype(str(font_path), 28)
+    except Exception:
+        font = ImageFont.load_default()
 
-    font = _load_branding_font(max(28, bar_height // 3))
-    text = "Sarafi Pardis | sarafipardis.co.uk"
+    text = f"@sarafiipardis"
     bbox = draw.textbbox((0, 0), text, font=font)
     tw = bbox[2] - bbox[0]
-    th = bbox[3] - bbox[1]
-    tx = (w - tw) // 2
-    ty = h - bar_height + (bar_height - th) // 2
-    draw.text((tx, ty), text, font=font, fill=(212, 175, 55, 255))
+    draw.text(
+        ((w - tw) // 2, h - bar_h + (bar_h - (bbox[3] - bbox[1])) // 2),
+        text,
+        font=font,
+        fill=(212, 175, 55),
+    )
+    return img
 
-    return image
+
+def generate_story_banner(
+    category,
+    price_items: Iterable[Tuple],
+    timestamp=None,
+) -> io.BytesIO:
+    """Generate a 1080x1920 Instagram Story banner and return a PNG BytesIO."""
+    if timestamp is None:
+        timestamp = timezone.now()
+    board = _render_board(category, price_items, timestamp)
+    board.stream.seek(0)
+    source = Image.open(board.stream).convert("RGB")
+
+    story = _fit_to_canvas(source, *STORY_SIZE)
+    story = _add_branding(story, category.name)
+
+    buf = io.BytesIO()
+    buf.name = f"{category.slug or 'banner'}_story.png"
+    story.convert("RGB").save(buf, format="PNG")
+    buf.seek(0)
+    return buf
 
 
-class InstagramBannerService:
-    """Generates Instagram Story and Post banners from existing price data."""
+def generate_post_banner(
+    category,
+    price_items: Iterable[Tuple],
+    timestamp=None,
+) -> io.BytesIO:
+    """Generate a 1080x1080 Instagram Post banner and return a PNG BytesIO."""
+    if timestamp is None:
+        timestamp = timezone.now()
+    board = _render_board(category, price_items, timestamp)
+    board.stream.seek(0)
+    source = Image.open(board.stream).convert("RGB")
 
-    @staticmethod
-    def render_story(
-        category,
-        price_items: Iterable[Tuple],
-        timestamp=None,
-    ) -> RenderedPriceImage:
-        """Render a 1080x1920 Instagram Story banner."""
-        ts = timestamp or timezone.now()
-        rendered = _get_telegram_image(category, list(price_items), ts)
-        source = _telegram_image_to_pil(rendered)
+    post = _fit_to_canvas(source, *POST_SIZE)
+    post = _add_branding(post, category.name)
 
-        story = _fit_to_canvas(source, STORY_SIZE)
-        story = _add_branding_bar(story, bar_height=90)
-
-        buf = io.BytesIO()
-        buf.name = "instagram_story.png"
-        story.convert("RGB").save(buf, format="PNG")
-        buf.seek(0)
-        return RenderedPriceImage(stream=buf, width=STORY_SIZE[0], height=STORY_SIZE[1])
-
-    @staticmethod
-    def render_post(
-        category,
-        price_items: Iterable[Tuple],
-        timestamp=None,
-    ) -> RenderedPriceImage:
-        """Render a 1080x1080 Instagram Post banner."""
-        ts = timestamp or timezone.now()
-        rendered = _get_telegram_image(category, list(price_items), ts)
-        source = _telegram_image_to_pil(rendered)
-
-        post = _fit_to_canvas(source, POST_SIZE)
-        post = _add_branding_bar(post, bar_height=70)
-
-        buf = io.BytesIO()
-        buf.name = "instagram_post.png"
-        post.convert("RGB").save(buf, format="PNG")
-        buf.seek(0)
-        return RenderedPriceImage(stream=buf, width=POST_SIZE[0], height=POST_SIZE[1])
+    buf = io.BytesIO()
+    buf.name = f"{category.slug or 'banner'}_post.png"
+    post.convert("RGB").save(buf, format="PNG")
+    buf.seek(0)
+    return buf

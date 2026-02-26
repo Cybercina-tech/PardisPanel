@@ -10,7 +10,7 @@ from django.utils import timezone
 from category.models import Category, PriceType
 from change_price.models import PriceHistory
 from core.sorting import sort_categories, sort_price_types_by_category
-from .services import InstagramBannerService
+from .services import generate_story_banner, generate_post_banner
 
 logger = logging.getLogger(__name__)
 
@@ -59,18 +59,19 @@ def _render_banner(category_id: int, format_type: str):
     if not price_items:
         return None, "No prices available for this category."
 
-    svc = InstagramBannerService()
-    ts = timezone.now()
+    try:
+        if format_type == "story":
+            buf = generate_story_banner(category, price_items)
+        elif format_type == "post":
+            buf = generate_post_banner(category, price_items)
+        else:
+            return None, f"Invalid format: {format_type}"
+    except Exception as exc:
+        logger.error("Banner generation failed: %s", exc, exc_info=True)
+        return None, str(exc)
 
-    if format_type == "story":
-        rendered = svc.render_story(category, price_items, timestamp=ts)
-    elif format_type == "post":
-        rendered = svc.render_post(category, price_items, timestamp=ts)
-    else:
-        return None, f"Invalid format: {format_type}"
-
-    rendered.stream.seek(0)
-    return rendered.stream.read(), None
+    buf.seek(0)
+    return buf.read(), None
 
 
 @login_required

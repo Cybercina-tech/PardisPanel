@@ -1,4 +1,5 @@
 import logging
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -621,3 +622,73 @@ def finalize_special_price(request, special_price_history_id):
     }
     
     return render(request, 'finalize/finalize_special_price.html', context)
+
+
+@login_required
+def download_instagram_banner(request, category_id, banner_type):
+    """
+    Generate and download an Instagram banner for the given category.
+    banner_type: 'story' (1080x1920) or 'post' (1080x1080).
+    """
+    from instagram_banner.services import generate_story_banner, generate_post_banner
+
+    if banner_type not in ("story", "post"):
+        messages.error(request, "Invalid banner type.")
+        return redirect("finalize:finalize_category", category_id=category_id)
+
+    category = get_object_or_404(Category, id=category_id)
+
+    latest_finalization = Finalization.objects.filter(
+        category=category
+    ).order_by("-finalized_at").first()
+
+    if latest_finalization:
+        finalized_history_ids = set(
+            latest_finalization.finalized_prices.values_list("price_history_id", flat=True)
+        )
+        finalized_price_map = {
+            fph.price_history.price_type_id: fph.price_history
+            for fph in latest_finalization.finalized_prices.select_related("price_history__price_type")
+        }
+    else:
+        finalized_history_ids = set()
+        finalized_price_map = {}
+
+    price_types = PriceType.objects.filter(category=category).select_related(
+        "source_currency", "target_currency"
+    )
+    category_name_lower = category.name.lower()
+    if "پوند" in category.name or "pound" in category_name_lower or "gbp" in category_name_lower:
+        price_types = sort_gbp_price_types(price_types)
+
+    price_items = []
+    for price_type in price_types:
+        latest_price = price_type.price_histories.first()
+        if not latest_price:
+            continue
+        if latest_price.id not in finalized_history_ids:
+            price_items.append((price_type, latest_price))
+        elif price_type.id in finalized_price_map:
+            price_items.append((price_type, finalized_price_map[price_type.id]))
+        else:
+            price_items.append((price_type, latest_price))
+
+    if not price_items:
+        messages.warning(request, "No prices available to generate a banner.")
+        return redirect("finalize:finalize_category", category_id=category_id)
+
+    try:
+        if banner_type == "story":
+            buf = generate_story_banner(category, price_items)
+            filename = f"{category.slug or 'banner'}_story.png"
+        else:
+            buf = generate_post_banner(category, price_items)
+            filename = f"{category.slug or 'banner'}_post.png"
+    except Exception as exc:
+        logger.error("Instagram banner generation failed: %s", exc, exc_info=True)
+        messages.error(request, f"Failed to generate banner: {exc}")
+        return redirect("finalize:finalize_category", category_id=category_id)
+
+    response = HttpResponse(buf.getvalue(), content_type="image/png")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response

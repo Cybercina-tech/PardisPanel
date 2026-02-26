@@ -30,8 +30,10 @@ from price_publisher.services.tether_renderer import (
 from price_publisher.services.special_offer_renderer import (
     SPECIAL_GBP_TEMPLATES,
     normalize_identifier,
+    render_double_price_board,
     render_special_offer_board,
     resolve_special_offer_template,
+    supports_double_price_type,
     supports_special_offer_type,
 )
 from telegram_app.services.telegram_client import TelegramService
@@ -238,8 +240,21 @@ class PricePublisherService:
     ) -> PublicationResult:
         """Render and post a special price to Telegram."""
 
+        is_double = supports_double_price_type(special_price_type)
         custom_offer = supports_special_offer_type(special_price_type)
-        if custom_offer:
+
+        if is_double:
+            try:
+                image = render_double_price_board(
+                    special_price_type=special_price_type,
+                    price_history=price_history,
+                )
+            except FileNotFoundError as exc:
+                raise PricePublicationError(str(exc)) from exc
+            caption = self._build_special_price_caption(
+                special_price_type, price_history, custom_offer=True
+            )
+        elif custom_offer:
             try:
                 image = render_special_offer_board(
                     special_price_type=special_price_type,
@@ -247,6 +262,9 @@ class PricePublisherService:
                 )
             except FileNotFoundError as exc:
                 raise PricePublicationError(str(exc)) from exc
+            caption = self._build_special_price_caption(
+                special_price_type, price_history, custom_offer=True
+            )
         else:
             subtitle = self._build_pricetype_subtitle(special_price_type)
             entry = PriceEntry(
@@ -266,10 +284,10 @@ class PricePublisherService:
                 timestamp=self._get_history_timestamp(price_history),
                 template_assets=template_assets,
             )
+            caption = self._build_special_price_caption(
+                special_price_type, price_history, custom_offer=False
+            )
 
-        # Build caption for special GBP offers (inspired by Tether)
-        caption = self._build_special_price_caption(special_price_type, price_history, custom_offer)
-            
         return self._send_photo(
             channel=channel,
             image=image,
@@ -495,7 +513,10 @@ class PricePublisherService:
             raise PricePublicationError(f"Failed to load template image: {exc}") from exc
 
     def _build_special_price_caption(self, special_price_type, price_history, custom_offer: bool) -> str:
-        """Build caption for special price offers, detecting if it's a special GBP template."""
+        """Build caption for special price offers. Double-price types: no caption (empty)."""
+        if getattr(special_price_type, "is_double_price", False):
+            return ""  # No description in Telegram for نقدی و حسابی banners
+
         special_price_name = getattr(special_price_type, "name", "")
         normalized_name = normalize_identifier(special_price_name)
         

@@ -24,6 +24,7 @@ class SpecialPriceItemSerializer(serializers.Serializer):
     Items from `special_price.SpecialPriceType` appear under a synthetic
     "Special Prices" category in the API response.
     Only items with a recent special_price (last 6 hours) are included.
+    When is_double_price is True, cash_price and account_price are present.
     """
 
     id = serializers.IntegerField()
@@ -32,6 +33,13 @@ class SpecialPriceItemSerializer(serializers.Serializer):
     trade_type = serializers.CharField()
     latest_special_price = serializers.DecimalField(max_digits=20, decimal_places=2)
     latest_special_price_timestamp = serializers.DateTimeField()
+    is_double_price = serializers.BooleanField(default=False)
+    cash_price = serializers.DecimalField(
+        max_digits=20, decimal_places=2, allow_null=True, required=False
+    )
+    account_price = serializers.DecimalField(
+        max_digits=20, decimal_places=2, allow_null=True, required=False
+    )
 
 
 class CategoryPricingSerializer(serializers.Serializer):

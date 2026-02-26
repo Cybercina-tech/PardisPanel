@@ -22,15 +22,15 @@ BADGE_STYLE = (
 
 @admin.register(SpecialPriceType)
 class SpecialPriceTypeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'source_currency', 'target_currency', 'trade_type', 'slug', 'created_at')
-    list_filter = ('source_currency', 'target_currency', 'trade_type', 'created_at')
+    list_display = ('name', 'source_currency', 'target_currency', 'trade_type', 'is_double_price', 'slug', 'created_at')
+    list_filter = ('source_currency', 'target_currency', 'trade_type', 'is_double_price', 'created_at')
     search_fields = ('name', 'description')
     prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ('created_at', 'updated_at')
-    
+
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'slug', 'description', 'source_currency', 'target_currency', 'trade_type')
+            'fields': ('name', 'slug', 'description', 'source_currency', 'target_currency', 'trade_type', 'is_double_price')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -71,7 +71,7 @@ class SpecialPriceHistoryAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('Price Information', {
-            'fields': ('special_price_type', 'price', 'notes')
+            'fields': ('special_price_type', 'price', 'cash_price', 'account_price', 'notes')
         }),
         ('Diagnostics', {
             'fields': ('previous_price_display', 'created_at', 'updated_at'),
@@ -90,6 +90,16 @@ class SpecialPriceHistoryAdmin(admin.ModelAdmin):
         )
 
     def formatted_price(self, obj):
+        if getattr(obj.special_price_type, 'is_double_price', False):
+            cash = obj.cash_price if obj.cash_price is not None else obj.price
+            account = obj.account_price if obj.account_price is not None else obj.price
+            pair = f"{obj.special_price_type.source_currency.code}/{obj.special_price_type.target_currency.code}"
+            return format_html(
+                '<span class="price-value">Cash: {} / Account: {}</span> <small>{}</small>',
+                f"{cash:,.2f}" if cash is not None else "—",
+                f"{account:,.2f}" if account is not None else "—",
+                pair,
+            )
         value = f"{obj.price:,.2f}"
         pair = f"{obj.special_price_type.source_currency.code}/{obj.special_price_type.target_currency.code}"
         return format_html('<span class="price-value">{}</span> <small>{}</small>', value, pair)
@@ -188,6 +198,11 @@ class SpecialPriceHistoryAdmin(admin.ModelAdmin):
         return payload
 
     def _format_price(self, entry: SpecialPriceHistory) -> str:
+        if getattr(entry.special_price_type, 'is_double_price', False):
+            cash = entry.cash_price if entry.cash_price is not None else entry.price
+            account = entry.account_price if entry.account_price is not None else entry.price
+            pair = f"{entry.special_price_type.source_currency.code}/{entry.special_price_type.target_currency.code}"
+            return f"Cash: {cash:,.2f} / Account: {account:,.2f} {pair}"
         value = entry.price
         if isinstance(value, Decimal):
             value = f"{value:,.2f}"

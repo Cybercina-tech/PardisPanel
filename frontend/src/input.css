@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Tailwind components — compiled into output.css */
+@layer components {
+  .tailwind-nav-link {
+    @apply relative flex items-center space-x-2.5 rtl:space-x-reverse px-5 py-2.5 text-sm text-gray-300 rounded-xl transition-all duration-300 border border-transparent;
+    color: var(--color-white-soft);
+  }
+  .tailwind-nav-link:hover {
+    color: var(--color-gold) !important;
+    background: rgba(255, 215, 0, 0.1);
+    border-color: rgba(255, 215, 0, 0.4);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+  }
+  .tailwind-nav-link.active {
+    color: var(--color-gold) !important;
+    background: rgba(255, 215, 0, 0.15);
+    border-color: rgba(255, 215, 0, 0.5);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+  }
+  .mobile-nav-link {
+    @apply flex items-center space-x-4 rtl:space-x-reverse px-5 py-4 text-base rounded-xl transition-all duration-300 border border-transparent;
+    color: var(--color-white-soft);
+  }
+  .mobile-nav-link:hover {
+    color: var(--color-gold) !important;
+    background: rgba(255, 215, 0, 0.1);
+    border-color: rgba(255, 215, 0, 0.4);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+  }
+  .mobile-nav-link.active {
+    color: var(--color-gold) !important;
+    background: rgba(255, 215, 0, 0.15);
+    border-color: rgba(255, 215, 0, 0.5);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+  }
+  .mobile-nav-link i {
+    @apply w-6 text-center;
+  }
+}

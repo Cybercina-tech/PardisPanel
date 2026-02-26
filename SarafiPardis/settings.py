@@ -127,9 +127,9 @@ MEDIA_ROOT = BASE_DIR / 'public' / 'media'
 TEMPLATE_EDITOR_DEFAULT_FONT = str(BASE_DIR / 'static' / 'fonts' / 'Kalameh.ttf')
 PRICE_RENDERER_FONT_ROOT = BASE_DIR / 'static' / 'fonts'
 LEGACY_CATEGORY_BACKGROUNDS = {
-    "pound": "price_theme/1.png",
-    "gbp": "price_theme/1.png",
-    "پوند": "price_theme/1.png",
+    "pound": "price_theme/1.jpg",
+    "gbp": "price_theme/1.jpg",
+    "پوند": "price_theme/1.jpg",
 }
 
 # -----------------------------

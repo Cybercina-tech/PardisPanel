@@ -37,7 +37,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background: var(--color-black-base);
     color: var(--color-white-soft);
-    overflow-x: hidden;
+    /* Avoid overflow-x: hidden globally - it can clip fixed/sticky navbar and card shadows */
 }
 
 /* Gold animations */
@@ -205,7 +205,7 @@ body {
     }
 }
 
-/* Prevent horizontal scroll on mobile */
+/* Prevent horizontal scroll on mobile only - do not use on body globally to avoid clipping fixed navbar */
 @media (max-width: 767px) {
     body {
         overflow-x: hidden;

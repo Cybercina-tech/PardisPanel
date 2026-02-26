@@ -69,18 +69,21 @@ hi
 
 ```
 PardisPanel/
-├── accounts/              # User authentication and management
-├── analysis/              # Analytics dashboard and reporting
-├── category/              # Category and price type management
-├── change_price/          # Price update functionality
-├── dashboard/             # Main dashboard
-├── finalize/              # Price finalization workflow
-├── price_publisher/       # Image rendering and Telegram publishing
-├── setting/               # System settings and logging
-├── special_price/         # Special price management
-├── telegram_app/          # Telegram bot and channel management
-├── template_editor/       # Visual template editor
-└── SarafiPardis/          # Main project configuration
+├── frontend/             # Tailwind CSS (package.json, src/input.css) — run npm from here
+├── accounts/             # User authentication and management
+├── analysis/             # Analytics dashboard and reporting
+├── category/             # Category and price type management
+├── change_price/         # Price update functionality
+├── dashboard/            # Main dashboard
+├── finalize/             # Price finalization workflow
+├── price_publisher/     # Image rendering and Telegram publishing
+├── setting/             # System settings and logging
+├── special_price/        # Special price management
+├── telegram_app/         # Telegram bot and channel management
+├── template_editor/      # Visual template editor
+├── static/               # Django static files (CSS output: static/dist/output.css)
+├── templates/            # Django templates
+└── SarafiPardis/        # Main project configuration
 ```
 
 ### Key Modules
@@ -178,7 +181,13 @@ PardisPanel/
    python manage.py collectstatic
    ```
 
-8. **Run development server**
+8. **Build Tailwind CSS** (optional — for UI styles)
+   ```bash
+   cd frontend && npm install && npm run build-css && cd ..
+   ```
+   Or run `npm run watch-css` from `frontend/` during development.
+
+9. **Run development server**
    ```bash
    python manage.py runserver
    ```

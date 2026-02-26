@@ -30,10 +30,17 @@
                 <div class="stat-icon">
                     <i class="bi bi-cash-coin"></i>
                 </div>
-                <div class="stat-label">Current Price</div>
+                <div class="stat-label">Current Price{% if special_price_type.is_double_price %}s{% endif %}</div>
+                {% if special_price_type.is_double_price %}
+                <div class="stat-value text-gold">
+                    <span class="d-block"><i class="bi bi-wallet2 me-1"></i>نقدی: {{ special_price_history.cash_price|default:special_price_history.price|floatformat:2 }}</span>
+                    <span class="d-block mt-1"><i class="bi bi-credit-card me-1"></i>حسابی: {{ special_price_history.account_price|default:special_price_history.price|floatformat:2 }}</span>
+                </div>
+                {% else %}
                 <div class="stat-value text-gold">
                     {{ special_price_history.price|floatformat:2 }}
                 </div>
+                {% endif %}
                 <div class="stat-subtext">
                     Updated {{ special_price_history.updated_at|date:"M d, Y H:i" }}
                 </div>
@@ -105,8 +112,13 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="text-gold-light small">Price</label>
+                                <label class="text-gold-light small">Price{% if special_price_type.is_double_price %}s{% endif %}</label>
+                                {% if special_price_type.is_double_price %}
+                                <p class="text-gold fw-bold mb-1"><i class="bi bi-wallet2 me-1"></i>نقدی: {{ special_price_history.cash_price|default:special_price_history.price|floatformat:2 }}</p>
+                                <p class="text-gold fw-bold fs-4 mb-0"><i class="bi bi-credit-card me-1"></i>حسابی: {{ special_price_history.account_price|default:special_price_history.price|floatformat:2 }}</p>
+                                {% else %}
                                 <p class="text-gold fw-bold fs-4 mb-0">{{ special_price_history.price|floatformat:2 }}</p>
+                                {% endif %}
                             </div>
                             <div class="mb-3">
                                 <label class="text-gold-light small">Last Updated</label>

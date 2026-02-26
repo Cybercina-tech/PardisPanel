@@ -77,6 +77,61 @@
         </div>
     </div>
 
+    <!-- Instagram Banner Download -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark border-gold">
+                <div class="card-header bg-black-secondary border-bottom-gold d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 text-gold">
+                        <i class="bi bi-instagram me-2"></i>Instagram Banners
+                    </h5>
+                    <button class="btn btn-sm btn-outline-gold" type="button" data-bs-toggle="collapse" data-bs-target="#instagramBannerPanel" aria-expanded="false" aria-controls="instagramBannerPanel">
+                        <i class="bi bi-download me-1"></i>Download Banners
+                    </button>
+                </div>
+                <div class="collapse" id="instagramBannerPanel">
+                    <div class="card-body">
+                        <p class="text-white-50 mb-3">Download the current prices as Instagram-ready images. Banners are generated with the latest prices shown above.</p>
+                        <div class="row g-3">
+                            <div class="col-12 col-md-6">
+                                <div class="card bg-black-secondary border-light-gold h-100">
+                                    <div class="card-body text-center">
+                                        <div class="ig-size-preview ig-story-preview mb-3">
+                                            <div class="ig-size-box story-box">
+                                                <span>1080 &times; 1920</span>
+                                            </div>
+                                        </div>
+                                        <h6 class="text-gold mb-1">Story</h6>
+                                        <p class="text-white-50 small mb-3">Portrait format (9:16)</p>
+                                        <a href="{% url 'finalize:download_instagram_banner' category.id 'story' %}" class="btn btn-gold w-100 ig-download-btn">
+                                            <i class="bi bi-download me-1"></i>Download Story PNG
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <div class="card bg-black-secondary border-light-gold h-100">
+                                    <div class="card-body text-center">
+                                        <div class="ig-size-preview ig-post-preview mb-3">
+                                            <div class="ig-size-box post-box">
+                                                <span>1080 &times; 1080</span>
+                                            </div>
+                                        </div>
+                                        <h6 class="text-gold mb-1">Post</h6>
+                                        <p class="text-white-50 small mb-3">Square format (1:1)</p>
+                                        <a href="{% url 'finalize:download_instagram_banner' category.id 'post' %}" class="btn btn-gold w-100 ig-download-btn">
+                                            <i class="bi bi-download me-1"></i>Download Post PNG
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Finalization Form -->
     <div class="row">
         <div class="col-12 col-md-8 mx-auto">
@@ -237,6 +292,43 @@
         border-bottom-color: var(--gold-primary) !important;
     }
     
+    /* Instagram Banner Preview */
+    .ig-size-preview {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    .ig-size-box {
+        border: 2px dashed var(--gold-primary);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gold-primary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        opacity: 0.7;
+    }
+    
+    .ig-size-box.story-box {
+        width: 54px;
+        height: 96px;
+    }
+    
+    .ig-size-box.post-box {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .ig-download-btn {
+        transition: transform 0.15s;
+    }
+    
+    .ig-download-btn:hover {
+        transform: translateY(-1px);
+    }
+
     /* Finalize Button Loading State */
     .finalize-submit-btn {
         position: relative;

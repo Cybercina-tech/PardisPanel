@@ -7,7 +7,7 @@
         <div class="card-header bg-dark border-bottom-gold">
             <div class="d-flex justify-content-between align-items-center">
                 <h5 class="mb-0 text-gold">Update Special Price - {{ special_price_type.name }}</h5>
-                <a href="{% url 'special_price:price_history' special_price_type.id %}" 
+                <a href="{% url 'special_price:price_history' special_price_type.id %}"
                    class="btn btn-sm btn-outline-gold">
                     <i class="fas fa-history me-1"></i>View History
                 </a>
@@ -16,15 +16,26 @@
         <div class="card-body">
             {% if latest_price %}
             <div class="alert bg-dark border-info text-light mb-4">
-                <h6 class="text-info mb-2">Current Special Price:</h6>
+                <h6 class="text-info mb-2">Current Special Price{% if special_price_type.is_double_price %}s{% endif %}:</h6>
+                {% if special_price_type.is_double_price %}
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <small><i class="fas fa-wallet text-warning me-1"></i> نقدی (Cash): <span class="text-gold">{{ latest_price.cash_price|default:latest_price.price }}</span></small>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <small><i class="fas fa-credit-card text-info me-1"></i> حسابی (Account): <span class="text-gold">{{ latest_price.account_price|default:latest_price.price }}</span></small>
+                    </div>
+                </div>
+                {% else %}
                 <div class="row">
                     <div class="col-12">
                         <small>Price: <span class="text-gold">{{ latest_price.price }}</span></small>
                     </div>
                 </div>
+                {% endif %}
                 <div class="mt-2">
                     <small class="text-muted">
-                        Last updated: 
+                        Last updated:
                         <span>{{ latest_price.updated_at|date:"F d, Y H:i" }}</span>
                         {% if latest_price.updated_at|to_jalali:"short" %}
                             <span class="ms-2">/ {{ latest_price.updated_at|to_jalali:"short" }}</span>
@@ -37,6 +48,37 @@
             <form method="post">
                 {% csrf_token %}
                 <div class="row g-3">
+                    {% if special_price_type.is_double_price %}
+                    <div class="col-12">
+                        <div class="rounded-2xl p-3 bg-black bg-opacity-25 border border-yellow-500/20">
+                            <label class="form-label text-gold d-flex align-items-center">
+                                <i class="fas fa-wallet text-warning me-2"></i>{{ form.cash_price.label }}
+                            </label>
+                            {{ form.cash_price }}
+                            {% if form.cash_price.errors %}
+                            <div class="text-danger small mt-1">{{ form.cash_price.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="rounded-2xl p-3 bg-black bg-opacity-25 border border-yellow-500/20">
+                            <label class="form-label text-gold d-flex align-items-center">
+                                <i class="fas fa-credit-card text-info me-2"></i>{{ form.account_price.label }}
+                            </label>
+                            {{ form.account_price }}
+                            {% if form.account_price.errors %}
+                            <div class="text-danger small mt-1">{{ form.account_price.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-gold">Notes</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                        <div class="text-danger small mt-1">{{ form.notes.errors }}</div>
+                        {% endif %}
+                    </div>
+                    {% else %}
                     <div class="col-12">
                         <label class="form-label text-gold">Special Price</label>
                         {{ form.price }}
@@ -51,6 +93,7 @@
                         <div class="text-danger small mt-1">{{ form.notes.errors }}</div>
                         {% endif %}
                     </div>
+                    {% endif %}
                 </div>
                 <div class="d-flex justify-content-between gap-3 mt-4">
                     <a href="{% url 'special_price:dashboard' %}" class="btn btn-secondary-gold flex-grow-1">
@@ -65,4 +108,3 @@
     </div>
 </div>
 {% endblock %}
-

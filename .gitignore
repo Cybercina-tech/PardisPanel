@@ -1,145 +1,97 @@
+# ===========================
 # Python
+# ===========================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
 *.egg
-MANIFEST
+*.egg-info/
+dist/
+build/
+*.whl
 
-# Django
-*.log
-*.pot
-*.pyc
-*.pyo
-*.pyd
-__pycache__/
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-/media
-/staticfiles
-/static_collected
-staticfiles/
-public/staticfiles/
-*.sqlite3
-*.sqlite3-journal
-
+# ===========================
 # Virtual Environment
+# ===========================
 venv/
 env/
-ENV/
-env.bak/
-venv.bak/
 .venv/
 
-# Environment variables
+# ===========================
+# Environment & Secrets
+# ===========================
 .env
-.env.local
-.env.*.local
-*.env
-
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-.DS_Store
-Thumbs.db
-
-# Cache
-cache/
-.cache/
-*.cache
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.hypothesis/
-*.djcache
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# Celery
-celerybeat-schedule
-celerybeat.pid
-
-# Migrations (optional - uncomment if you don't want to track migrations)
-# */migrations/*.py
-# */migrations/*.pyc
-# !*/migrations/__init__.py
-
-# Coverage reports
-.coverage
-.coverage.*
-coverage.xml
-*.cover
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# Backup files
-*.bak
-*.backup
-*.tmp
-
-# OS files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Desktop.ini
-
-# Django static files (collected)
-staticfiles/
-public/staticfiles/
-static_root/
-
-# Django secret keys and sensitive files
+.env.*
 *.secret
 *.key
 secret_key.txt
-.secret_key
 
-# Process files
+# ===========================
+# Django
+# ===========================
+*.log
+*.pot
+db.sqlite3
+db.sqlite3-journal
+local_settings.py
+
+# Collected static & uploaded media (runtime output)
+public/
+staticfiles/
+static_root/
+/media/
+
+# ===========================
+# Node / Frontend Build
+# ===========================
+node_modules/
+frontend/node_modules/
+package-lock.json
+
+# ===========================
+# IDE & Editor
+# ===========================
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+*~
+
+# ===========================
+# OS Files
+# ===========================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ===========================
+# Testing & Coverage
+# ===========================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+test_*.jpg
+test_*.png
+
+# ===========================
+# Type Checking & Linting
+# ===========================
+.mypy_cache/
+.pytype/
+.pyre/
+
+# ===========================
+# Misc
+# ===========================
+*.bak
+*.backup
+*.tmp
 *.pid
 *.sock
-
-# Django migrations (if you want to ignore them - currently commented)
-# */migrations/*.py
-# !*/migrations/__init__.py    
-
-./.cursor/
+celerybeat-schedule
+celerybeat.pid

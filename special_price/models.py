@@ -19,6 +19,10 @@ class SpecialPriceType(models.Model):
         ('sell', 'Sell'),
     )
     trade_type = models.CharField(max_length=10, choices=TRADE_CHOICES)
+    is_double_price = models.BooleanField(
+        default=False,
+        help_text="If True, this type uses two prices (Cash and Account) on one banner.",
+    )
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -46,6 +50,22 @@ class SpecialPriceType(models.Model):
 class SpecialPriceHistory(models.Model):
     special_price_type = models.ForeignKey(SpecialPriceType, on_delete=models.CASCADE, related_name='special_price_histories')
     price = models.DecimalField(max_digits=20, decimal_places=2, validators=[MinValueValidator(0)])
+    cash_price = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)],
+        help_text="Cash price (نقدی); used when special_price_type.is_double_price is True.",
+    )
+    account_price = models.DecimalField(
+        max_digits=20,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)],
+        help_text="Account price (حسابی); used when special_price_type.is_double_price is True.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     notes = models.TextField(blank=True, null=True)
