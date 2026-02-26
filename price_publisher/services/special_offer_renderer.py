@@ -44,7 +44,7 @@ DOUBLE_PRICE_FONT = ("montsrrat.otf", 85)  # Montserrat size 85 for both
 DOUBLE_DATE_XY = (180, 50)           # English date "26 Feb 2026" for both banners
 DOUBLE_DATE_FONT = ("montsrrat.otf", 50)    # Montserrat size 50
 DOUBLE_DATE_FILL_SELL = (255, 255, 255)  # White — for sell banner (2.png)
-DOUBLE_DATE_FILL_BUY = (255, 255, 255)   # White — for buy banner
+DOUBLE_DATE_FILL_BUY = (0, 0, 189)       # Blue — for buy banner
 
 OFFER_TEXT_POSITIONS = {
     "farsi_date": (1900, 250),
