@@ -37,6 +37,9 @@ OFFER_TEXT_POSITIONS = {
     "tether_buy_irr": (1750, 1150),    # خرید تتر به تومن
     "tether_buy_gbp": (690, 1920),    # خرید تتر به پوند
     "tether_sell_gbp": (1860, 1920),   # فروش تتر به پوند
+    "tether_sell_try": (690, 2140),   # فروش تتر به لیر
+    "tether_sell_aed": (1260, 2140),  # فروش تتر به درهم
+    "tether_sell_eur": (1860, 2140),  # فروش تتر به یورو
     "working_hours": (1200, 2200),   # ساعات کاری
 }
 
@@ -69,6 +72,9 @@ TETHER_LAYOUT_ORDER = [
     "tether_sell_irr",
     "tether_buy_gbp",
     "tether_sell_gbp",
+    "tether_sell_try",
+    "tether_sell_aed",
+    "tether_sell_eur",
 ]
 
 
@@ -123,13 +129,59 @@ PRICE_TYPE_ALIASES = {
         "فروش_تتر_پوند",
         "فروشتترپوند",
     },
+    "tether_sell_try": {
+        "tether_sell_try",
+        "tether-sell-try",
+        "sell_tether_try",
+        "sell-usdt-try",
+        "usdt_sell_try",
+        "sell_tether_lira",
+        "sell_usdt_lira",
+        "فروش_تتر_لیر",
+        "فروشتترلیر",
+    },
+    "tether_sell_aed": {
+        "tether_sell_aed",
+        "tether-sell-aed",
+        "sell_tether_aed",
+        "sell-usdt-aed",
+        "usdt_sell_aed",
+        "sell_tether_dirham",
+        "sell_usdt_dirham",
+        "فروش_تتر_درهم",
+        "فروشتتردرهم",
+    },
+    "tether_sell_eur": {
+        "tether_sell_eur",
+        "tether-sell-eur",
+        "sell_tether_eur",
+        "sell-usdt-eur",
+        "usdt_sell_eur",
+        "sell_tether_euro",
+        "sell_usdt_euro",
+        "فروش_تتر_یورو",
+        "فروشتتریورو",
+    },
 }
 
 
 def supports_tether_category(category) -> bool:
     slug = (category.slug or "").lower()
     name = (category.name or "").lower()
-    keywords = {"tether", "usdt", "تتر"}
+    keywords = {
+        "tether",
+        "usdt",
+        "تتر",
+        "try",
+        "lira",
+        "لیر",
+        "aed",
+        "dirham",
+        "درهم",
+        "eur",
+        "euro",
+        "یورو",
+    }
     return any(keyword in slug for keyword in keywords) or any(
         keyword in name for keyword in keywords
     )
@@ -303,6 +355,15 @@ def _fallback_match(price_type) -> Optional[str]:
     def _target_is_gbp() -> bool:
         return "gbp" in target or "pound" in target or "پوند" in name
 
+    def _target_is_try() -> bool:
+        return "try" in target or "lira" in target or "لیر" in name
+
+    def _target_is_aed() -> bool:
+        return "aed" in target or "dirham" in target or "درهم" in name
+
+    def _target_is_eur() -> bool:
+        return "eur" in target or "euro" in target or "یورو" in name
+
     if _target_is_irr():
         if trade == "buy":
             return "tether_buy_irr"
@@ -313,6 +374,13 @@ def _fallback_match(price_type) -> Optional[str]:
             return "tether_buy_gbp"
         if trade == "sell":
             return "tether_sell_gbp"
+    # New currencies on tether board are sell-only by business rule.
+    if _target_is_try() and trade == "sell":
+        return "tether_sell_try"
+    if _target_is_aed() and trade == "sell":
+        return "tether_sell_aed"
+    if _target_is_eur() and trade == "sell":
+        return "tether_sell_eur"
 
     if trade == "buy":
         if "gbp" in name or "پوند" in name:
@@ -321,6 +389,12 @@ def _fallback_match(price_type) -> Optional[str]:
     if trade == "sell":
         if "gbp" in name or "پوند" in name:
             return "tether_sell_gbp"
+        if "try" in name or "lira" in name or "لیر" in name:
+            return "tether_sell_try"
+        if "aed" in name or "dirham" in name or "درهم" in name:
+            return "tether_sell_aed"
+        if "eur" in name or "euro" in name or "یورو" in name:
+            return "tether_sell_eur"
         return "tether_sell_irr"
 
     return None
