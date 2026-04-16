@@ -29,22 +29,18 @@ except ImportError:
 
 from price_publisher.services.image_renderer import RenderedPriceImage
 
-# Coordinates derived from the legacy pic_generator implementation
+# Pound banner coordinates
 DATE_BOX_POSITIONS = {
-    "farsi_date": (2290, 290),
-    "farsi_weekday": (2150, 470),
-    "eng_date": (690, 290),
-    "eng_weekday": (730, 470),
+    "farsi_date": (2700, 200),
+    "eng_date": (280, 220),
 }
 
 PRICE_POSITIONS = {
-    "buy_from_account": (760, 680),
-    "cash_purchase_price": (760, 1030),
-    "sell_from_account": (760, 1580),
-    "cash_sales_price": (760, 1920),
-    "official_sale_price": (760, 2260),
-    "lira": (760, 2773),
-    "dirham": (760, 3135),
+    "cash_purchase_price": (1000, 800),
+    "buy_from_account": (1000, 1300),
+    "cash_sales_price": (1000, 1950),
+    "sell_from_account": (1000, 2430),
+    "official_sale_price": (1000, 2980),
 }
 
 STOP_POSITIONS = {
@@ -68,13 +64,11 @@ CALL_POSITIONS = {
 }
 
 LAYOUT_ORDER = [
-    "buy_from_account",
     "cash_purchase_price",
-    "sell_from_account",
+    "buy_from_account",
     "cash_sales_price",
+    "sell_from_account",
     "official_sale_price",
-    "lira",
-    "dirham",
 ]
 
 PRICE_TYPE_ALIASES = {
@@ -145,6 +139,7 @@ STATIC_ROOT_DIR = Path(settings.BASE_DIR) / "static"
 IMAGE_ROOT = STATIC_ROOT_DIR / "img"
 FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", STATIC_ROOT_DIR / "fonts"))
 LEGACY_BACKGROUNDS = getattr(settings, "LEGACY_CATEGORY_BACKGROUNDS", {})
+POUND_BACKGROUND_PATH = IMAGE_ROOT / "price_theme" / "pound.png"
 
 
 def supports_category(category) -> bool:
@@ -192,7 +187,7 @@ def render_category_board(
             target_position,
             display_text,
             font=fonts[font_key],
-            fill="white",
+            fill="black",
         )
 
     buffer = io.BytesIO()
@@ -214,14 +209,15 @@ def _resolve_background_for_category(category) -> Path:
     slug = (category.slug or "").lower()
     name = category.name.lower()
 
-    # Check if this is a pound/GBP category - use rotating backgrounds
+    # Pound categories must always use the dedicated pound banner.
     is_pound = any(keyword in slug or keyword in name for keyword in ["pound", "gbp", "پوند"])
     
     if is_pound:
-        # Use rotating background for pound categories
-        rotating = _get_rotating_background()
-        if rotating is not None:
-            return rotating
+        if POUND_BACKGROUND_PATH.exists():
+            return POUND_BACKGROUND_PATH
+        raise FileNotFoundError(
+            f"Pound background not found at {POUND_BACKGROUND_PATH}."
+        )
 
     def candidate(keys):
         for key in keys:
@@ -290,26 +286,25 @@ def _get_rotating_background():
 
 @functools.lru_cache(maxsize=1)
 def _load_fonts():
-    fonts = {
-        "farsi_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 110),
-        "farsi_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 80),
-        "eng_date": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 110),
-        "eng_weekday": ImageFont.truetype(str(FONT_ROOT / "Kalameh.ttf"), 80),
-        "stop": ImageFont.truetype(str(FONT_ROOT / "Morabba.ttf"), 115),
-        "call": ImageFont.truetype(str(FONT_ROOT / "Morabba.ttf"), 100),
-    }
-    
-    price_font_path = FONT_ROOT / "Kalameh.ttf"
-    if not price_font_path.exists():
+    primary_font_path = FONT_ROOT / "YekanBakhEN-Bold.ttf"
+    if not primary_font_path.exists():
         raise FileNotFoundError(
-            f"Font file not found: {price_font_path}. "
+            f"Font file not found: {primary_font_path}. "
             f"Please ensure the font file exists in the fonts directory."
         )
+
+    fonts = {
+        "farsi_date": ImageFont.truetype(str(primary_font_path), 100),
+        "eng_date": ImageFont.truetype(str(primary_font_path), 100),
+        "stop": ImageFont.truetype(str(primary_font_path), 200),
+        "call": ImageFont.truetype(str(primary_font_path), 200),
+    }
+
     try:
-        fonts["price"] = ImageFont.truetype(str(price_font_path), 132)
+        fonts["price"] = ImageFont.truetype(str(primary_font_path), 200)
     except OSError as e:
         raise OSError(
-            f"Failed to load font 'Kalameh.ttf': {e}"
+            f"Failed to load font '{primary_font_path.name}': {e}"
         ) from e
     
     return fonts
@@ -319,30 +314,23 @@ def _draw_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
     today_en = now.strftime("%A")
 
     jalali = jdatetime.datetime.fromgregorian(datetime=now)
-    farsi_date_str = f"{jalali.day} {_farsi_month(jalali.month)} {jalali.year}"
     farsi_weekday = FARSI_WEEKDAYS.get(today_en, "")
+    farsi_date_str = _to_farsi_digits(
+        f"{farsi_weekday}, {jalali.day} {_farsi_month(jalali.month)} {jalali.year}"
+    )
+    eng_date_str = f"{today_en}, {now.day} {now.strftime('%B')} {now.year}"
 
-    # Persian date + weekday in top-right box
-    _draw_centered(
-        draw_ctx, _reshape_rtl(farsi_date_str), fonts["farsi_date"],
-        *DATE_BOX_POSITIONS["farsi_date"], fill="white",
+    draw_ctx.text(
+        DATE_BOX_POSITIONS["farsi_date"],
+        _reshape_rtl(farsi_date_str),
+        font=fonts["farsi_date"],
+        fill="black",
     )
-    _draw_centered(
-        draw_ctx, _reshape_rtl(farsi_weekday), fonts["farsi_weekday"],
-        *DATE_BOX_POSITIONS["farsi_weekday"], fill="white",
-    )
-
-    # English date + weekday in top-left box
-    eng_day = _to_english_digits(str(now.day))
-    eng_year = _to_english_digits(str(now.year))
-    eng_date_str = f"{eng_day} {now.strftime('%b')} {eng_year}"
-    _draw_centered(
-        draw_ctx, eng_date_str, fonts["eng_date"],
-        *DATE_BOX_POSITIONS["eng_date"], fill="white",
-    )
-    _draw_centered(
-        draw_ctx, now.strftime("%A"), fonts["eng_weekday"],
-        *DATE_BOX_POSITIONS["eng_weekday"], fill="white",
+    draw_ctx.text(
+        DATE_BOX_POSITIONS["eng_date"],
+        eng_date_str,
+        font=fonts["eng_date"],
+        fill="black",
     )
 
 

@@ -11,8 +11,8 @@ from typing import Iterable
 def sort_gbp_price_types(price_types):
     """
     Sort price types for GBP/Pound category:
-    1. خرید از حساب (Buy Account)
-    2. خرید نقدی (Buy Cash)
+    1. خرید نقدی (Buy Cash)
+    2. خرید از حساب (Buy Account)
     3. فروش از حساب (Sell Account)
     4. فروش نقدی (Sell Cash)
     5. فروش رسمی (Sell Official)
@@ -36,9 +36,9 @@ def sort_gbp_price_types(price_types):
             return 7
 
         if trade_type == "buy":
-            if "حساب" in name or "account" in name_lower:
-                return 1
             if "نقدی" in name or "نقد" in name or "cash" in name_lower:
+                return 1
+            if "حساب" in name or "account" in name_lower:
                 return 2
             return 10
         if trade_type == "sell":
@@ -61,6 +61,9 @@ def sort_tether_price_types(price_types):
     2. فروش تتر تومان (Sell Tether Toman/IRR)
     3. خرید تتر پوند (Buy Tether GBP)
     4. فروش تتر پوند (Sell Tether GBP)
+    5. خرید/فروش تتر یورو (Buy/Sell Tether EUR)
+    6. خرید/فروش تتر لیر (Buy/Sell Tether TRY)
+    7. خرید/فروش تتر درهم (Buy/Sell Tether AED)
     """
     if not price_types:
         return price_types
@@ -91,18 +94,48 @@ def sort_tether_price_types(price_types):
             or "pound" in target_name
             or "پوند" in target_name
         )
+        has_eur = (
+            any(kw in name_lower for kw in ("یورو", "euro", "eur"))
+            or "eur" in target_code
+            or "euro" in target_name
+            or "یورو" in target_name
+        )
+        has_try = (
+            any(kw in name_lower for kw in ("لیر", "lira", "try"))
+            or "try" in target_code
+            or "lira" in target_name
+            or "لیر" in target_name
+        )
+        has_aed = (
+            any(kw in name_lower for kw in ("درهم", "dirham", "aed"))
+            or "aed" in target_code
+            or "dirham" in target_name
+            or "درهم" in target_name
+        )
 
         if trade_type == "buy":
-            if has_toman:
-                return 1
             if has_gbp:
                 return 3
+            if has_eur:
+                return 5
+            if has_try:
+                return 6
+            if has_aed:
+                return 7
+            if has_toman:
+                return 1
             return 10
         if trade_type == "sell":
-            if has_toman:
-                return 2
             if has_gbp:
                 return 4
+            if has_eur:
+                return 5
+            if has_try:
+                return 6
+            if has_aed:
+                return 7
+            if has_toman:
+                return 2
             return 20
         return 30
 

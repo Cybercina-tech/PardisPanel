@@ -13,10 +13,48 @@ from core.sorting import (
 )
 
 
+def _ensure_tether_column_price_types() -> None:
+    """
+    Keep Tether-relevant cross-currency rates under the Tether category.
+    """
+    tether_category = Category.objects.filter(
+        name__iregex=r"(تتر|tether|usdt)"
+    ).first()
+    if not tether_category:
+        return
+
+    tether_related = PriceType.objects.select_related(
+        "source_currency", "target_currency", "category"
+    ).filter(
+        category__name__iregex=r"(پوند|pound|gbp|تتر|tether|usdt)"
+    )
+
+    ids_to_move = []
+    for pt in tether_related:
+        name_lower = (pt.name or "").lower()
+        source_code = (getattr(pt.source_currency, "code", "") or "").upper()
+        target_code = (getattr(pt.target_currency, "code", "") or "").upper()
+        involves_tether = "USDT" in {source_code, target_code} or any(
+            token in name_lower for token in ("تتر", "tether", "usdt")
+        )
+        is_requested_cross = (
+            source_code in {"TRY", "EUR", "AED"}
+            or target_code in {"TRY", "EUR", "AED"}
+            or any(token in name_lower for token in ("لیر", "یورو", "درهم", "پوند", "lira", "euro", "dirham", "pound", "gbp"))
+        )
+        if (involves_tether or is_requested_cross) and pt.category_id != tether_category.id:
+            ids_to_move.append(pt.id)
+
+    if ids_to_move:
+        PriceType.objects.filter(id__in=ids_to_move).update(category=tether_category)
+
+
 def price_dashboard(request):
     """
     Display a dashboard showing all categories and their price types with latest prices.
     """
+    _ensure_tether_column_price_types()
+
     categories = Category.objects.prefetch_related(
         Prefetch(
             'price_types',
@@ -87,6 +125,7 @@ def price_history(request, price_type_id):
 
 
 def update_category_prices(request, category_id):
+    _ensure_tether_column_price_types()
     category = get_object_or_404(Category, id=category_id)
     price_types = PriceType.objects.filter(category=category)
     

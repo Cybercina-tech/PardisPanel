@@ -18,44 +18,26 @@ IMAGE_ROOT = STATIC_ROOT_DIR / "img"
 FONT_ROOT = Path(getattr(settings, "PRICE_RENDERER_FONT_ROOT", STATIC_ROOT_DIR / "fonts"))
 MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 
-# Changed to use USDT.jpg from media/templates/
-BACKGROUND_RELATIVE_PATH = Path("templates") / "USDT.jpg"
+# Tether banner background for EUR/AED/TRY + USDT/GBP rows
+BACKGROUND_RELATIVE_PATH = Path("templates") / "tether_lir_derham_euro.jpg"
 
 
 OFFER_TEXT_POSITIONS = {
     # Date fields
-    "farsi_date": (1900, 250),
-    "farsi_weekday": (1860, 420),  # Default position
-    "farsi_weekday_tuesday": (615, 435),  # Special position for Tuesday: x=615, y=435
-    "english_date": (410, 250),  # Moved slightly to the left
-    "english_weekday": (580, 420),
-    # Tether banner date fields
-    "tether_date": (1280, 300),  # Date format: "14 dec"
-    "tether_year": (1305, 410),  # Year: "2025"
-    # Updated coordinates for new banner
-    "tether_sell_irr": (540, 1151),  # فروش تتر به تومن
-    "tether_buy_irr": (1750, 1150),    # خرید تتر به تومن
-    "tether_buy_gbp": (690, 1920),    # خرید تتر به پوند
-    "tether_sell_gbp": (1860, 1920),   # فروش تتر به پوند
-    "tether_sell_try": (690, 2140),   # فروش تتر به لیر
-    "tether_sell_aed": (1260, 2140),  # فروش تتر به درهم
-    "tether_sell_eur": (1860, 2140),  # فروش تتر به یورو
-    "working_hours": (1200, 2200),   # ساعات کاری
+    "farsi_date": (2700, 200),
+    "english_date": (280, 220),
+    # Tether banner fields
+    "tether_sell_eur": (1000, 730),   # یورو
+    "tether_sell_aed": (1000, 1250),  # درهم
+    "tether_sell_try": (1000, 1770),  # لیر
+    "tether_buy_gbp": (1000, 2530),   # خرید تتر به پوند
+    "tether_sell_gbp": (1000, 3050),  # فروش تتر به پوند
 }
 
 FONT_FILES = {
-    # Date fonts
-    "farsi_date": ("Morabba.ttf", 200),
-    "farsi_weekday": ("Morabba.ttf", 200),
-    "farsi_weekday_tuesday": ("Morabba.ttf", 200),  # Size 200 for Tuesday
-    "english_date": ("montsrrat.otf", 200),  # Changed to English font
-    "english_weekday": ("montsrrat.otf", 200),  # Changed to English font
-    "english_number": ("montsrrat.otf", 200),  # Size 200
-    "tether_price": ("montsrrat.otf", 200),  # English font for Tether prices
-    "working_hours": ("Morabba.ttf", 200),  # ساعات کاری
-    # Tether banner date fonts (English)
-    "tether_date": ("montsrrat.otf", 110),  # Date format: "14 dec" - size 110
-    "tether_year": ("montsrrat.otf", 145),  # Year: "2025" - size 145
+    "farsi_date": ("YekanBakhEN-Bold.ttf", 100),
+    "english_date": ("YekanBakhEN-Bold.ttf", 100),
+    "tether_price": ("YekanBakhEN-Bold.ttf", 200),
 }
 
 from core.formatting import (
@@ -68,13 +50,11 @@ from core.formatting import (
 )
 
 TETHER_LAYOUT_ORDER = [
-    "tether_buy_irr",
-    "tether_sell_irr",
+    "tether_sell_eur",
+    "tether_sell_aed",
+    "tether_sell_try",
     "tether_buy_gbp",
     "tether_sell_gbp",
-    "tether_sell_try",
-    "tether_sell_aed",
-    "tether_sell_eur",
 ]
 
 
@@ -131,36 +111,72 @@ PRICE_TYPE_ALIASES = {
     },
     "tether_sell_try": {
         "tether_sell_try",
+        "tether_buy_try",
         "tether-sell-try",
+        "tether-buy-try",
         "sell_tether_try",
+        "buy_tether_try",
         "sell-usdt-try",
+        "buy-usdt-try",
         "usdt_sell_try",
+        "usdt_buy_try",
+        "try",
+        "lira",
+        "لیر",
         "sell_tether_lira",
+        "buy_tether_lira",
         "sell_usdt_lira",
+        "buy_usdt_lira",
         "فروش_تتر_لیر",
+        "خرید_تتر_لیر",
         "فروشتترلیر",
+        "خریدتترلیر",
     },
     "tether_sell_aed": {
         "tether_sell_aed",
+        "tether_buy_aed",
         "tether-sell-aed",
+        "tether-buy-aed",
         "sell_tether_aed",
+        "buy_tether_aed",
         "sell-usdt-aed",
+        "buy-usdt-aed",
         "usdt_sell_aed",
+        "usdt_buy_aed",
+        "aed",
+        "dirham",
+        "درهم",
         "sell_tether_dirham",
+        "buy_tether_dirham",
         "sell_usdt_dirham",
+        "buy_usdt_dirham",
         "فروش_تتر_درهم",
+        "خرید_تتر_درهم",
         "فروشتتردرهم",
+        "خریدتتردرهم",
     },
     "tether_sell_eur": {
         "tether_sell_eur",
+        "tether_buy_eur",
         "tether-sell-eur",
+        "tether-buy-eur",
         "sell_tether_eur",
+        "buy_tether_eur",
         "sell-usdt-eur",
+        "buy-usdt-eur",
         "usdt_sell_eur",
+        "usdt_buy_eur",
+        "eur",
+        "euro",
+        "یورو",
         "sell_tether_euro",
+        "buy_tether_euro",
         "sell_usdt_euro",
+        "buy_usdt_euro",
         "فروش_تتر_یورو",
+        "خرید_تتر_یورو",
         "فروشتتریورو",
+        "خریدتتریورو",
     },
 }
 
@@ -204,7 +220,7 @@ def render_tether_board(
     draw_ctx = ImageDraw.Draw(image)
     fonts = _load_fonts()
 
-    # Draw date and year on tether board
+    # Draw Persian/English dates on tether board
     now = timezone.localtime(timestamp) if timestamp else timezone.localtime()
     _draw_tether_dates(draw_ctx, fonts, now)
 
@@ -260,26 +276,26 @@ def _load_fonts():
 
 
 def _draw_tether_dates(draw_ctx: ImageDraw.ImageDraw, fonts, now):
-    """Draw date and year on tether board in English format."""
-    # Date format: "14 dec" (day + abbreviated month)
-    day = now.day
-    month_abbr = now.strftime("%b").lower()  # e.g., "dec"
-    date_text = f"{day} {month_abbr}"
-    
-    draw_ctx.text(
-        OFFER_TEXT_POSITIONS["tether_date"],
-        date_text,
-        font=fonts["tether_date"],
-        fill=(0, 0, 0),  # Black color
+    """Draw dates in required Persian and English formats."""
+    weekday_en = now.strftime("%A")
+    jalali = jdatetime.datetime.fromgregorian(datetime=now)
+    farsi_weekday = FARSI_WEEKDAYS.get(weekday_en, "")
+    farsi_date_text = _to_farsi_digits(
+        f"{farsi_weekday}, {jalali.day} {_farsi_month(jalali.month)} {jalali.year}"
     )
-    
-    # Year format: "2025"
-    year_text = str(now.year)
+    english_date_text = f"{weekday_en}, {now.day} {now.strftime('%B')} {now.year}"
+
     draw_ctx.text(
-        OFFER_TEXT_POSITIONS["tether_year"],
-        year_text,
-        font=fonts["tether_year"],
-        fill=(0, 0, 0),  # Black color
+        OFFER_TEXT_POSITIONS["farsi_date"],
+        farsi_date_text,
+        font=fonts["farsi_date"],
+        fill=(0, 0, 0),
+    )
+    draw_ctx.text(
+        OFFER_TEXT_POSITIONS["english_date"],
+        english_date_text,
+        font=fonts["english_date"],
+        fill=(0, 0, 0),
     )
 
 
@@ -374,12 +390,11 @@ def _fallback_match(price_type) -> Optional[str]:
             return "tether_buy_gbp"
         if trade == "sell":
             return "tether_sell_gbp"
-    # New currencies on tether board are sell-only by business rule.
-    if _target_is_try() and trade == "sell":
+    if _target_is_try() and trade in {"buy", "sell"}:
         return "tether_sell_try"
-    if _target_is_aed() and trade == "sell":
+    if _target_is_aed() and trade in {"buy", "sell"}:
         return "tether_sell_aed"
-    if _target_is_eur() and trade == "sell":
+    if _target_is_eur() and trade in {"buy", "sell"}:
         return "tether_sell_eur"
 
     if trade == "buy":
