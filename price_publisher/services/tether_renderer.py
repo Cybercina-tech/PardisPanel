@@ -20,6 +20,7 @@ MEDIA_ROOT = Path(settings.MEDIA_ROOT)
 
 # Tether banner background for EUR/AED/TRY + USDT/GBP rows
 BACKGROUND_RELATIVE_PATH = Path("templates") / "tether_lir_derham_euro.jpg"
+STATIC_FALLBACK_BACKGROUND = IMAGE_ROOT / "price_theme" / "tether_lir_derham_euro.jpg"
 
 
 OFFER_TEXT_POSITIONS = {
@@ -212,9 +213,12 @@ def render_tether_board(
     # Changed to use media/templates/USDT.jpg
     background_path = MEDIA_ROOT / BACKGROUND_RELATIVE_PATH
     if not background_path.exists():
-        raise FileNotFoundError(
-            f"Tether offer background missing at {background_path}."
-        )
+        if STATIC_FALLBACK_BACKGROUND.exists():
+            background_path = STATIC_FALLBACK_BACKGROUND
+        else:
+            raise FileNotFoundError(
+                f"Tether offer background missing at {background_path} and static fallback {STATIC_FALLBACK_BACKGROUND}."
+            )
 
     image = _open_background(background_path).copy()
     draw_ctx = ImageDraw.Draw(image)

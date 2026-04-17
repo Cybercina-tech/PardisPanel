@@ -37,12 +37,23 @@ def _ensure_tether_column_price_types() -> None:
         involves_tether = "USDT" in {source_code, target_code} or any(
             token in name_lower for token in ("تتر", "tether", "usdt")
         )
+        is_tether_cross = (
+            ("USDT" in {source_code, target_code} and {"TRY", "EUR", "AED", "GBP"} & {source_code, target_code})
+            or any(token in name_lower for token in ("تتر", "tether", "usdt"))
+            and any(token in name_lower for token in ("لیر", "یورو", "درهم", "پوند", "lira", "euro", "dirham", "pound", "gbp"))
+        )
         is_requested_cross = (
             source_code in {"TRY", "EUR", "AED"}
             or target_code in {"TRY", "EUR", "AED"}
-            or any(token in name_lower for token in ("لیر", "یورو", "درهم", "پوند", "lira", "euro", "dirham", "pound", "gbp"))
+            or any(token in name_lower for token in ("لیر", "یورو", "درهم", "lira", "euro", "dirham"))
         )
-        if (involves_tether or is_requested_cross) and pt.category_id != tether_category.id:
+        should_move_to_tether = involves_tether or is_tether_cross or is_requested_cross
+        is_core_pound_row = (
+            source_code == "GBP"
+            and target_code in {"IRT", "IRR"}
+            and any(token in name_lower for token in ("خرید نقدی", "خرید از حساب", "فروش نقدی", "فروش از حساب", "فروش رسمی", "cash", "account", "official"))
+        )
+        if should_move_to_tether and not is_core_pound_row and pt.category_id != tether_category.id:
             ids_to_move.append(pt.id)
 
     if ids_to_move:
