@@ -42,12 +42,7 @@ def _ensure_tether_column_price_types() -> None:
             or any(token in name_lower for token in ("تتر", "tether", "usdt"))
             and any(token in name_lower for token in ("لیر", "یورو", "درهم", "پوند", "lira", "euro", "dirham", "pound", "gbp"))
         )
-        is_requested_cross = (
-            source_code in {"TRY", "EUR", "AED"}
-            or target_code in {"TRY", "EUR", "AED"}
-            or any(token in name_lower for token in ("لیر", "یورو", "درهم", "lira", "euro", "dirham"))
-        )
-        should_move_to_tether = involves_tether or is_tether_cross or is_requested_cross
+        should_move_to_tether = involves_tether or is_tether_cross
         is_core_pound_row = (
             source_code == "GBP"
             and target_code in {"IRT", "IRR"}
