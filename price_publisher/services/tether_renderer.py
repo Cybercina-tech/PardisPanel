@@ -356,7 +356,8 @@ def _match_price_key(price_type) -> Optional[str]:
         if not normalized:
             continue
         for key, aliases in PRICE_TYPE_ALIASES.items():
-            if normalized in aliases:
+            normalized_aliases = {_normalize(alias) for alias in aliases}
+            if normalized in normalized_aliases:
                 return key
     return None
 
@@ -366,23 +367,24 @@ def _fallback_match(price_type) -> Optional[str]:
     source = (getattr(price_type.source_currency, "code", "") or "").lower()
     target = (getattr(price_type.target_currency, "code", "") or "").lower()
     name = (getattr(price_type, "name", "") or "").lower()
+    normalized_name = _normalize(name)
 
     def _target_is_irr() -> bool:
         return any(
             token in target for token in ("irr", "irt", "rial", "toman")
-        ) or any(token in name for token in ("تومان", "تومن"))
+        ) or any(token in normalized_name for token in ("تومان", "تومن"))
 
     def _target_is_gbp() -> bool:
-        return "gbp" in target or "pound" in target or "پوند" in name
+        return "gbp" in target or "pound" in target or "پوند" in normalized_name
 
     def _target_is_try() -> bool:
-        return "try" in target or "lira" in target or "لیر" in name
+        return "try" in target or "lira" in target or "لیر" in normalized_name
 
     def _target_is_aed() -> bool:
-        return "aed" in target or "dirham" in target or "درهم" in name
+        return "aed" in target or "dirham" in target or "درهم" in normalized_name
 
     def _target_is_eur() -> bool:
-        return "eur" in target or "euro" in target or "یورو" in name
+        return "eur" in target or "euro" in target or "یورو" in normalized_name
 
     if _target_is_irr():
         if trade == "buy":
@@ -402,17 +404,17 @@ def _fallback_match(price_type) -> Optional[str]:
         return "tether_sell_eur"
 
     if trade == "buy":
-        if "gbp" in name or "پوند" in name:
+        if "gbp" in normalized_name or "پوند" in normalized_name:
             return "tether_buy_gbp"
         return "tether_buy_irr"
     if trade == "sell":
-        if "gbp" in name or "پوند" in name:
+        if "gbp" in normalized_name or "پوند" in normalized_name:
             return "tether_sell_gbp"
-        if "try" in name or "lira" in name or "لیر" in name:
+        if "try" in normalized_name or "lira" in normalized_name or "لیر" in normalized_name:
             return "tether_sell_try"
-        if "aed" in name or "dirham" in name or "درهم" in name:
+        if "aed" in normalized_name or "dirham" in normalized_name or "درهم" in normalized_name:
             return "tether_sell_aed"
-        if "eur" in name or "euro" in name or "یورو" in name:
+        if "eur" in normalized_name or "euro" in normalized_name or "یورو" in normalized_name:
             return "tether_sell_eur"
         return "tether_sell_irr"
 
@@ -441,6 +443,10 @@ def _collect_identifiers(price_type) -> Tuple[str, ...]:
 def _normalize(value: str) -> str:
     return (
         value.strip()
+        .replace("ي", "ی")
+        .replace("ك", "ک")
+        .replace("ة", "ه")
+        .replace("‌", "")
         .replace(" ", "_")
         .replace("-", "_")
         .replace("/", "_")
