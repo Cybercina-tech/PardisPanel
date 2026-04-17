@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
+from django.db.utils import IntegrityError
 from django.db.models import Prefetch
 from category.models import PriceType, Category
 from .models import PriceHistory
@@ -51,8 +52,35 @@ def _ensure_tether_column_price_types() -> None:
         if should_move_to_tether and not is_core_pound_row and pt.category_id != tether_category.id:
             ids_to_move.append(pt.id)
 
-    if ids_to_move:
-        PriceType.objects.filter(id__in=ids_to_move).update(category=tether_category)
+    if not ids_to_move:
+        return
+
+    for pt in PriceType.objects.filter(id__in=ids_to_move).select_related(
+        "source_currency", "target_currency", "category"
+    ):
+        duplicate = PriceType.objects.filter(
+            category=tether_category,
+            name=pt.name,
+        ).exclude(pk=pt.pk).first()
+
+        if duplicate:
+            # Merge histories into existing row and remove duplicate source row.
+            pt.price_histories.update(price_type=duplicate)
+            pt.delete()
+            continue
+
+        try:
+            pt.category = tether_category
+            pt.save(update_fields=["category"])
+        except IntegrityError:
+            # Safety fallback in case of race conditions or unobserved duplicates.
+            existing = PriceType.objects.filter(
+                category=tether_category,
+                name=pt.name,
+            ).exclude(pk=pt.pk).first()
+            if existing:
+                pt.price_histories.update(price_type=existing)
+                pt.delete()
 
 
 def price_dashboard(request):
