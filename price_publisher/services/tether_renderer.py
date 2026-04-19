@@ -36,8 +36,8 @@ OFFER_TEXT_POSITIONS = {
 }
 
 FONT_FILES = {
-    "farsi_date": ("YekanBakhEN-Bold.ttf", 100),
-    "english_date": ("YekanBakhEN-Bold.ttf", 100),
+    "farsi_date": ("YekanBakhEN-Bold.ttf", 110),
+    "english_date": ("YekanBakhEN-Bold.ttf", 110),
     "tether_price": ("YekanBakhEN-Bold.ttf", 200),
 }
 
@@ -97,7 +97,9 @@ PRICE_TYPE_ALIASES = {
         "buy_tether_pound",
         "buy_usdt_pound",
         "خرید_تتر_پوند",
+        "خرید_تتر_به_پوند",
         "خریدتترپوند",
+        "خریدتتربهپوند",
     },
     "tether_sell_gbp": {
         "tether_sell_gbp",
@@ -108,7 +110,9 @@ PRICE_TYPE_ALIASES = {
         "sell_tether_pound",
         "sell_usdt_pound",
         "فروش_تتر_پوند",
+        "فروش_تتر_به_پوند",
         "فروشتترپوند",
+        "فروشتتربهپوند",
     },
     "tether_sell_try": {
         "tether_sell_try",
@@ -386,8 +390,17 @@ def _fallback_match(price_type) -> Optional[str]:
             return False
         return True
 
-    def _target_is_gbp() -> bool:
-        return "gbp" in target or "pound" in target or "پوند" in normalized_name
+    def _involves_usdt() -> bool:
+        return (
+            "usdt" in source
+            or "usdt" in target
+            or any(t in normalized_name for t in ("تتر", "tether", "usdt"))
+        )
+
+    def _is_usdt_gbp_pair() -> bool:
+        """USDT/GBP cross only — not GBP/IRT pound rows whose name contains 'پوند'."""
+        codes = {source, target}
+        return "usdt" in codes and "gbp" in codes
 
     def _target_is_try() -> bool:
         return (
@@ -415,7 +428,7 @@ def _fallback_match(price_type) -> Optional[str]:
 
     # Cross-rates to toman/rial must be checked BEFORE generic IRR, otherwise
     # e.g. EUR->IRT incorrectly maps to tether_buy_irr.
-    if _target_is_gbp():
+    if _is_usdt_gbp_pair():
         if trade == "buy":
             return "tether_buy_gbp"
         if trade == "sell":
@@ -434,11 +447,11 @@ def _fallback_match(price_type) -> Optional[str]:
             return "tether_sell_irr"
 
     if trade == "buy":
-        if "gbp" in normalized_name or "پوند" in normalized_name:
+        if _involves_usdt() and ("gbp" in normalized_name or "پوند" in normalized_name):
             return "tether_buy_gbp"
         return "tether_buy_irr"
     if trade == "sell":
-        if "gbp" in normalized_name or "پوند" in normalized_name:
+        if _involves_usdt() and ("gbp" in normalized_name or "پوند" in normalized_name):
             return "tether_sell_gbp"
         if "try" in normalized_name or "lira" in normalized_name or "لیر" in normalized_name:
             return "tether_sell_try"

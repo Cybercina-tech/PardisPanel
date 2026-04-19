@@ -294,8 +294,8 @@ def _load_fonts():
         )
 
     fonts = {
-        "farsi_date": ImageFont.truetype(str(primary_font_path), 100),
-        "eng_date": ImageFont.truetype(str(primary_font_path), 100),
+        "farsi_date": ImageFont.truetype(str(primary_font_path), 110),
+        "eng_date": ImageFont.truetype(str(primary_font_path), 110),
         "stop": ImageFont.truetype(str(primary_font_path), 200),
         "call": ImageFont.truetype(str(primary_font_path), 200),
     }
