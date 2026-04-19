@@ -5,7 +5,52 @@ finalize/views, and change_price/templatetags.
 """
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Iterable, Sequence
+
+
+def _normalize_price_type_label(value: str) -> str:
+    """Same rules as special_offer normalize_identifier (avoid cross-app import cycles)."""
+    return (
+        (value or "")
+        .strip()
+        .replace("\u200c", "")
+        .replace(" ", "")
+        .replace("-", "")
+        .replace("_", "")
+        .lower()
+    )
+
+
+# Tether banner rows (top → bottom) — must match tether_renderer.TETHER_LAYOUT_ORDER semantics.
+TETHER_BANNER_UPDATE_NAME_ORDER: Sequence[str] = (
+    "یورو",
+    "درهم",
+    "لیر",
+    "خرید تتر به پوند",
+    "فروش تتر به پوند",
+)
+
+
+def tether_banner_price_types_for_update(price_types) -> list:
+    """
+    Only the five rows shown on the tether EUR/AED/TRY + GBP banner.
+    Excludes IRR toman rows and stray GBP cash rows under tether category.
+    """
+    allowed = {_normalize_price_type_label(n) for n in TETHER_BANNER_UPDATE_NAME_ORDER}
+    order_map = {
+        _normalize_price_type_label(n): i for i, n in enumerate(TETHER_BANNER_UPDATE_NAME_ORDER)
+    }
+    filtered = [
+        pt
+        for pt in price_types
+        if _normalize_price_type_label(getattr(pt, "name", "") or "") in allowed
+    ]
+    filtered.sort(
+        key=lambda pt: order_map.get(
+            _normalize_price_type_label(getattr(pt, "name", "") or ""), 99
+        )
+    )
+    return filtered
 
 
 def sort_gbp_price_types(price_types):

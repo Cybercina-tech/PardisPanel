@@ -28,8 +28,7 @@
                     <h6 class="text-gold mb-3">
                         <i class="fas fa-dollar-sign me-2"></i>Price Types
                     </h6>
-                    {% load change_price_tags %}
-                    {% for price_type in price_types|sort_price_types_by_category:category.name %}
+                    {% for price_type in price_types %}
                     <div class="price-card mb-4 p-3 bg-black-secondary border-light-gold rounded">
                         <div class="price-header mb-3">
                             <div class="d-flex justify-content-between align-items-center">

@@ -4,13 +4,16 @@ from category.models import Category, PriceType
 
 
 class CategoryPriceUpdateForm(forms.Form):
-    def __init__(self, category, *args, **kwargs):
+    def __init__(self, category, *args, price_types=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.category = category
-        
-        # Get all price types for this category
-        price_types = PriceType.objects.filter(category=category)
-        
+
+        # Optional explicit list/queryset (e.g. tether banner subset in correct order).
+        if price_types is not None:
+            price_types = list(price_types)
+        else:
+            price_types = list(PriceType.objects.filter(category=category))
+
         # Create fields for each price type
         for price_type in price_types:
             self.fields[f'price_{price_type.id}'] = forms.DecimalField(

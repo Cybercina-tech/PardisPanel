@@ -3,15 +3,91 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.db.models import Prefetch
-from category.models import PriceType, Category
+from category.models import PriceType, Category, Currency
 from .models import PriceHistory
 from .forms import PriceUpdateForm, CategoryPriceUpdateForm
 from setting.utils import log_event
 from core.sorting import (
     sort_gbp_price_types,
-    sort_tether_price_types,
     sort_categories,
+    sort_price_types_by_category,
+    tether_banner_price_types_for_update,
 )
+
+
+def _is_tether_category(category) -> bool:
+    name = (category.name or "").lower()
+    return "تتر" in (category.name or "") or "tether" in name or "usdt" in name
+
+
+def _ensure_tether_banner_rows(category) -> None:
+    """Ensure DB rows exist for the five tether-banner fields (idempotent)."""
+    if not _is_tether_category(category):
+        return
+
+    usdt = Currency.objects.filter(code__iexact="USDT").first()
+    gbp = Currency.objects.filter(code__iexact="GBP").first()
+    eur = Currency.objects.filter(code__iexact="EUR").first()
+    aed = Currency.objects.filter(code__iexact="AED").first()
+    try_ccy = Currency.objects.filter(code__iexact="TRY").first()
+    irt = Currency.objects.filter(code__iexact="IRT").first() or Currency.objects.filter(
+        code__iexact="IRR"
+    ).first()
+
+    if usdt and gbp:
+        PriceType.objects.get_or_create(
+            category=category,
+            name="خرید تتر به پوند",
+            defaults={
+                "trade_type": "buy",
+                "source_currency": usdt,
+                "target_currency": gbp,
+                "description": "",
+            },
+        )
+        PriceType.objects.get_or_create(
+            category=category,
+            name="فروش تتر به پوند",
+            defaults={
+                "trade_type": "sell",
+                "source_currency": usdt,
+                "target_currency": gbp,
+                "description": "",
+            },
+        )
+    if eur and irt:
+        PriceType.objects.get_or_create(
+            category=category,
+            name="یورو",
+            defaults={
+                "trade_type": "buy",
+                "source_currency": eur,
+                "target_currency": irt,
+                "description": "",
+            },
+        )
+    if aed and irt:
+        PriceType.objects.get_or_create(
+            category=category,
+            name="درهم",
+            defaults={
+                "trade_type": "buy",
+                "source_currency": aed,
+                "target_currency": irt,
+                "description": "",
+            },
+        )
+    if try_ccy and irt:
+        PriceType.objects.get_or_create(
+            category=category,
+            name="لیر",
+            defaults={
+                "trade_type": "buy",
+                "source_currency": try_ccy,
+                "target_currency": irt,
+                "description": "",
+            },
+        )
 
 
 def _ensure_tether_column_price_types() -> None:
@@ -161,15 +237,22 @@ def price_history(request, price_type_id):
 def update_category_prices(request, category_id):
     _ensure_tether_column_price_types()
     category = get_object_or_404(Category, id=category_id)
-    price_types = PriceType.objects.filter(category=category)
-    
-    # Sort price types based on category type
+    price_types_qs = PriceType.objects.filter(category=category)
+
+    # Order / subset for display (must match banner + form fields).
     category_name_lower = category.name.lower()
-    if 'پوند' in category.name or 'pound' in category_name_lower or 'gbp' in category_name_lower:
-        price_types = sort_gbp_price_types(price_types)
-    elif 'تتر' in category.name or 'tether' in category_name_lower or 'usdt' in category_name_lower:
-        price_types = sort_tether_price_types(price_types)
-    
+    if "پوند" in category.name or "pound" in category_name_lower or "gbp" in category_name_lower:
+        price_types = sort_gbp_price_types(price_types_qs)
+    elif _is_tether_category(category):
+        _ensure_tether_banner_rows(category)
+        price_types = tether_banner_price_types_for_update(
+            PriceType.objects.filter(category=category)
+        )
+    else:
+        price_types = sort_price_types_by_category(
+            list(price_types_qs), category.name
+        )
+
     # Get latest prices for all price types
     latest_prices = {
         pt.id: PriceHistory.objects.filter(price_type=pt).first()
@@ -177,7 +260,7 @@ def update_category_prices(request, category_id):
     }
     
     if request.method == 'POST':
-        form = CategoryPriceUpdateForm(category, request.POST)
+        form = CategoryPriceUpdateForm(category, request.POST, price_types=price_types)
         if form.is_valid():
             with transaction.atomic():
                 notes = form.cleaned_data.pop('notes')
@@ -224,7 +307,7 @@ def update_category_prices(request, category_id):
             if latest:
                 initial_data[f'price_{price_type.id}'] = latest.price
         
-        form = CategoryPriceUpdateForm(category, initial=initial_data)
+        form = CategoryPriceUpdateForm(category, initial=initial_data, price_types=price_types)
     
     context = {
         'form': form,
