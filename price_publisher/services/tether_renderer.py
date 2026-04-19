@@ -369,39 +369,69 @@ def _fallback_match(price_type) -> Optional[str]:
     name = (getattr(price_type, "name", "") or "").lower()
     normalized_name = _normalize(name)
 
-    def _target_is_irr() -> bool:
+    def _has_irr_side() -> bool:
         return any(
             token in target for token in ("irr", "irt", "rial", "toman")
-        ) or any(token in normalized_name for token in ("تومان", "تومن"))
+        ) or any(token in source for token in ("irr", "irt", "rial", "toman"))
+
+    def _is_tether_irr_pair() -> bool:
+        """USDT <-> IRR/IRT (classic tether/toman rows), not EUR/AED/TRY cross to toman."""
+        if not _has_irr_side():
+            return False
+        if "usdt" not in source and "usdt" not in target:
+            return False
+        if any(c in {source, target} for c in ("eur", "try", "aed")):
+            return False
+        if any(token in normalized_name for token in ("یورو", "euro", "eur", "لیر", "lira", "try", "درهم", "dirham", "aed")):
+            return False
+        return True
 
     def _target_is_gbp() -> bool:
         return "gbp" in target or "pound" in target or "پوند" in normalized_name
 
     def _target_is_try() -> bool:
-        return "try" in target or "lira" in target or "لیر" in normalized_name
+        return (
+            "try" in source
+            or "try" in target
+            or "lira" in target
+            or "لیر" in normalized_name
+        )
 
     def _target_is_aed() -> bool:
-        return "aed" in target or "dirham" in target or "درهم" in normalized_name
+        return (
+            "aed" in source
+            or "aed" in target
+            or "dirham" in target
+            or "درهم" in normalized_name
+        )
 
     def _target_is_eur() -> bool:
-        return "eur" in target or "euro" in target or "یورو" in normalized_name
+        return (
+            "eur" in source
+            or "eur" in target
+            or "euro" in target
+            or "یورو" in normalized_name
+        )
 
-    if _target_is_irr():
-        if trade == "buy":
-            return "tether_buy_irr"
-        if trade == "sell":
-            return "tether_sell_irr"
+    # Cross-rates to toman/rial must be checked BEFORE generic IRR, otherwise
+    # e.g. EUR->IRT incorrectly maps to tether_buy_irr.
     if _target_is_gbp():
         if trade == "buy":
             return "tether_buy_gbp"
         if trade == "sell":
             return "tether_sell_gbp"
-    if _target_is_try() and trade in {"buy", "sell"}:
-        return "tether_sell_try"
-    if _target_is_aed() and trade in {"buy", "sell"}:
-        return "tether_sell_aed"
     if _target_is_eur() and trade in {"buy", "sell"}:
         return "tether_sell_eur"
+    if _target_is_aed() and trade in {"buy", "sell"}:
+        return "tether_sell_aed"
+    if _target_is_try() and trade in {"buy", "sell"}:
+        return "tether_sell_try"
+
+    if _is_tether_irr_pair():
+        if trade == "buy":
+            return "tether_buy_irr"
+        if trade == "sell":
+            return "tether_sell_irr"
 
     if trade == "buy":
         if "gbp" in normalized_name or "پوند" in normalized_name:
