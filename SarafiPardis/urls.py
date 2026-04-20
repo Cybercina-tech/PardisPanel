@@ -47,4 +47,7 @@ urlpatterns = [
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# Ensure static assets are served even when infra static mapping is missing.
+# This prevents stylesheet/script links from resolving to HTML 404 pages.
+urlpatterns += static(settings.STATIC_URL, document_root=settings.BASE_DIR / "static")

@@ -57,7 +57,7 @@
                             <h4 class="card-title mb-1">
                                 {% if avg_24h_change != 0 %}
                                     <span class="{% if avg_24h_change > 0 %}text-success{% elif avg_24h_change < 0 %}text-danger{% endif %}">
-                                        {{ avg_24h_change|smart_number }}%
+                                        {{ avg_24h_change|floatformat:1 }}%
                                     </span>
                                 {% else %}
                                     <span class="text-white-50">0%</span>
