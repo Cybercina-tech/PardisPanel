@@ -12,17 +12,60 @@ from core.sorting import (
     sort_categories,
     sort_price_types_by_category,
     tether_banner_price_types_for_update,
+    is_tether_category,
 )
 
 
-def _is_tether_category(category) -> bool:
-    name = (category.name or "").lower()
-    return "تتر" in (category.name or "") or "tether" in name or "usdt" in name
+def _rehome_pure_pound_rows_from_tether() -> None:
+    """
+    Move GBP↔IRT/IRR rows that do not mention tether/USDT out of the Tether category
+    into the Pound category (e.g. 'خرید پوند نقدی' mis-filed under تتر).
+    """
+    tether_cat = (
+        Category.objects.filter(name__iregex=r"(تتر|tether|usdt)").order_by("id").first()
+    )
+    pound_cat = (
+        Category.objects.filter(name__iregex=r"(پوند|pound|gbp)").order_by("id").first()
+    )
+    if not tether_cat or not pound_cat or tether_cat.id == pound_cat.id:
+        return
+
+    for pt in list(
+        PriceType.objects.select_related("source_currency", "target_currency").filter(
+            category=tether_cat
+        )
+    ):
+        src = (getattr(pt.source_currency, "code", "") or "").upper()
+        tgt = (getattr(pt.target_currency, "code", "") or "").upper()
+        pair = {src, tgt}
+        if pair not in ({"GBP", "IRT"}, {"GBP", "IRR"}):
+            continue
+        name_l = (pt.name or "").lower()
+        if any(t in name_l for t in ("تتر", "tether", "usdt")):
+            continue
+
+        duplicate = PriceType.objects.filter(
+            category=pound_cat, name=pt.name
+        ).exclude(pk=pt.pk).first()
+        if duplicate:
+            pt.price_histories.update(price_type=duplicate)
+            pt.delete()
+            continue
+        try:
+            pt.category = pound_cat
+            pt.save(update_fields=["category"])
+        except IntegrityError:
+            existing = PriceType.objects.filter(
+                category=pound_cat, name=pt.name
+            ).first()
+            if existing:
+                pt.price_histories.update(price_type=existing)
+                pt.delete()
 
 
 def _ensure_tether_banner_rows(category) -> None:
     """Ensure DB rows exist for the five tether-banner fields (idempotent)."""
-    if not _is_tether_category(category):
+    if not is_tether_category(category):
         return
 
     usdt = Currency.objects.filter(code__iexact="USDT").first()
@@ -89,6 +132,27 @@ def _ensure_tether_banner_rows(category) -> None:
             },
         )
 
+    # Fix wrong FKs (e.g. GBP/GBP) so finalize table and renderer see correct pairs.
+    if aed and irt:
+        PriceType.objects.filter(category=category, name="درهم").update(
+            source_currency=aed, target_currency=irt
+        )
+    if try_ccy and irt:
+        PriceType.objects.filter(category=category, name="لیر").update(
+            source_currency=try_ccy, target_currency=irt
+        )
+    if eur and irt:
+        PriceType.objects.filter(category=category, name="یورو").update(
+            source_currency=eur, target_currency=irt
+        )
+    if usdt and gbp:
+        PriceType.objects.filter(category=category, name="خرید تتر به پوند").update(
+            source_currency=usdt, target_currency=gbp
+        )
+        PriceType.objects.filter(category=category, name="فروش تتر به پوند").update(
+            source_currency=usdt, target_currency=gbp
+        )
+
 
 def _ensure_tether_column_price_types() -> None:
     """
@@ -99,6 +163,8 @@ def _ensure_tether_column_price_types() -> None:
     ).first()
     if not tether_category:
         return
+
+    _rehome_pure_pound_rows_from_tether()
 
     tether_related = PriceType.objects.select_related(
         "source_currency", "target_currency", "category"
@@ -243,7 +309,7 @@ def update_category_prices(request, category_id):
     category_name_lower = category.name.lower()
     if "پوند" in category.name or "pound" in category_name_lower or "gbp" in category_name_lower:
         price_types = sort_gbp_price_types(price_types_qs)
-    elif _is_tether_category(category):
+    elif is_tether_category(category):
         _ensure_tether_banner_rows(category)
         price_types = tether_banner_price_types_for_update(
             PriceType.objects.filter(category=category)

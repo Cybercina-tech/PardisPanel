@@ -31,6 +31,26 @@ TETHER_BANNER_UPDATE_NAME_ORDER: Sequence[str] = (
 )
 
 
+def is_tether_category(category) -> bool:
+    cname = getattr(category, "name", None) or ""
+    lower = cname.lower()
+    return "تتر" in cname or "tether" in lower or "usdt" in lower
+
+
+def price_types_for_finalize(category, price_types) -> list:
+    """
+    Price types shown on finalize dashboard and passed to image publishers.
+    Tether: only the five banner rows (excludes mis-filed GBP cash rows, etc.).
+    """
+    items = list(price_types)
+    lower = (category.name or "").lower()
+    if "پوند" in category.name or "pound" in lower or "gbp" in lower:
+        return list(sort_gbp_price_types(items))
+    if is_tether_category(category):
+        return tether_banner_price_types_for_update(items)
+    return sort_price_types_by_category(items, category.name)
+
+
 def tether_banner_price_types_for_update(price_types) -> list:
     """
     Only the five rows shown on the tether EUR/AED/TRY + GBP banner.

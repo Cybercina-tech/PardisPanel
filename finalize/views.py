@@ -18,7 +18,15 @@ from price_publisher.services.publisher import (
 from .models import Finalization, FinalizedPriceHistory, SpecialPriceFinalization
 from .services import ExternalAPIService
 from setting.utils import log_finalize_event, log_telegram_event
-from core.sorting import sort_gbp_price_types, sort_categories
+from core.sorting import (
+    sort_categories,
+    price_types_for_finalize,
+    is_tether_category,
+)
+from change_price.views import (
+    _ensure_tether_banner_rows,
+    _ensure_tether_column_price_types,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +39,8 @@ def finalize_dashboard(request):
     - All categories with links to their update pages
     - Special prices that are pending finalization
     """
+    _ensure_tether_column_price_types()
+
     # Get all categories with their price types
     categories = Category.objects.prefetch_related(
         Prefetch(
@@ -61,13 +71,11 @@ def finalize_dashboard(request):
         else:
             finalized_history_ids = set()
         
-        # Get all price types for this category
-        price_types = category.price_types.all()
-        
-        # Sort price types for GBP/Pound category
-        category_name_lower = category.name.lower()
-        if 'پوند' in category.name or 'pound' in category_name_lower or 'gbp' in category_name_lower:
-            price_types = sort_gbp_price_types(price_types)
+        if is_tether_category(category):
+            _ensure_tether_banner_rows(category)
+
+        price_types = price_types_for_finalize(category, category.price_types.all())
+
         category_pending = []
         
         for price_type in price_types:
@@ -148,7 +156,11 @@ def finalize_category(request, category_id):
             return redirect('finalize:dashboard')
         
         channel = get_object_or_404(TelegramChannel, id=channel_id, is_active=True)
-        
+
+        _ensure_tether_column_price_types()
+        if is_tether_category(category):
+            _ensure_tether_banner_rows(category)
+
         # Get latest finalization for this category to determine which prices are pending
         latest_finalization = Finalization.objects.filter(
             category=category
@@ -167,17 +179,14 @@ def finalize_category(request, category_id):
             finalized_history_ids = set()
             finalized_price_map = {}
         
-        # Get all price types for this category
-        price_types = PriceType.objects.filter(category=category).select_related(
-            'source_currency', 'target_currency'
+        price_types = price_types_for_finalize(
+            category,
+            PriceType.objects.filter(category=category).select_related(
+                "source_currency", "target_currency"
+            ),
         )
-        
-        # Sort price types for GBP/Pound category
-        category_name_lower = category.name.lower()
-        if 'پوند' in category.name or 'pound' in category_name_lower or 'gbp' in category_name_lower:
-            price_types = sort_gbp_price_types(price_types)
-        
-        # Build price_items: include ALL price types in the category
+
+        # Build price_items: only rows used for this category's board (tether = five slots)
         # For each price_type:
         # - If it has a pending (new) price, use that
         # - Otherwise, use the last finalized price from the latest finalization
@@ -411,7 +420,10 @@ def finalize_category(request, category_id):
         return redirect('finalize:dashboard')
     
     # GET request - show confirmation form
-    # Get latest finalization to determine pending prices
+    _ensure_tether_column_price_types()
+    if is_tether_category(category):
+        _ensure_tether_banner_rows(category)
+
     latest_finalization = Finalization.objects.filter(
         category=category
     ).order_by('-finalized_at').first()
@@ -423,15 +435,12 @@ def finalize_category(request, category_id):
     else:
         finalized_history_ids = set()
     
-    # Get all price types and their pending prices
-    price_types = PriceType.objects.filter(category=category).select_related(
-        'source_currency', 'target_currency'
+    price_types = price_types_for_finalize(
+        category,
+        PriceType.objects.filter(category=category).select_related(
+            "source_currency", "target_currency"
+        ),
     )
-    
-    # Sort price types for GBP/Pound category
-    category_name_lower = category.name.lower()
-    if 'پوند' in category.name or 'pound' in category_name_lower or 'gbp' in category_name_lower:
-        price_types = sort_gbp_price_types(price_types)
     
     pending_prices = []
     for price_type in price_types:
@@ -638,6 +647,10 @@ def download_instagram_banner(request, category_id, banner_type):
 
     category = get_object_or_404(Category, id=category_id)
 
+    _ensure_tether_column_price_types()
+    if is_tether_category(category):
+        _ensure_tether_banner_rows(category)
+
     latest_finalization = Finalization.objects.filter(
         category=category
     ).order_by("-finalized_at").first()
@@ -654,12 +667,12 @@ def download_instagram_banner(request, category_id, banner_type):
         finalized_history_ids = set()
         finalized_price_map = {}
 
-    price_types = PriceType.objects.filter(category=category).select_related(
-        "source_currency", "target_currency"
+    price_types = price_types_for_finalize(
+        category,
+        PriceType.objects.filter(category=category).select_related(
+            "source_currency", "target_currency"
+        ),
     )
-    category_name_lower = category.name.lower()
-    if "پوند" in category.name or "pound" in category_name_lower or "gbp" in category_name_lower:
-        price_types = sort_gbp_price_types(price_types)
 
     price_items = []
     for price_type in price_types:
