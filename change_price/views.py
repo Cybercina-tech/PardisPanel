@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.db.models import Prefetch
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 from category.models import PriceType, Category, Currency
 from .models import PriceHistory
 from .forms import PriceUpdateForm, CategoryPriceUpdateForm
@@ -437,3 +439,33 @@ def update_category_prices(request, category_id):
         'latest_prices': latest_prices
     }
     return render(request, 'change_price/update_category_prices.html', context)
+
+
+@require_GET
+def live_prices_json(request):
+    price_types = PriceType.objects.select_related(
+        "category", "source_currency", "target_currency"
+    ).prefetch_related("price_histories")
+
+    prices = []
+    for price_type in price_types:
+        latest_history = price_type.price_histories.first()
+        prices.append(
+            {
+                "category_name": price_type.category.slug,
+                "price_type_name": price_type.slug,
+                "trade_type": price_type.trade_type,
+                "source_currency": price_type.source_currency.code,
+                "target_currency": price_type.target_currency.code,
+                "latest_price": (
+                    str(latest_history.price) if latest_history is not None else None
+                ),
+                "updated_at": (
+                    latest_history.updated_at.isoformat()
+                    if latest_history is not None
+                    else None
+                ),
+            }
+        )
+
+    return JsonResponse({"count": len(prices), "prices": prices})
