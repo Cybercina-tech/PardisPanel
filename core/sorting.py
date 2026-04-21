@@ -34,7 +34,12 @@ TETHER_BANNER_UPDATE_NAME_ORDER: Sequence[str] = (
 def is_tether_category(category) -> bool:
     cname = getattr(category, "name", None) or ""
     lower = cname.lower()
-    return "تتر" in cname or "tether" in lower or "usdt" in lower
+    return (
+        "تتر" in cname
+        or "tether" in lower
+        or "usdt" in lower
+        or "سایر ارز" in cname
+    )
 
 
 def price_types_for_finalize(category, price_types) -> list:
@@ -213,7 +218,7 @@ def sort_price_types_by_category(price_types, category_name: str):
         return price_types
 
     lower = category_name.lower()
-    if any(kw in category_name for kw in ("تتر",)) or any(
+    if any(kw in category_name for kw in ("تتر", "سایر ارز")) or any(
         kw in lower for kw in ("tether", "usdt")
     ):
         return sort_tether_price_types(price_types)
@@ -231,7 +236,7 @@ def sort_categories(categories: Iterable) -> list:
         name = (cat.name or "").lower()
         if "پوند" in cat.name or "pound" in name or "gbp" in name:
             return (0, name)
-        if "تتر" in cat.name or "tether" in name or "usdt" in name:
+        if "تتر" in cat.name or "سایر ارز" in cat.name or "tether" in name or "usdt" in name:
             return (1, name)
         return (2, name)
 

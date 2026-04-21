@@ -193,6 +193,7 @@ def supports_tether_category(category) -> bool:
         "tether",
         "usdt",
         "تتر",
+        "سایر ارز",
         "try",
         "lira",
         "لیر",

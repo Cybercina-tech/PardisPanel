@@ -1,7 +1,7 @@
 """Templates for Telegram captions and inline keyboards matching legacy bot output."""
 
 PARDIS_PRICE_CAPTION = (
-    "💷 خرید فروش تتر و پوند نقدی و حسابی\n"
+    "💷 خرید فروش تتر | لیر | یورو | درهم\n"
     "🔺🔺🔺🔺🔺🔺🔺🔺🔺\n"
     "Mr. Mahdi    📞  +447533544249\n\n"
     "Ms. Sogand    📞  +447399990340\n\n"

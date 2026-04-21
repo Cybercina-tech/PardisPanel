@@ -107,7 +107,7 @@ N129QL"""
 # Legacy Telegram message metadata (copied from admin_finalize.py)
 # ----------------------------------------------------------------------
 LEGACY_FINAL_MESSAGE = (
-    "💷 <b>خرید فروش تتر و پوند نقدی و حسابی</b>\n\n"
+    "💷 <b>خرید فروش تتر | لیر | یورو | درهم</b>\n\n"
     "📱 <a href=\"https://wa.me/447533544249\">+447533544249</a>\n\n"
     "📍 <b>آدرس دفتر:</b>\n"
     "<a href=\"https://maps.app.goo.gl/d3sorvbK9VRFvSBaA\">Office A\n"
@@ -617,7 +617,7 @@ class PricePublisherService:
             f"🇮🇷 {farsi_weekday} {farsi_date}\n\n"
             f"🇬🇧 {english_weekday}, {english_date}\n\n"
             f"━━━━━━\n\n"
-            "💷 خرید فروش تتر\n\n"
+            "💷 خرید فروش تتر | لیر | یورو | درهم\n\n"
             "━━━━━━━━━━━\n"
             "💬 کارشناسان ما همواره پاسخ‌گوی شما هستند.\n"
             "📞 تماس با ما:\n"
@@ -647,7 +647,7 @@ class PricePublisherService:
         office_address = "Office A, 708A High Road, North Finchley, N12 9QL"
         
         caption = (
-            "💷 خرید و فروش پوند (GBP) | لیر | درهم\n"
+            "💷 خرید و فروش پوند (GBP)\n"
             "💰 نقدی و حسابی\n\n"
             "━━━━━━━━━━━\n"
             "💬 کارشناسان ما همواره پاسخ‌گوی شما هستند.\n"

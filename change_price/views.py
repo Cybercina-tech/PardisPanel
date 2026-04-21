@@ -22,7 +22,11 @@ def _rehome_pure_pound_rows_from_tether() -> None:
     into the Pound category (e.g. 'خرید پوند نقدی' mis-filed under تتر).
     """
     tether_cat = (
-        Category.objects.filter(name__iregex=r"(تتر|tether|usdt)").order_by("id").first()
+        Category.objects.filter(
+            name__iregex=r"(تتر|tether|usdt|سایر\s*ارز(?:\s*ها)?)"
+        )
+        .order_by("id")
+        .first()
     )
     pound_cat = (
         Category.objects.filter(name__iregex=r"(پوند|pound|gbp)").order_by("id").first()
@@ -159,7 +163,7 @@ def _ensure_tether_column_price_types() -> None:
     Keep Tether-relevant cross-currency rates under the Tether category.
     """
     tether_category = Category.objects.filter(
-        name__iregex=r"(تتر|tether|usdt)"
+        name__iregex=r"(تتر|tether|usdt|سایر\s*ارز(?:\s*ها)?)"
     ).first()
     if not tether_category:
         return
@@ -169,7 +173,7 @@ def _ensure_tether_column_price_types() -> None:
     tether_related = PriceType.objects.select_related(
         "source_currency", "target_currency", "category"
     ).filter(
-        category__name__iregex=r"(پوند|pound|gbp|تتر|tether|usdt)"
+        category__name__iregex=r"(پوند|pound|gbp|تتر|tether|usdt|سایر\s*ارز(?:\s*ها)?)"
     )
 
     ids_to_move = []
