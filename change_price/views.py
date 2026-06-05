@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.utils import IntegrityError
 from django.db.models import Prefetch
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
 from category.models import PriceType, Category, Currency
 from .models import PriceHistory
 from .forms import PriceUpdateForm, CategoryPriceUpdateForm
@@ -13,7 +15,49 @@ from core.sorting import (
     sort_price_types_by_category,
     tether_banner_price_types_for_update,
     is_tether_category,
+    price_types_for_finalize,
 )
+
+
+def _normalize_pt_name(value: str) -> str:
+    return (value or "").strip().replace("\u200c", " ").replace("  ", " ").lower()
+
+
+def _sanitize_pound_update_price_types(price_types_qs):
+    """
+    For Pound update page:
+    - keep only one buy-cash row (merge duplicate histories),
+    - hide student-sell and lira rows.
+    """
+    items = sort_gbp_price_types(price_types_qs)
+    keep = []
+    kept_buy_cash = None
+
+    for pt in items:
+        name_norm = _normalize_pt_name(pt.name)
+
+        if "لیر" in name_norm or "lira" in name_norm:
+            continue
+        if "دانشجویی" in name_norm:
+            continue
+
+        is_buy_cash = (
+            (pt.trade_type or "").lower() == "buy"
+            and ("نقدی" in name_norm or "cash" in name_norm)
+        )
+        if is_buy_cash:
+            if kept_buy_cash is None:
+                kept_buy_cash = pt
+                keep.append(pt)
+            else:
+                # Merge history into the first buy-cash row and remove duplicate row.
+                pt.price_histories.update(price_type=kept_buy_cash)
+                pt.delete()
+            continue
+
+        keep.append(pt)
+
+    return keep
 
 
 def _rehome_pure_pound_rows_from_tether() -> None:
@@ -245,6 +289,15 @@ def price_dashboard(request):
     ).all()
     
     categories = sort_categories(categories)
+    for category in categories:
+        if "پوند" in category.name or "pound" in category.name.lower() or "gbp" in category.name.lower():
+            category.display_price_types = _sanitize_pound_update_price_types(
+                category.price_types.all()
+            )
+        else:
+            category.display_price_types = price_types_for_finalize(
+                category, category.price_types.all()
+            )
     
     context = {
         'categories': categories
@@ -312,7 +365,7 @@ def update_category_prices(request, category_id):
     # Order / subset for display (must match banner + form fields).
     category_name_lower = category.name.lower()
     if "پوند" in category.name or "pound" in category_name_lower or "gbp" in category_name_lower:
-        price_types = sort_gbp_price_types(price_types_qs)
+        price_types = _sanitize_pound_update_price_types(price_types_qs)
     elif is_tether_category(category):
         _ensure_tether_banner_rows(category)
         price_types = tether_banner_price_types_for_update(
@@ -386,3 +439,33 @@ def update_category_prices(request, category_id):
         'latest_prices': latest_prices
     }
     return render(request, 'change_price/update_category_prices.html', context)
+
+
+@require_GET
+def live_prices_json(request):
+    price_types = PriceType.objects.select_related(
+        "category", "source_currency", "target_currency"
+    ).prefetch_related("price_histories")
+
+    prices = []
+    for price_type in price_types:
+        latest_history = price_type.price_histories.first()
+        prices.append(
+            {
+                "category_name": price_type.category.slug,
+                "price_type_name": price_type.slug,
+                "trade_type": price_type.trade_type,
+                "source_currency": price_type.source_currency.code,
+                "target_currency": price_type.target_currency.code,
+                "latest_price": (
+                    str(latest_history.price) if latest_history is not None else None
+                ),
+                "updated_at": (
+                    latest_history.updated_at.isoformat()
+                    if latest_history is not None
+                    else None
+                ),
+            }
+        )
+
+    return JsonResponse({"count": len(prices), "prices": prices})

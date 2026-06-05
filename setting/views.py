@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django.core.paginator import Paginator
+from django.urls import reverse
 from telegram_app.forms import SendMessageForm, TelegramBotForm, TelegramChannelForm
 from telegram_app.models import TelegramBot, TelegramChannel
 from telegram_app.services.telegram_client import TelegramService
@@ -97,6 +98,9 @@ def settings_view(request):
         'bots': bots,
         'channels': channels,
         'active_section': active_section,
+        'live_prices_api_url': request.build_absolute_uri(
+            reverse("change_price:live_prices_json")
+        ),
     }
     
     return render(request, "setting/settings.html", context)

@@ -11,10 +11,23 @@ class LoginRequiredMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
         self.login_url = settings.LOGIN_URL
+        self.public_prefixes = (
+            "/admin/",
+            "/static/",
+            "/media/",
+            "/prices/live-json/",
+        )
 
     def __call__(self, request):
         path = request.path_info
         if not request.user.is_authenticated:
-            if not (path.startswith(self.login_url) or path.startswith('/admin/') or path.startswith('/static/') or path.startswith('/media/')):
+            normalized_path = path if path.endswith("/") else f"{path}/"
+            is_live_prices_path = normalized_path.endswith("/prices/live-json/")
+            is_public_path = (
+                path.startswith(self.login_url)
+                or any(path.startswith(prefix) for prefix in self.public_prefixes)
+                or is_live_prices_path
+            )
+            if not is_public_path:
                 return redirect(self.login_url)
         return self.get_response(request)
