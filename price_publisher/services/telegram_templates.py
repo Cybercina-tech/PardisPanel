@@ -29,7 +29,7 @@ PARDIS_INLINE_BUTTONS = [
     ],
     [
         {"text": "وب سایت", "url": "https://sarafipardis.co.uk/"},
-        {"text": "اینستاگرام", "url": "https://www.instagram.com/sarafiipardis"},
+        {"text": "اینستاگرام", "url": "https://www.instagram.com/sarafipardis"},
     ],
     [
         {"text": "کانال تلگرام ما", "url": "https://t.me/sarafipardis"},

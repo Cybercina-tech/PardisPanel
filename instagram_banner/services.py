@@ -115,7 +115,7 @@ def _add_branding(img: Image.Image, category_name: str) -> Image.Image:
     except Exception:
         font = ImageFont.load_default()
 
-    text = f"@sarafiipardis"
+    text = f"@sarafipardis"
     bbox = draw.textbbox((0, 0), text, font=font)
     tw = bbox[2] - bbox[0]
     draw.text(

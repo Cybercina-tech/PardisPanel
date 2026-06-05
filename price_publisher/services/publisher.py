@@ -139,7 +139,7 @@ LEGACY_FINAL_BUTTONS = [
         {"text": "وب سایت", "url": "https://sarafipardis.co.uk/"},
         {
             "text": "اینستاگرام",
-            "url": "https://www.instagram.com/sarafiipardis",
+            "url": "https://www.instagram.com/sarafipardis",
         },
     ],
 ]
