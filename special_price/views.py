@@ -19,14 +19,16 @@ def special_price_dashboard(request):
         )
     ).select_related('source_currency', 'target_currency').all()
 
-    # Pinned: double-price GBP types (Buy first, then Sell)
-    PINNED_SLUGS = ('special-gbp-buy', 'special-gbp-sell')
+    # Pinned: double-price GBP types (Sell first, then Buy)
+    PINNED_SLUGS = ('special-gbp-sell', 'special-gbp-buy')
     pinned_special_price_types = [
         t for t in all_types
         if getattr(t, 'slug', None) in PINNED_SLUGS
     ]
     pinned_special_price_types.sort(
-        key=lambda t: (0 if getattr(t, 'slug') == 'special-gbp-buy' else 1)
+        key=lambda t: PINNED_SLUGS.index(getattr(t, 'slug', ''))
+        if getattr(t, 'slug', None) in PINNED_SLUGS
+        else 99
     )
 
     # Others: exclude pinned

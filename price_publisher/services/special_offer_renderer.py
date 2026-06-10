@@ -33,11 +33,19 @@ SPECIAL_GBP_TEMPLATES = (
 )
 
 # Double-price banners: one image for Buy, one for Sell (1760×716).
+# Files live under MEDIA_ROOT/templates/. Resolved by slug first (see DOUBLE_PRICE_BACKGROUND_BY_SLUG).
 # Top bar = Account (حسابی), bottom bar = Cash (نقدی). Font: Montserrat (montsrrat.otf) size 58.
 # Both banners use white price pills — black price text on both.
 # Date: Montserrat 34 at (130, 55). Buy: black text; Sell: white text.
-DOUBLE_BUY_BACKGROUND = "special_gbp_buy_double.png"
-DOUBLE_SELL_BACKGROUND = "special_gbp_sell_double.png"
+DOUBLE_BUY_BACKGROUND = "gbp_special_buy_banner.png"
+DOUBLE_SELL_BACKGROUND = "gbp_special_sell_banner.png"
+DOUBLE_PRICE_BACKGROUND_BY_SLUG = {
+    "special-gbp-buy": DOUBLE_BUY_BACKGROUND,
+    "special-gbp-sell": DOUBLE_SELL_BACKGROUND,
+}
+# Legacy filenames kept for reference / manual cleanup on servers.
+LEGACY_DOUBLE_BUY_BACKGROUND = "special_gbp_buy_double.png"
+LEGACY_DOUBLE_SELL_BACKGROUND = "special_gbp_sell_double.png"
 DOUBLE_ACCOUNT_BAR_XY = (420, 286)   # Top bar - Account (حسابی)
 DOUBLE_CASH_BAR_XY = (420, 410)      # Bottom bar - Cash (نقدی)
 DOUBLE_PRICE_FONT = ("montsrrat.otf", 58)
@@ -237,23 +245,22 @@ def render_double_price_board(
 ) -> RenderedPriceImage:
     """
     Render a double-price banner: Account price on top bar, Cash price on bottom bar.
-    Uses special_gbp_buy_double.png (Buy) and special_gbp_sell_double.png (Sell).
+    Uses gbp_special_buy_banner.png (Buy) and gbp_special_sell_banner.png (Sell).
     Backgrounds must exist under MEDIA_ROOT/templates/. Font: English word font (montsrrat).
     """
     trade_type = (getattr(special_price_type, "trade_type", "") or "").strip().lower()
-    if trade_type == "buy":
-        background_name = DOUBLE_BUY_BACKGROUND
-    elif trade_type == "sell":
-        background_name = DOUBLE_SELL_BACKGROUND
-    else:
-        raise ValueError(f"Unknown trade_type for double-price: {trade_type}")
+    slug = (getattr(special_price_type, "slug", "") or "").strip()
+    background_name = DOUBLE_PRICE_BACKGROUND_BY_SLUG.get(slug)
+    if not background_name:
+        if trade_type == "buy":
+            background_name = DOUBLE_BUY_BACKGROUND
+        elif trade_type == "sell":
+            background_name = DOUBLE_SELL_BACKGROUND
+        else:
+            raise ValueError(f"Unknown trade_type for double-price: {trade_type}")
     price_fill = DOUBLE_PRICE_FILL
 
-    background_path = MEDIA_ROOT / "templates" / background_name
-    if not background_path.exists():
-        raise FileNotFoundError(
-            f"Double-price background missing at {background_path.relative_to(settings.BASE_DIR)}."
-        )
+    background_path = _resolve_double_price_background_path(background_name)
 
     image = _open_background(background_path).copy()
     draw_ctx = ImageDraw.Draw(image)
@@ -388,11 +395,45 @@ def render_special_offer_board(
     return RenderedPriceImage(stream=buffer, width=image.width, height=image.height)
 
 
-@functools.lru_cache(maxsize=8)
+_BACKGROUND_CACHE: dict[tuple[str, float], Image.Image] = {}
+
+
+def _resolve_double_price_background_path(background_name: str) -> Path:
+    """Resolve a double-price banner file, with legacy filename fallback."""
+    templates_dir = MEDIA_ROOT / "templates"
+    candidates = [background_name]
+    if background_name == DOUBLE_BUY_BACKGROUND:
+        candidates.append(LEGACY_DOUBLE_BUY_BACKGROUND)
+    elif background_name == DOUBLE_SELL_BACKGROUND:
+        candidates.append(LEGACY_DOUBLE_SELL_BACKGROUND)
+
+    for name in candidates:
+        path = templates_dir / name
+        if path.exists():
+            return path
+
+    raise FileNotFoundError(
+        f"Double-price background missing. Tried: "
+        f"{', '.join(str((templates_dir / name).relative_to(settings.BASE_DIR)) for name in candidates)}"
+    )
+
+
 def _open_background(path: Path) -> Image.Image:
-    """Cache opened background images to avoid repeated disk I/O."""
-    img = Image.open(path).convert("RGBA")
+    """Load a background image; cache invalidates automatically when the file changes."""
+    resolved = Path(path).resolve()
+    mtime = resolved.stat().st_mtime
+    cache_key = (str(resolved), mtime)
+    cached = _BACKGROUND_CACHE.get(cache_key)
+    if cached is not None:
+        return cached
+
+    for key in list(_BACKGROUND_CACHE):
+        if key[0] == str(resolved):
+            del _BACKGROUND_CACHE[key]
+
+    img = Image.open(resolved).convert("RGBA")
     img.load()
+    _BACKGROUND_CACHE[cache_key] = img
     return img
 
 
