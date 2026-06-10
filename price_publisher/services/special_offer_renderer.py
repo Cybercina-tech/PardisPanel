@@ -46,8 +46,9 @@ DOUBLE_PRICE_BACKGROUND_BY_SLUG = {
 # Legacy filenames kept for reference / manual cleanup on servers.
 LEGACY_DOUBLE_BUY_BACKGROUND = "special_gbp_buy_double.png"
 LEGACY_DOUBLE_SELL_BACKGROUND = "special_gbp_sell_double.png"
-DOUBLE_ACCOUNT_BAR_XY = (375, 258)   # Top bar - Account (حسابی)
-DOUBLE_CASH_BAR_XY = (375, 382)      # Bottom bar - Cash (نقدی)
+# Price anchor = center of the number slot inside each white pill (both banners 1760×716).
+DOUBLE_ACCOUNT_PRICE_CENTER = (462, 286)  # Top pill - Account (حسابی)
+DOUBLE_CASH_PRICE_CENTER = (462, 410)     # Bottom pill - Cash (نقدی)
 DOUBLE_PRICE_FONT = ("montsrrat.otf", 58)
 DOUBLE_DATE_XY = (1480, 48)
 DOUBLE_DATE_FONT = ("montsrrat.otf", 34)
@@ -299,19 +300,11 @@ def render_double_price_board(
     account_holder.notes = getattr(price_history, "notes", None)
     account_text = _format_price_value(account_holder, special_price_type=special_price_type)
 
-    # Top bar = Account (حسابی), bottom bar = Cash (نقدی)
-    draw_ctx.text(
-        DOUBLE_ACCOUNT_BAR_XY,
-        account_text,
-        font=price_font,
-        fill=price_fill,
-    )
-    draw_ctx.text(
-        DOUBLE_CASH_BAR_XY,
-        cash_text,
-        font=price_font,
-        fill=price_fill,
-    )
+    # Top pill = Account (حسابی), bottom pill = Cash (نقدی) — centered in white bars.
+    account_xy = _text_xy_for_center(draw_ctx, account_text, price_font, DOUBLE_ACCOUNT_PRICE_CENTER)
+    cash_xy = _text_xy_for_center(draw_ctx, cash_text, price_font, DOUBLE_CASH_PRICE_CENTER)
+    draw_ctx.text(account_xy, account_text, font=price_font, fill=price_fill)
+    draw_ctx.text(cash_xy, cash_text, font=price_font, fill=price_fill)
 
     working_hours_text = "ساعات کاری:\nدوشنبه تا شنبه: ۹:۳۰ صبح تا ۵:۰۰ عصر\nیکشنبه: تعطیل"
     working_hours_lines = working_hours_text.split("\n")
@@ -393,6 +386,22 @@ def render_special_offer_board(
     image.convert("RGB").save(buffer, format="PNG")
     buffer.seek(0)
     return RenderedPriceImage(stream=buffer, width=image.width, height=image.height)
+
+
+def _text_xy_for_center(
+    draw_ctx: ImageDraw.ImageDraw,
+    text: str,
+    font: ImageFont.FreeTypeFont,
+    center_xy: tuple[int, int],
+) -> tuple[int, int]:
+    """Return top-left coordinates so ``text`` is centered on ``center_xy``."""
+    cx, cy = center_xy
+    bbox = draw_ctx.textbbox((0, 0), text, font=font)
+    tw = bbox[2] - bbox[0]
+    th = bbox[3] - bbox[1]
+    x = cx - tw / 2 - bbox[0]
+    y = cy - th / 2 - bbox[1]
+    return int(x), int(y)
 
 
 _BACKGROUND_CACHE: dict[tuple[str, float], Image.Image] = {}
