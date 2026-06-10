@@ -36,7 +36,7 @@ SPECIAL_GBP_TEMPLATES = (
 # Files live under MEDIA_ROOT/templates/. Resolved by slug first (see DOUBLE_PRICE_BACKGROUND_BY_SLUG).
 # Top bar = Account (حسابی), bottom bar = Cash (نقدی). Font: Montserrat (montsrrat.otf) size 58.
 # Both banners use white price pills — black price text on both.
-# Date: Montserrat 34 at (130, 55). Buy: black text; Sell: white text.
+# Date: Montserrat 34 at top-right (1480, 48). Buy: black text; Sell: white text.
 DOUBLE_BUY_BACKGROUND = "gbp_special_buy_banner.png"
 DOUBLE_SELL_BACKGROUND = "gbp_special_sell_banner.png"
 DOUBLE_PRICE_BACKGROUND_BY_SLUG = {
@@ -46,10 +46,10 @@ DOUBLE_PRICE_BACKGROUND_BY_SLUG = {
 # Legacy filenames kept for reference / manual cleanup on servers.
 LEGACY_DOUBLE_BUY_BACKGROUND = "special_gbp_buy_double.png"
 LEGACY_DOUBLE_SELL_BACKGROUND = "special_gbp_sell_double.png"
-DOUBLE_ACCOUNT_BAR_XY = (420, 286)   # Top bar - Account (حسابی)
-DOUBLE_CASH_BAR_XY = (420, 410)      # Bottom bar - Cash (نقدی)
+DOUBLE_ACCOUNT_BAR_XY = (350, 268)   # Top bar - Account (حسابی)
+DOUBLE_CASH_BAR_XY = (350, 392)      # Bottom bar - Cash (نقدی)
 DOUBLE_PRICE_FONT = ("montsrrat.otf", 58)
-DOUBLE_DATE_XY = (130, 55)
+DOUBLE_DATE_XY = (1480, 48)
 DOUBLE_DATE_FONT = ("montsrrat.otf", 34)
 DOUBLE_DATE_FILL_SELL = (255, 255, 255)  # White on dark sell banner
 DOUBLE_DATE_FILL_BUY = (0, 0, 0)        # Black on light buy banner
@@ -266,7 +266,7 @@ def render_double_price_board(
     draw_ctx = ImageDraw.Draw(image)
     fonts = _load_fonts()
 
-    # English date on double-price banners: e.g. "10 Jun 2026", Montserrat 34 at (130, 55).
+    # English date on double-price banners: e.g. "10 Jun 2026", Montserrat 34 at top-right.
     timestamp = _extract_timestamp(price_history)
     if timestamp:
         localized = timezone.localtime(timestamp)
