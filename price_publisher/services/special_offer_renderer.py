@@ -32,19 +32,20 @@ SPECIAL_GBP_TEMPLATES = (
     "special_sell_account_GBP.jpg",
 )
 
-# Double-price banners: one image for Buy, one for Sell.
-# Top bar = Account (حسابی), bottom bar = Cash (نقدی). Font: Montserrat (montsrrat.otf) size 85.
-# Buy: white price text. Sell: black price text.
-# Date: Montserrat 50 at (180, 50). Sell banner only: date font color black. Buy banner: white.
+# Double-price banners: one image for Buy, one for Sell (1760×716).
+# Top bar = Account (حسابی), bottom bar = Cash (نقدی). Font: Montserrat (montsrrat.otf) size 58.
+# Both banners use white price pills — black price text on both.
+# Date: Montserrat 34 at (130, 55). Buy: black text; Sell: white text.
 DOUBLE_BUY_BACKGROUND = "special_gbp_buy_double.png"
 DOUBLE_SELL_BACKGROUND = "special_gbp_sell_double.png"
-DOUBLE_ACCOUNT_BAR_XY = (560, 360)   # Top bar - Account (حسابی)
-DOUBLE_CASH_BAR_XY = (560, 540)      # Bottom bar - Cash (نقدی)
-DOUBLE_PRICE_FONT = ("montsrrat.otf", 85)  # Montserrat size 85 for both
-DOUBLE_DATE_XY = (180, 50)           # English date "26 Feb 2026" for both banners
-DOUBLE_DATE_FONT = ("montsrrat.otf", 50)    # Montserrat size 50
-DOUBLE_DATE_FILL_SELL = (255, 255, 255)  # White — for sell banner (2.png)
-DOUBLE_DATE_FILL_BUY = (0, 0, 189)       # Blue — for buy banner
+DOUBLE_ACCOUNT_BAR_XY = (420, 286)   # Top bar - Account (حسابی)
+DOUBLE_CASH_BAR_XY = (420, 410)      # Bottom bar - Cash (نقدی)
+DOUBLE_PRICE_FONT = ("montsrrat.otf", 58)
+DOUBLE_DATE_XY = (130, 55)
+DOUBLE_DATE_FONT = ("montsrrat.otf", 34)
+DOUBLE_DATE_FILL_SELL = (255, 255, 255)  # White on dark sell banner
+DOUBLE_DATE_FILL_BUY = (0, 0, 0)        # Black on light buy banner
+DOUBLE_PRICE_FILL = (0, 0, 0)            # Black on white price pills (both banners)
 
 OFFER_TEXT_POSITIONS = {
     "farsi_date": (1900, 250),
@@ -236,18 +237,17 @@ def render_double_price_board(
 ) -> RenderedPriceImage:
     """
     Render a double-price banner: Account price on top bar, Cash price on bottom bar.
-    Uses special_gbp_buy_double.png (Buy, white text) and special_gbp_sell_double.png (Sell, black text).
+    Uses special_gbp_buy_double.png (Buy) and special_gbp_sell_double.png (Sell).
     Backgrounds must exist under MEDIA_ROOT/templates/. Font: English word font (montsrrat).
     """
     trade_type = (getattr(special_price_type, "trade_type", "") or "").strip().lower()
     if trade_type == "buy":
         background_name = DOUBLE_BUY_BACKGROUND
-        price_fill = (255, 255, 255)  # White for Buy (on blue bars)
     elif trade_type == "sell":
         background_name = DOUBLE_SELL_BACKGROUND
-        price_fill = (0, 0, 0)  # Black for Sell (on white bars)
     else:
         raise ValueError(f"Unknown trade_type for double-price: {trade_type}")
+    price_fill = DOUBLE_PRICE_FILL
 
     background_path = MEDIA_ROOT / "templates" / background_name
     if not background_path.exists():
@@ -259,8 +259,7 @@ def render_double_price_board(
     draw_ctx = ImageDraw.Draw(image)
     fonts = _load_fonts()
 
-    # English date on double-price banners: "26 Feb 2026", Montserrat 50 at (180, 50).
-    # Sell banner (2.png) only: date color black. Buy banner: white.
+    # English date on double-price banners: e.g. "10 Jun 2026", Montserrat 34 at (130, 55).
     timestamp = _extract_timestamp(price_history)
     if timestamp:
         localized = timezone.localtime(timestamp)
