@@ -46,8 +46,8 @@ DOUBLE_PRICE_BACKGROUND_BY_SLUG = {
 # Legacy filenames kept for reference / manual cleanup on servers.
 LEGACY_DOUBLE_BUY_BACKGROUND = "special_gbp_buy_double.png"
 LEGACY_DOUBLE_SELL_BACKGROUND = "special_gbp_sell_double.png"
-DOUBLE_ACCOUNT_BAR_XY = (350, 268)   # Top bar - Account (حسابی)
-DOUBLE_CASH_BAR_XY = (350, 392)      # Bottom bar - Cash (نقدی)
+DOUBLE_ACCOUNT_BAR_XY = (375, 258)   # Top bar - Account (حسابی)
+DOUBLE_CASH_BAR_XY = (375, 382)      # Bottom bar - Cash (نقدی)
 DOUBLE_PRICE_FONT = ("montsrrat.otf", 58)
 DOUBLE_DATE_XY = (1480, 48)
 DOUBLE_DATE_FONT = ("montsrrat.otf", 34)
