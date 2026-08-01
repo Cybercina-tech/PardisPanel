@@ -36,7 +36,7 @@ SPECIAL_GBP_TEMPLATES = (
 # Files live under MEDIA_ROOT/templates/. Resolved by slug first (see DOUBLE_PRICE_BACKGROUND_BY_SLUG).
 # Top bar = Account (حسابی), bottom bar = Cash (نقدی). Font: Montserrat (montsrrat.otf) size 58.
 # Both banners use white price pills — black price text on both.
-# Date: Montserrat 34 at top-right (1480, 48). Buy: black text; Sell: white text.
+# No date is drawn on these — only on the single special GBP banners.
 DOUBLE_BUY_BACKGROUND = "gbp_special_buy_banner.png"
 DOUBLE_SELL_BACKGROUND = "gbp_special_sell_banner.png"
 DOUBLE_PRICE_BACKGROUND_BY_SLUG = {
@@ -50,11 +50,21 @@ LEGACY_DOUBLE_SELL_BACKGROUND = "special_gbp_sell_double.png"
 DOUBLE_ACCOUNT_PRICE_CENTER = (462, 286)  # Top pill - Account (حسابی)
 DOUBLE_CASH_PRICE_CENTER = (462, 410)     # Bottom pill - Cash (نقدی)
 DOUBLE_PRICE_FONT = ("montsrrat.otf", 58)
-DOUBLE_DATE_XY = (1480, 48)
-DOUBLE_DATE_FONT = ("montsrrat.otf", 34)
-DOUBLE_DATE_FILL_SELL = (255, 255, 255)  # White on dark sell banner
-DOUBLE_DATE_FILL_BUY = (0, 0, 0)        # Black on light buy banner
 DOUBLE_PRICE_FILL = (0, 0, 0)            # Black on white price pills (both banners)
+
+# --- Gregorian (میلادی) date, top-right — single special GBP banners only ----
+# Same typeface the other-currency banners use for their Gregorian date
+# (tether_renderer / legacy_category_renderer: YekanBakhEN-Bold at 110px on
+# 4000px-wide artwork). Size and margins are kept as ratios of the banner so the
+# date scales to whatever template it is drawn on.
+GREGORIAN_DATE_FONT_FILE = "YekanBakhEN-Bold.ttf"
+GREGORIAN_DATE_SIZE_RATIO = 110 / 4000  # ~48px on the 1760px-wide double banner
+GREGORIAN_DATE_MIN_SIZE = 18
+GREGORIAN_DATE_RIGHT_RATIO = 0.035      # gap from the right edge
+GREGORIAN_DATE_TOP_RATIO = 0.06         # gap from the top edge
+GREGORIAN_DATE_FORMAT = "%d %b %Y"      # e.g. 26 Feb 2026
+# Special GBP single-price templates are light artwork -> black date.
+SPECIAL_GBP_DATE_FILL = (0, 0, 0)
 
 OFFER_TEXT_POSITIONS = {
     "farsi_date": (1900, 250),
@@ -85,8 +95,8 @@ FONT_DEFINITIONS = {
     "special_sell_account_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
     # Double-price banners (نقدی و حسابی): Montserrat 85 for prices
     "double_price": DOUBLE_PRICE_FONT,
-    # Double-price date: English "26 Feb 2026", Montserrat 50
-    "double_price_date": DOUBLE_DATE_FONT,
+    # Gregorian date is loaded separately (size depends on banner width):
+    # see _draw_gregorian_date / GREGORIAN_DATE_* constants.
 }
 
 from core.formatting import (
@@ -267,23 +277,7 @@ def render_double_price_board(
     draw_ctx = ImageDraw.Draw(image)
     fonts = _load_fonts()
 
-    # English date on double-price banners: e.g. "10 Jun 2026", Montserrat 34 at top-right.
-    timestamp = _extract_timestamp(price_history)
-    if timestamp:
-        localized = timezone.localtime(timestamp)
-        date_text = localized.strftime("%d %b %Y")  # e.g. 26 Feb 2026
-    else:
-        date_text = timezone.localtime().strftime("%d %b %Y")
-    date_font = fonts.get("double_price_date") or fonts.get("english_number")
-    if date_font:
-        date_fill = DOUBLE_DATE_FILL_SELL if trade_type == "sell" else DOUBLE_DATE_FILL_BUY
-        draw_ctx.text(
-            DOUBLE_DATE_XY,
-            date_text,
-            font=date_font,
-            fill=date_fill,
-        )
-
+    # No date on the double-price banners — the artwork carries its own.
     price_font = fonts.get("double_price") or fonts.get("english_number") or fonts.get("price")
 
     # Build a minimal object so _format_price_value can read .price and .notes
@@ -349,8 +343,10 @@ def render_special_offer_board(
     fonts = _load_fonts()
 
     timestamp = _extract_timestamp(price_history)
-    # Only draw dates for non-special GBP templates
-    if not _is_special_gbp_template(template.background):
+    if _is_special_gbp_template(template.background):
+        # Special GBP banners carry only the Gregorian date, top-right.
+        _draw_gregorian_date(draw_ctx, image, timestamp, fill=SPECIAL_GBP_DATE_FILL)
+    else:
         _draw_dates(draw_ctx, fonts, timestamp)
 
     price_text = _format_price_value(
@@ -386,6 +382,44 @@ def render_special_offer_board(
     image.convert("RGB").save(buffer, format="PNG")
     buffer.seek(0)
     return RenderedPriceImage(stream=buffer, width=image.width, height=image.height)
+
+
+@functools.lru_cache(maxsize=8)
+def _gregorian_date_font(size: int) -> ImageFont.FreeTypeFont:
+    """Load the Gregorian-date font used by the other-currency banners."""
+    font_path = FONT_ROOT / GREGORIAN_DATE_FONT_FILE
+    if not font_path.exists():
+        raise FileNotFoundError(
+            f"Font file not found: {font_path}. "
+            f"Please ensure the font file exists in the fonts directory."
+        )
+    return ImageFont.truetype(str(font_path), size)
+
+
+def _draw_gregorian_date(
+    draw_ctx: ImageDraw.ImageDraw,
+    image: Image.Image,
+    timestamp,
+    *,
+    fill,
+) -> str:
+    """Draw the Gregorian date (e.g. "26 Feb 2026") at the top-right of ``image``.
+
+    Font, size and margins follow the other-currency banners, scaled to the
+    banner's own dimensions so the same call works on every template size.
+    """
+    localized = timezone.localtime(timestamp) if timestamp else timezone.localtime()
+    date_text = localized.strftime(GREGORIAN_DATE_FORMAT)
+
+    size = max(GREGORIAN_DATE_MIN_SIZE, round(image.width * GREGORIAN_DATE_SIZE_RATIO))
+    font = _gregorian_date_font(size)
+
+    bbox = draw_ctx.textbbox((0, 0), date_text, font=font)
+    text_width = bbox[2] - bbox[0]
+    x = image.width - round(image.width * GREGORIAN_DATE_RIGHT_RATIO) - text_width - bbox[0]
+    y = round(image.height * GREGORIAN_DATE_TOP_RATIO) - bbox[1]
+    draw_ctx.text((int(x), int(y)), date_text, font=font, fill=fill)
+    return date_text
 
 
 def _text_xy_for_center(
