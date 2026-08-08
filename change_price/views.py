@@ -2,10 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.db.models import Prefetch
+from django.db.models import Prefetch, OuterRef, Subquery
 from django.http import JsonResponse
+from django.utils import timezone
 from django.views.decorators.http import require_GET
+from datetime import timedelta
+from decimal import Decimal
 from category.models import PriceType, Category, Currency
+from special_price.models import SpecialPriceType, SpecialPriceHistory
 from .models import PriceHistory
 from .forms import PriceUpdateForm, CategoryPriceUpdateForm
 from setting.utils import log_event
@@ -17,6 +21,11 @@ from core.sorting import (
     is_tether_category,
     price_types_for_finalize,
 )
+
+
+# A special price counts as live for this long after its last update; past it,
+# `is_active` flips to False in the public live-prices JSON.
+SPECIAL_PRICE_ACTIVE_WINDOW = timedelta(hours=12)
 
 
 def _normalize_pt_name(value: str) -> str:
@@ -441,6 +450,75 @@ def update_category_prices(request, category_id):
     return render(request, 'change_price/update_category_prices.html', context)
 
 
+def _price_str(value):
+    """
+    Render a price with the model's two decimal places.
+
+    Values pulled through Subquery skip the field's decimal conversion, so
+    SQLite hands back Decimal('82450') where PostgreSQL gives
+    Decimal('82450.00'); quantizing here keeps the JSON identical on both.
+    """
+    if value is None:
+        return None
+    return str(Decimal(value).quantize(Decimal("0.01")))
+
+
+def _special_prices_payload():
+    """
+    Latest special price per SpecialPriceType — both single and double
+    (نقدی/حسابی) types, straight from the newest SpecialPriceHistory row.
+
+    `is_active` is True while that row was updated inside
+    SPECIAL_PRICE_ACTIVE_WINDOW, so consumers can drop stale offers without
+    re-deriving the rule from `updated_at`.
+    """
+    latest_history = SpecialPriceHistory.objects.filter(
+        special_price_type=OuterRef("pk")
+    ).order_by("-created_at")
+
+    special_price_types = (
+        SpecialPriceType.objects.select_related("source_currency", "target_currency")
+        .annotate(
+            latest_price=Subquery(latest_history.values("price")[:1]),
+            latest_cash_price=Subquery(latest_history.values("cash_price")[:1]),
+            latest_account_price=Subquery(latest_history.values("account_price")[:1]),
+            latest_updated_at=Subquery(latest_history.values("updated_at")[:1]),
+            latest_notes=Subquery(latest_history.values("notes")[:1]),
+        )
+        .order_by("name")
+    )
+
+    cutoff = timezone.now() - SPECIAL_PRICE_ACTIVE_WINDOW
+
+    specials = []
+    for spt in special_price_types:
+        updated_at = spt.latest_updated_at
+        price = spt.latest_price
+        # Double-price types carry both legs; single types repeat `price`
+        # so every entry answers "what is the cash/account rate?".
+        cash_price = spt.latest_cash_price if spt.is_double_price else price
+        account_price = spt.latest_account_price if spt.is_double_price else price
+
+        specials.append(
+            {
+                "special_price_type_name": spt.slug,
+                "name": spt.name,
+                "trade_type": spt.trade_type,
+                "source_currency": spt.source_currency.code,
+                "target_currency": spt.target_currency.code,
+                "is_double_price": spt.is_double_price,
+                "is_active": updated_at is not None and updated_at >= cutoff,
+                "latest_price": _price_str(price),
+                "cash_price": _price_str(cash_price),
+                "account_price": _price_str(account_price),
+                "notes": spt.latest_notes or None,
+                "updated_at": updated_at.isoformat() if updated_at is not None else None,
+            }
+        )
+
+    return specials
+
+
 @require_GET
 def live_prices_json(request):
     price_types = PriceType.objects.select_related(
@@ -468,4 +546,17 @@ def live_prices_json(request):
             }
         )
 
-    return JsonResponse({"count": len(prices), "prices": prices})
+    special_prices = _special_prices_payload()
+
+    response = JsonResponse(
+        {
+            "count": len(prices),
+            "prices": prices,
+            "special_count": len(special_prices),
+            "special_prices": special_prices,
+        }
+    )
+    # Rates change through the day and `is_active` expires on a clock, so no
+    # proxy or browser should serve this from cache.
+    response["Cache-Control"] = "no-store, max-age=0"
+    return response

@@ -58,13 +58,13 @@ DOUBLE_PRICE_FILL = (0, 0, 0)            # Black on white price pills (both bann
 # 4000px-wide artwork). Size and margins are kept as ratios of the banner so the
 # date scales to whatever template it is drawn on.
 GREGORIAN_DATE_FONT_FILE = "YekanBakhEN-Bold.ttf"
-GREGORIAN_DATE_SIZE_RATIO = 110 / 4000  # ~48px on the 1760px-wide double banner
+GREGORIAN_DATE_SIZE_RATIO = 195 / 4000  # ~86px on the 1760px-wide double banner
 GREGORIAN_DATE_MIN_SIZE = 18
-GREGORIAN_DATE_RIGHT_RATIO = 0.035      # gap from the right edge
+GREGORIAN_DATE_RIGHT_RATIO = 0.09       # gap from the right edge (larger = further left)
 GREGORIAN_DATE_TOP_RATIO = 0.06         # gap from the top edge
 GREGORIAN_DATE_FORMAT = "%d %b %Y"      # e.g. 26 Feb 2026
-# Special GBP single-price templates are light artwork -> black date.
-SPECIAL_GBP_DATE_FILL = (0, 0, 0)
+# Special GBP single-price templates are dark artwork -> white date.
+SPECIAL_GBP_DATE_FILL = (255, 255, 255)
 
 OFFER_TEXT_POSITIONS = {
     "farsi_date": (1900, 250),
