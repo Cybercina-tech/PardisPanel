@@ -80,8 +80,6 @@ def _publish_category(category, channel, price_history_ids, notes, user_id):
             "price_type__source_currency",
             "price_type__target_currency",
         )
-        .exclude(price_type__source_currency__code="TRY")
-        .exclude(price_type__target_currency__code="TRY")
         .order_by("id")
     )
     price_items = [(ph.price_type, ph) for ph in histories]

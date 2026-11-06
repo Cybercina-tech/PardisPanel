@@ -1,7 +1,7 @@
 """Guarantees carried over from the Pardis panel.
 
 * ``GET /prices/live-json/`` is a public contract with third-party sites.
-* Lira (TRY) never enters a finalize flow.
+* Lira (TRY) is finalized and bannered with the other currencies, but is never pushed to the rates API.
 * A special-price banner can be downloaded without publishing anything.
 """
 import io
@@ -63,7 +63,7 @@ class LivePricesJsonContractTest(TestCase):
         self.assertEqual(self.client.post("/prices/live-json/").status_code, 405)
 
 
-class LiraExcludedFromFinalizeTest(TestCase):
+class LiraFinalizeTest(TestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
             username="mgr", password="x", role=CustomUser.ROLE_MANAGEMENT
@@ -81,7 +81,7 @@ class LiraExcludedFromFinalizeTest(TestCase):
         bot = TelegramBot.objects.create(name="bot", token="t")
         self.channel = TelegramChannel.objects.create(bot=bot, name="main", chat_id="@c")
 
-    def test_dashboard_has_no_lira_rows(self):
+    def test_dashboard_lists_lira_row(self):
         client = APIClient()
         client.force_authenticate(self.user)
         data = client.get("/api/finalize/dashboard/").json()
@@ -90,11 +90,11 @@ class LiraExcludedFromFinalizeTest(TestCase):
             for c in data["pending_by_category"]
             for p in c["pending_prices"]
         ]
-        self.assertEqual(names, ["خرید تتر"])
+        self.assertCountEqual(names, ["خرید تتر", "لیر"])
 
     @patch("finalize.api_views.ExternalAPIService.send_finalized_prices")
     @patch("finalize.api_views.publish_category_prices_task.apply_async")
-    def test_finalize_publishes_and_pushes_without_lira(self, mock_publish, mock_push):
+    def test_finalize_publishes_lira_but_pushes_without_it(self, mock_publish, mock_push):
         mock_push.return_value = {"sent": [], "failed": [], "skipped": []}
         result = MagicMock()
         result.get.return_value = {"success": True, "response": "ok", "caption": "c"}
@@ -109,9 +109,9 @@ class LiraExcludedFromFinalizeTest(TestCase):
         FinalizeCategoryAPIView.as_view()(request, category_id=self.cat.id)
 
         sent_ids = mock_publish.call_args.kwargs["kwargs"]["price_history_ids"]
-        self.assertEqual(sent_ids, [self.usdt_hist.id])
+        self.assertCountEqual(sent_ids, [self.usdt_hist.id, self.lira_hist.id])
         pushed = [pt.id for pt, _ in mock_push.call_args.args[0]]
-        self.assertEqual(pushed, [self.usdt_type.id])
+        self.assertCountEqual(pushed, [self.usdt_type.id, self.lira_type.id])
 
     def test_external_rates_never_contain_lira(self):
         items = [(self.usdt_type, self.usdt_hist), (self.lira_type, self.lira_hist)]

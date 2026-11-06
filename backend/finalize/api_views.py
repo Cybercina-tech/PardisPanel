@@ -44,18 +44,6 @@ from .serializers import (
 
 logger = logging.getLogger(__name__)
 
-# The lira rate is not finalized, rendered, published or pushed any more. The rows
-# stay in the database (and in the public live-json feed); they just never enter
-# a finalize flow.
-LIRA_CURRENCY_CODE = "TRY"
-
-
-def _without_lira(price_types_qs):
-    return price_types_qs.exclude(source_currency__code=LIRA_CURRENCY_CODE).exclude(
-        target_currency__code=LIRA_CURRENCY_CODE
-    )
-
-
 def _push_external_rates(price_items):
     """Send finalized GBP/USDT rates to the public rates API (Pardis contract).
 
@@ -161,7 +149,7 @@ def _build_finalize_dashboard_data():
         .prefetch_related(
             Prefetch(
                 "price_types",
-                queryset=_without_lira(PriceType.objects.all())
+                queryset=PriceType.objects.all()
                 .select_related("source_currency", "target_currency")
                 .prefetch_related(prefetch_price_histories_latest())
                 .order_by("order", "id"),
@@ -348,7 +336,7 @@ class FinalizeCategoryAPIView(APIView):
 
         finalized_history_ids, finalized_price_map = _finalized_state(category)
 
-        price_types = _without_lira(PriceType.objects.filter(category=category)).select_related(
+        price_types = PriceType.objects.filter(category=category).select_related(
             "source_currency", "target_currency"
         )
         category_name_lower = category.name.lower()
@@ -514,7 +502,7 @@ def _requested_banner_format(request):
 
 def _latest_category_price_items(category):
     """``(price_type, latest history)`` pairs, in the order the board expects."""
-    price_types = _without_lira(PriceType.objects.filter(category=category)).select_related(
+    price_types = PriceType.objects.filter(category=category).select_related(
         "source_currency", "target_currency"
     )
     category_name_lower = category.name.lower()
@@ -542,7 +530,7 @@ class FinalizeBannersListAPIView(APIView):
             .prefetch_related(
                 Prefetch(
                     "price_types",
-                    queryset=_without_lira(PriceType.objects.all()).prefetch_related(
+                    queryset=PriceType.objects.all().prefetch_related(
                         prefetch_price_histories_latest()
                     ),
                 )
@@ -893,7 +881,7 @@ class FinalizeAllAPIView(APIView):
         """Run finalization for one category. Raises on failure."""
         finalized_history_ids, finalized_price_map = _finalized_state(category)
 
-        price_types = _without_lira(PriceType.objects.filter(category=category)).select_related(
+        price_types = PriceType.objects.filter(category=category).select_related(
             "source_currency", "target_currency"
         )
         category_name_lower = category.name.lower()
