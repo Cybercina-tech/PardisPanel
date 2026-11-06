@@ -1,0 +1,20 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Iran Lion and Sun flag">
+  <rect x="4" y="8" width="56" height="48" rx="8" fill="#ffffff"/>
+  <rect x="4" y="8" width="56" height="16" rx="8" fill="#1f9d55"/>
+  <rect x="4" y="40" width="56" height="16" rx="8" fill="#d32f2f"/>
+  <circle cx="32" cy="32" r="11" fill="#f4c542"/>
+  <g fill="#f4c542">
+    <rect x="31.2" y="14.5" width="1.6" height="6.2" rx="0.8"/>
+    <rect x="31.2" y="43.3" width="1.6" height="6.2" rx="0.8"/>
+    <rect x="43.3" y="31.2" width="6.2" height="1.6" rx="0.8"/>
+    <rect x="14.5" y="31.2" width="6.2" height="1.6" rx="0.8"/>
+    <rect x="40.4" y="20.1" width="1.6" height="6.2" rx="0.8" transform="rotate(45 41.2 23.2)"/>
+    <rect x="20.6" y="39.9" width="1.6" height="6.2" rx="0.8" transform="rotate(45 21.4 43)"/>
+    <rect x="20.6" y="20.1" width="1.6" height="6.2" rx="0.8" transform="rotate(-45 21.4 23.2)"/>
+    <rect x="40.4" y="39.9" width="1.6" height="6.2" rx="0.8" transform="rotate(-45 41.2 43)"/>
+  </g>
+  <path d="M23 37.5c0-3.6 2.2-5.8 5.6-5.8 2.6 0 4.2.9 6 .9 1.7 0 3.1-.7 4.6-2.1v2.8c0 4.4-2.7 7.4-6.8 7.4h-6.1c-1.8 0-3.3-1.4-3.3-3.2z" fill="#f4c542"/>
+  <path d="M30.8 30.2l3.7 1.5-3.7 1.4 1-2.9-1-2.9z" fill="#0f172a"/>
+  <path d="M39.8 30.4l4.8-2.2-2.8 4.4z" fill="#f4c542"/>
+  <rect x="4" y="8" width="56" height="48" rx="8" fill="none" stroke="#cbd5e1" stroke-width="1.2"/>
+</svg>

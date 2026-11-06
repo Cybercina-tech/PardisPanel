@@ -1,0 +1,1 @@
+.fade-enter-active[data-v-7a829b2e],.fade-leave-active[data-v-7a829b2e]{transition:opacity .2s ease}.fade-enter-from[data-v-7a829b2e],.fade-leave-to[data-v-7a829b2e]{opacity:0}.save-pulse[data-v-7a829b2e]{animation:savePulse-7a829b2e 2s ease-in-out infinite}@keyframes savePulse-7a829b2e{0%,to{box-shadow:0 0 #d4af3766}50%{box-shadow:0 0 0 8px #d4af3700}}

@@ -1,0 +1,275 @@
+# مستندات سیستم Template Editor (ویرایشگر قالب)
+
+این سند **پیاده‌سازی واقعی** ویرایشگر قالب دیجیتال ساینیج در پروژه PixelCast را از نظر **رابط کاربری**، **فرانت‌اند (Vue)**، **بک‌اند (Django REST)**، **قالب داده** و **جریان ذخیره/پخش** توضیح می‌دهد. مسیرهای کد به‌صورت نسبی از ریشه مخزن `PixelCast_signage` هستند.
+
+---
+
+## ۱. نقش و جایگاه در محصول
+
+**Template Editor** صفحه‌ای است که کاربر با آن قالب نمایش (ابعاد بوم، پس‌زمینه، چیدمان ویجت‌ها، استایل و محتوا) را طراحی می‌کند. خروجی اصلی برای سرور و پلیر، فیلد **`config_json`** روی مدل `Template` در دیتابیس است؛ در عین حال بک‌اند پس از هر ذخیره، ویجت‌ها را به رکوردهای **`Widget`** (و در صورت نیاز **`Content`**، **`QRActionLink`/`QRActionRule`**) همگام می‌کند تا پلیر و همگام‌سازی محتوا روی دیتابیس تکیه کنند.
+
+---
+
+## ۲. معماری لایه‌ای (خلاصه)
+
+| لایه | تکنولوژی | نقش |
+|------|-----------|-----|
+| UI Shell | Vue 3 + Vue Router + Pinia + Tailwind (`frontend/`) | صفحه ادیتور، کتابخانه ویجت، اینسپکتور، مودال‌ها |
+| Canvas / تعامل | `vue3-moveable` | جابه‌جایی، تغییر اندازه، چرخش، اسنپ به ویجت‌ها و مرز بوم |
+| پیش‌نمایش ویجت | همان کامپوننت‌های **`frontend/src/components/player/widgets/*`** | نزدیکی دید ادیتور به آنچه Web Player رندر می‌کند |
+| State/API | `useTemplatesStore` + `templatesAPI` در `frontend/src/services/api.js` | CRUD قالب؛ ذخیره از طریق `PUT/POST` روی `/api/templates/` |
+| بک‌اند | Django REST (`app/templates/`) | مدل‌ها، سریالایزر، `TemplateViewSet`، اکشن `activate_on_screen` |
+| همگام‌سازی DB | `_sync_widgets_from_config` در `app/templates/views.py` | از `config_json.widgets` → `Layer` پیش‌فرض + `Widget` + لینک `Content` و QR |
+
+جریان اصلی: **ادیتور → `config_json` (با مختصات درصدی) → API → ذخیره Template → سینک ویجت‌ها به DB → پلیر/اسکرین**.
+
+---
+
+## ۳. مسیرها و ورود به ادیتور
+
+- **ویرایش قالب موجود:** `/templates/:id/edit`  
+  - نام route: `template-editor`  
+  - کامپوننت: `frontend/src/pages/templates/TemplateEditor.vue`
+- **قالب جدید:** `/templates/new/edit`  
+  - نام route: `template-editor-new`  
+  - همان کامپوننت؛ پارام `id` در مسیر نیست.
+
+تعریف در `frontend/src/router/index.js`.
+
+**Query string های مفید برای «قالب جدید»:**  
+`name`, `width`, `height`, `description`, `orientation`, `screen_id` — در اسکریپت ادیتور برای مقداردهی اولیه نام/ابعاد و فیلدهای اختیاری هنگام ساخت استفاده می‌شوند.
+
+---
+
+## ۴. چیدمان ظاهری (UI/UX)
+
+### ۴.۱ اسکلت کلی
+
+صفحه داخل **`AppLayout`** رندر می‌شود. در `frontend/src/components/layout/AppLayout.vue` برای routeهای ادیتور، اسکرول اصلی اپ کنترل می‌شود تا فضای ادیتور تمام ارتفاع را بگیرد.
+
+ساختار تقریبی:
+
+1. **نوار بالا (Toolbar):** بازگشت به لیست، عنوان، Save، (دسکتاپ) Export JSON، Delete، Push to Screen، جمع‌شدن پنل راست؛ روی موبایل منوی «⋯» برای همان اکشن‌ها.
+2. **بدنه سه‌ستونه (دسکتاپ lg+):**
+   - **چپ:** `WidgetLibraryPanel` — دسته‌بندی ویجت‌ها با آکاردئون و رنگ تمیز (توکن‌های CSS «Antler»).
+   - **وسط:** ناحیه **workspace** با قاب مانیتور (`monitor-frame`)، بوم (`canvas-area`)، ویجت‌ها، کنترل‌های زوم (درصد، Fit، +/-).
+   - **راست:** `TemplateInspectorPanel` — تب Properties / Layers؛ عرض قابل جمع‌شدن (`rightPanelCollapsed`).
+3. **موبایل:** کتابخانه و اینسپکتور با **`Teleport`** به `body`، overlay تمام‌صفحه؛ dock پایین «Widgets / Inspector».
+
+### ۴.۲ تم و استایل
+
+- کلاس‌های Tailwind + متغیرهای سفارشی در `frontend/src/style.css` (بخش‌های مربوط به editor workspace، bezel، grid کنواس، رنگ دسته‌های کتابخانه ویجت).
+- حالت تاریک: کلاس `dark` روی ریشه؛ استایل‌های scoped و unscoped در انتهای `TemplateEditor.vue` برای Moveable و سوئیچ‌های اینسپکتور.
+
+### ۴.۳ بوم و زوم
+
+- ابعاد بوم از **`canvasWidth` / `canvasHeight`** (پیش‌فرض ۱۹۲۰×۱۰۸۰ یا از API/Query).
+- **مقیاس (`scale`):** با `transform: scale(...)` روی wrapper قاب؛ `Moveable` با `:zoom="1 / scale"` برای هماهنگی مختصات.
+- **Fit:** تابع `calculateScale` با اندازه `canvasContainer` و حاشیه؛ حداکثر مقیاس ۲.
+- **چرخ ماوس + Ctrl/Meta:** زوم؛ **پینچ لمسی:** handlerهای touch روی همان container.
+- **`ResizeObserver`** روی container برای به‌روزرسانی Fit هنگام تغییر اندازه پنل‌ها.
+
+### ۴.۴ حالت فقط‌خواندنی (Visitor / بدون مجوز)
+
+اگر `hasPermission(user, 'edit_templates')` false باشد:
+
+- بنر زرد: تغییرات روی سرور ذخیره نمی‌شود.
+- دکمه Save غیرفعال؛ **Export JSON** فقط اسنپ‌شات محلی JSON دانلود می‌کند (بدون `saveTemplate`).
+
+---
+
+## ۵. مدل داده در فرانت‌اند (شیء ویجت در ادیتور)
+
+هر ویجت در آرایه **`widgets`** (ref) یک آبجکت جاوااسکریپتی است؛ با **`config_json.widgets`** هنگام ذخیره/بارگذاری نگاشت می‌شود.
+
+فیلدهای کلیدی:
+
+| فیلد | معنا |
+|------|------|
+| `id` | قبل از اولین ذخیره ممکن است id موقت (`widget-...`) باشد؛ پس از سینک بک‌اند، UUID واقعی از سرور برمی‌گردد. |
+| `type` | یکی از انواع پشتیبانی‌شده (با مدل بک‌اند هم‌نام). |
+| `name` | نام نمایشی در لایه‌ها و لیست. |
+| `x`, `y`, `width`, `height` | در حافظه ادیتور **پیکسل**؛ در JSON ذخیره‌شده **درصد** نسبت به عرض/ارتفاع قالب. |
+| `rotation` | درجه. |
+| `zIndex` | ترتیب نقاشی روی بوم. |
+| `visible` | نگاشت به `is_active` ویجت در سینک (وقتی در payload باشد). |
+| `content` | رشته عمومی: متن، URL تصویر/ویدیو/webview، داده ساده برای برخی انواع. |
+| `content_id` / `content_ids` | ارجاع به رکورد `Content` برای رسانه/پلی‌لیست. |
+| `style` | آبجکت JSON آزاد برای تنظیمات ویجت (تم شمارش معکوس، آب و هوا، QR، آلبوم، نمودار، …). |
+
+**ذخیره (`saveTemplate`):**  
+`config_json` شامل `backgroundColor`, `backgroundImage` (اختیاری), و آرایه `widgets` با مختصات **درصدی**، به‌همراه `playlist_items` برابر با `style.playlist` برای آلبوم.
+
+**بارگذاری (`loadTemplateData`):**  
+از `GET` قالب، `config_json.widgets` خوانده می‌شود؛ رشته‌های درصدی به پیکسل تبدیل می‌شوند؛ برای انواع خاص، `style` با پیش‌فرض‌های ادیتور merge می‌شود تا فیلدهای جدید خالی نمانند.
+
+---
+
+## ۶. کتابخانه ویجت و افزودن ویجت
+
+تعریف بخش‌ها و دکمه‌ها در آرایه **`widgetLibrarySections`** داخل `TemplateEditor.vue` (بخش‌های Date & Time، Text & Live، Media، Web & Data).
+
+تابع **`addWidget(type)`** یک شیء پیش‌فرض با اندازه/موقعیت مرکزی، `zIndex`، `content` و **`style`** اولیه (بسته به نوع) می‌سازد و به `widgets` اضافه می‌کند.
+
+انواع پشتیبانی‌شده در UI (باید با `Widget.WIDGET_TYPE_CHOICES` در `app/templates/models.py` سازگار باشد):
+
+- `clock`, `date`, `weekday`, `countdown`
+- `text`, `weather`, `qr_action`
+- `image`, `video`, `album`
+- `webview`, `chart`
+
+---
+
+## ۷. تعامل بوم (Moveable، کیبورد، لایه‌ها)
+
+- **`vue3-moveable`** روی المنت DOM ویجت انتخاب‌شده؛ اسنپ به ویجت‌های دیگر و مرز بوم (`canvasBounds`).
+- **کیبورد:** `Delete` حذف ویجت انتخاب‌شده؛ فلش‌ها جابه‌جایی ۱px (با Shift ده‌پیکسل) — **فقط وقتی فوکوس روی input/textarea/select نباشد** تا تداخل با فرم اینسپکتور نباشد.
+- **ترتیب لایه:** در تب Layers اینسپکتور از APIهای reactive مثل `bringLayerToFront`, `sendLayerToBack`, `moveLayerOrder` استفاده می‌شود (تعویض `zIndex`).
+- **Drag & drop در لیست لایه‌ها:** برای جابه‌جایی z-index بین دو ویجت (هندلرهای `handleDragStart` / `handleDrop`).
+
+---
+
+## ۸. اینسپکتور و تزریق وابستگی (Provide/Inject)
+
+فایل **`frontend/src/pages/templates/templateEditorInjectionKey.js`** کلید `Symbol` را export می‌کند.
+
+در `TemplateEditor.vue` آبجکت **`templateEditorApi`** (reactive) با docenas متد و state مشترک ساخته می‌شود و با **`provide(TEMPLATE_EDITOR_INJECTION_KEY, templateEditorApi)`** به فرزندان داده می‌شود.
+
+**`TemplateInspectorPanel.vue`** با **`inject`** همان API را به نام `te` مصرف می‌کند؛ بنابراین فرم‌های طولانی Properties در فایل جدا نگه داشته شده‌اند بدون prop drilling عمیق.
+
+پنل شامل: موقعیت/اندازه/چرخش/z، فیلدهای per-type (متن، مارکی، آب و هوا، countdown با تم از `COUNTDOWN_THEMES`، QR با قوانین زمانی، آلبوم با صف پلی‌لیست، webview با draft URL، نمودار با `handleChartWidgetUpdate` و پنل‌های Chart جدا در `components/chart/`).
+
+---
+
+## ۹. پیش‌نمایش ویجت (`WidgetPreview.vue`)
+
+برای هر `type`، کامپوننت ویجت **همان پلیر** import می‌شود (مثلاً `TextWidget`, …) تا پیش‌نمایش ادیتور به رفتار پلیر نزدیک باشد.
+
+استثنا: **webview** در ادیتور iframe زنده نمی‌گیرد (پیام در UI: جلوگیری از مشکلات cross-origin/focus).
+
+یک **`computed`** (`playerWidget`) شکل ادیتور را به ساختار مورد انتظار کامپوننت‌های پلیر (`content_json`, `contents`, …) نگاشت می‌کند؛ برای `chart` از `fromWidgetChartPayload` استفاده می‌شود؛ برای `weather` داده نمونه ثابت؛ برای `album` از `style.playlist` آرایه pseudo-content ساخته می‌شود.
+
+---
+
+## ۱۰. مودال‌ها و یکپارچگی رسانه
+
+- **`MediaLibraryModal`:** انتخاب فایل از کتابخانه محتوا؛ فیلتر نوع برای image/video. پس از انتخاب، `content` و در صورت وجود `content_id` روی ویجت؛ برای ویجت‌های ذخیره‌شده در بک‌اند، **`contentsAPI.patch`** برای اتصال `widget` به محتوا.
+- **`PushToScreenModal`:** لیست اسکرین‌های آنلاین (از store اسکرین‌ها)، سپس فعال‌سازی قالب روی دستگاه انتخاب‌شده.
+
+---
+
+## ۱۱. Push to Screen (جریان فرانت)
+
+1. نیاز به **`templateId`** (ابتدا Save).
+2. `handlePushToScreen`: fetch اسکرین‌ها، بارگذاری قالب فعلی، باز کردن مودال.
+3. `handlePushToScreenSelect`:
+   - **`await saveTemplate()`** تا آخرین تغییرات روی سرور برود.
+   - **`templatesStore.activateOnScreen(templateId, screen.id, true)`** → `POST /api/templates/{id}/activate_on_screen/`.
+   - سپس دستور **`refresh`** از `useCommandsStore` با اولویت بالا برای پلیر.
+
+---
+
+## ۱۲. آفلاین و رویدادهای window
+
+- `navigator.onLine` + رویدادهای `online`/`offline` با اعلان toast؛ در حالت آفلاین **`saveTemplate`** با خطا متوقف می‌شود.
+- در **`onUnmounted`** listenerها و `ResizeObserver` و touch cleanup حذف می‌شوند.
+
+---
+
+## ۱۳. بک‌اند: مدل داده
+
+فایل **`app/templates/models.py`** (خلاصه ارتباط با ادیتور):
+
+- **`Template`:** `config_json` ذخیرهٔ canonical چیدمان برای ادیتور و پلیر؛ `width`/`height`/`orientation`/`is_sample`/…
+- **`Layer`:** در تئوری چندلایه؛ در عمل سینک ادیتور **`Layer` پیش‌فرض** (`Default Layer`) با ابعاد هم‌تراز قالب می‌سازد/به‌روز می‌کند.
+- **`Widget`:** `type`, موقعیت، `content_url` برای انواع URLمحور، **`content_json`** در DB معادل **`style`** در ادیتور برای بیشتر ویجت‌ها.
+- **`Content`:** فایل/متن/chart و غیره؛ لینک به `widget` برای همگام‌سازی دانلود روی اسکرین.
+- **`QRActionLink` / `QRActionRule` / `QRScanEvent`:** لینک کوتاه پایدار، قوانین ساعت/روز هفته، لاگ اسکن — از `style` ویجت `qr_action` پر می‌شود.
+
+**نکته:** اپ Django همچنین مدل **`Schedule`** در همین اپ دارد (زمان‌بندی قالب روی اسکرین‌ها)؛ ویرایشگر قالب مستقیماً UI زمان‌بندی نیست اما قالب ذخیره‌شده همان منبع `Template` برای زمان‌بندی است.
+
+---
+
+## ۱۴. بک‌اند: ذخیره قالب و سینک ویجت (`_sync_widgets_from_config`)
+
+پس از **`create`** و **`update`** در `TemplateViewSet.perform_create` / `perform_update`:
+
+تابع **`_sync_widgets_from_config(template, user)`** (`app/templates/views.py`):
+
+1. اگر `config_json.widgets` خالی یا نامعتبر → return.
+2. **`Layer.objects.get_or_create`** برای لایه پیش‌فرض قالب.
+3. برای هر آیتم `widgets_data`:
+   - نرمال‌سازی **`weather`** / **`qr_action`** (انتقال `content` به داخل `style` در صورت نیاز).
+   - **`content_url`** از `content` برای `image`/`video`/`webview`.
+   - پارس id: اگر UUID معتبر نباشد، UUID جدید تولید می‌شود و در نهایت در **`config_json` بازنوشت** می‌شود تا فرانت id پایدار داشته باشد.
+   - **`Widget.objects.get_or_create`** / به‌روزرسانی فیلدها شامل نگاشت **`zIndex`** و **`visible` → is_active**.
+   - **`content_json`** در DB = `style` ادیتور.
+   - لینک **`content_ids`** و **`style.playlist`** به رکوردهای `Content` (ترتیب، duration، transition در `content_json` محتوا در صورت نیاز).
+   - **`text`:** ایجاد/به‌روزرسانی `Content` نوع `text` با `text_content` برای سازگاری پلیر.
+   - **`image`/`video`/`webview` بدون Content:** در صورت وجود URL، `Content` ساخته می‌شود.
+   - **`qr_action`:** `QRActionLink` + حذف و ایجاد مجدد `QRActionRule`ها از آرایه `rules`؛ به‌روزرسانی `slug`/`redirectPath` در style و ذخیره widget.
+4. در پایان **`template.config_json['widgets']`** با idهای نهایی دوباره save می‌شود.
+
+تابع **`_parse_position`** رشته درصدی یا عدد را به پیکسل نسبت به عرض/ارتفاع قالب تبدیل می‌کند.
+
+---
+
+## ۱۵. APIهای REST مرتبط
+
+پیشوند معمول: **`/api/`** (از `app/templates/urls.py` و include در `Screengram/urls.py`).
+
+| Endpoint | کاربرد در ادیتور |
+|----------|------------------|
+| `GET/PUT/PATCH/POST/DELETE /templates/` … | بارگذاری/ذخیره قالب |
+| `POST /templates/{id}/activate_on_screen/` | body: `screen_id`, `sync_content` |
+| `GET/POST/PATCH … /contents/` | لینک محتوا به ویجت پس از انتخاب از Media Library |
+| `GET/POST … /layers/`, `/widgets/` | ViewSetها موجودند؛ ادیتور فعلی عمدتاً از **`config_json`** استفاده می‌کند، نه CRUD مستقیم لایه از UI |
+
+**Pinia store:** `frontend/src/stores/templates.js` — `fetchTemplate`, `updateTemplate`, `createTemplate`, `activateOnScreen` و همچنین actions لایه/ویجت برای صفحات دیگر احتمالی.
+
+---
+
+## ۱۶. امنیت و دسترسی (بک‌اند)
+
+- **`IsAuthenticated`** روی ViewSetها.
+- **`has_permission`** برای `create_templates` / `edit_templates` / `delete_templates`.
+- **`RolePermissions.can_edit_resource`** / `can_view_resource` برای مالکیت/سازمان و قالب‌های نمونه (`is_sample`).
+- اکشن **`activate_on_screen`:** بررسی دسترسی به قالب و اسکرین؛ در صورت موفقیت، **`ScreenSerializer`** در پاسخ برای به‌روزرسانی فوری UI؛ پاک کردن cache کلید `screen_template_{id}`؛ صف دستور `refresh` و در صورت نیاز `sync_content`.
+
+---
+
+## ۱۷. تست و مستندات جانبی
+
+- **E2E فرانت:** `frontend/tests/e2e/template-editor.spec.js` — چیدمان، میانبر کیبورد در فیلدها، پیکربندی QR، موبایل.
+- **بک‌اند:** `app/templates/tests.py` — شامل سناریوهای مرتبط با سینک/ادیتور (طبق نام کلاس‌ها در مخزن).
+- **Audit قدیمی:** `documentation/template-editor-baseline-audit.md` — مسائل برطرف‌شده قبلی (پنل‌ها، export، listenerها، …).
+
+---
+
+## ۱۸. فهرست فایل‌های کلیدی (مرجع سریع)
+
+| مسیر | توضیح |
+|------|--------|
+| `frontend/src/pages/templates/TemplateEditor.vue` | قلب UI، state بوم، save/load، Moveable، provide API |
+| `frontend/src/pages/templates/components/TemplateInspectorPanel.vue` | فرم‌های ویجت و لایه‌ها |
+| `frontend/src/pages/templates/components/WidgetLibraryPanel.vue` | دسته و دکمه افزودن |
+| `frontend/src/pages/templates/components/WidgetPreview.vue` | پل به کامپوننت‌های پلیر |
+| `frontend/src/pages/templates/templateEditorInjectionKey.js` | کلید inject |
+| `frontend/src/stores/templates.js` | Pinia |
+| `frontend/src/services/api.js` | `templatesAPI`, `layersAPI`, `widgetsAPI`, `contentsAPI` |
+| `app/templates/views.py` | `TemplateViewSet`, `_sync_widgets_from_config`, `activate_on_screen` |
+| `app/templates/models.py` | مدل‌های دامنه |
+| `app/templates/serializers.py` | `TemplateSerializer` و وابسته‌ها |
+| `frontend/src/style.css` | توکن‌های ظاهری ادیتور |
+
+---
+
+## ۱۹. جمع‌بندی برای توسعه‌دهنده
+
+1. **منبع حقیقت UI ادیتور** آرایه **`widgets`** در حافظه است؛ **منبع حقیقت پایدار بین جلسات** **`Template.config_json`** است.
+2. **بک‌اند پس از هر ذخیره** ویجت‌ها را به **`Widget`/`Content`/QR** منعکس می‌کند؛ idهای ویجت در `config_json` با UUID دیتابیس هم‌راستا می‌شوند.
+3. **مختصات ذخیره‌شده درصدی** است تا تغییر ابعاد قالب در آینده قابل تحمل باشد؛ ادیتور همیشه با **پیکسل** کار می‌کند.
+4. **پیش‌نمایش** عمدتاً همان **کد پلیر** است تا واگرایی کم باشد.
+5. **Visitor / بدون `edit_templates`** فقط مرور و export محلی؛ بدون ذخیره سرور.
+
+اگر بخشی از این سند با نسخه بعدی کد diverge شد، اول **`TemplateEditor.vue`** و **`views.py` → `_sync_widgets_from_config`** را مرجع قرار دهید؛ این دو فایل منبع رفتار واقعی سیستم هستند.

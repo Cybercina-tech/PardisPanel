@@ -1,0 +1,147 @@
+<nav class="navbar navbar-expand-lg sticky-top shadow-sm" id="mainNavbar">
+    <div class="container">
+        <!-- Brand/Logo: use SiteSettings logo if uploaded, else icon + name -->
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
+            {% if site_settings.logo %}
+            <img src="{{ site_settings.logo.url }}" alt="{{ site_settings.site_name }}" height="32" class="me-2">
+            {% else %}
+            <i class="bi bi-arrow-left-right me-2"></i>
+            {% endif %}
+            <span class="d-none d-sm-inline">{{ site_settings.site_name }}</span>
+            <span class="d-sm-none">{{ site_settings.site_name|truncatechars:12 }}</span>
+        </a>
+
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbarContent" 
+                aria-controls="mainNavbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navigation Menu -->
+        <div class="collapse navbar-collapse" id="mainNavbarContent">
+            <!-- Main Navigation Links -->
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="/prices">
+                        <i class="bi bi-currency-dollar me-1"></i>
+                        Update Prices
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/special-prices">
+                        <i class="bi bi-star me-1"></i>
+                        Special Prices
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/finalize">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Finalize Prices
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/categories">
+                        <i class="bi bi-tags me-1"></i>
+                        Categories
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/analysis">
+                        <i class="bi bi-graph-up-arrow me-1"></i>
+                        Analysis
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/settings">
+                        <i class="bi bi-gear me-1"></i>
+                        Settings
+                    </a>
+                </li>
+            </ul>
+
+            <!-- User Authentication Section -->
+            <ul class="navbar-nav user-section align-items-center ms-lg-auto">
+                {% if user.is_authenticated %}
+                    <!-- Professional User Profile & Logout Section -->
+                    <li class="nav-item">
+                        <div class="user-profile-section d-flex align-items-center gap-3">
+                            <!-- User Profile Card -->
+                            <div class="user-profile-card d-flex align-items-center">
+                                <div class="user-avatar-wrapper">
+                                    <i class="bi bi-person-circle user-avatar-icon"></i>
+                                </div>
+                                <div class="user-info-content">
+                                    <div class="user-name-display">
+                                        {% if user.get_full_name %}
+                                            {{ user.get_full_name }}
+                                        {% else %}
+                                            {{ user.username }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="user-role-display">
+                                        <i class="bi bi-shield-check me-1"></i>
+                                        <span>{{ user.role|capfirst }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Logout Button -->
+                            <a class="btn-logout-professional" 
+                               href="/logout/"
+                               title="خروج از حساب کاربری">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </li>
+                {% else %}
+                    <!-- Guest User Login Link -->
+                    <li class="nav-item">
+                        <a class="nav-link btn-login-professional" href="/login">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>
+                            <span>ورود</span>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+<script>
+    // Set active link based on current URL
+    // Note: Navbar scroll effect is handled by main.js
+    document.addEventListener('DOMContentLoaded', function() {
+        function setActiveNavLink() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('#mainNavbar .nav-link');
+            
+            // Remove all active classes first
+            navLinks.forEach(link => link.classList.remove('active'));
+            
+            // Find and set active link
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (!href) return;
+                
+                // Exact match
+                if (href === currentPath) {
+                    link.classList.add('active');
+                    return;
+                }
+                
+                // Match for nested routes (e.g., /prices/update/ matches /prices/)
+                // But exclude root path
+                if (href !== '/' && currentPath.startsWith(href) && 
+                    (currentPath.length === href.length || currentPath[href.length] === '/')) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        // Set active on page load
+        setActiveNavLink();
+        
+        // Update active link on navigation (for SPA-like behavior if needed)
+        window.addEventListener('popstate', setActiveNavLink);
+    });
+</script>

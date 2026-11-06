@@ -1,0 +1,18 @@
+# cPanel (Setup Python App) — Python 3.12. No Redis, no Celery worker, no browser.
+Django>=5.2,<5.3
+djangorestframework>=3.15.0
+djangorestframework-simplejwt>=5.3.0
+django-cors-headers>=4.4.0
+celery>=5.4          # tasks run in-process (CELERY_TASK_ALWAYS_EAGER); no broker needed
+aiogram>=3.13,<4     # Telegram Bot API client used for outbound publishing
+aiohttp>=3.9
+requests>=2.31
+pillow>=10.0.0
+jdatetime>=4.1.0
+pytz>=2023.3
+arabic-reshaper>=3.0.0
+python-bidi>=0.4.2
+cryptography>=41.0.0
+python-json-logger>=2.0.7
+# Optional: only imported when Google sign-in is configured (it is not on Pardis).
+google-auth>=2.30

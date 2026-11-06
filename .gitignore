@@ -1,97 +1,29 @@
-# ===========================
-# Python
-# ===========================
+
+# Build/cache junk
+graphify-out/
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-*.egg
-*.egg-info/
-dist/
-build/
-*.whl
-
-# ===========================
-# Virtual Environment
-# ===========================
-venv/
-env/
-.venv/
-
-# ===========================
-# Environment & Secrets
-# ===========================
-.env
-.env.*
-*.secret
-*.key
-secret_key.txt
-
-# ===========================
-# Django
-# ===========================
-*.log
-*.pot
-db.sqlite3
-db.sqlite3-journal
-local_settings.py
-
-# Collected static & uploaded media (runtime output)
-public/
-staticfiles/
-static_root/
-/media/
-
-# ===========================
-# Node / Frontend Build
-# ===========================
+*.pyc
 node_modules/
-frontend/node_modules/
-package-lock.json
+venv/
 
-# ===========================
-# IDE & Editor
-# ===========================
-.idea/
-.vscode/
-.cursor/
-*.swp
-*.swo
-*~
+# Local databases and logs
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+backend/celerybeat-schedule
+backend/celerybeat-schedule.dir
+backend/celerybeat-schedule-shm
+backend/celerybeat-schedule-wal
+backend/logs/
 
-# ===========================
-# OS Files
-# ===========================
+# macOS AppleDouble junk
+._*
 .DS_Store
-Thumbs.db
-Desktop.ini
 
-# ===========================
-# Testing & Coverage
-# ===========================
-.pytest_cache/
-.coverage
-.coverage.*
-htmlcov/
-coverage.xml
-*.cover
-test_*.jpg
-test_*.png
+# secrets (untracked 2026-09-21)
+.env.docker
+frontend/.env.local
 
-# ===========================
-# Type Checking & Linting
-# ===========================
-.mypy_cache/
-.pytype/
-.pyre/
-
-# ===========================
-# Misc
-# ===========================
-*.bak
-*.backup
-*.tmp
-*.pid
-*.sock
-celerybeat-schedule
-celerybeat.pid
+# Per-server compose overrides (domains, restart policy); compose loads it automatically.
+docker-compose.override.yml
+cache/

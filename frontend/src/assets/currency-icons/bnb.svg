@@ -1,0 +1,9 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BNB">
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="#f3ba2f"/>
+  <g fill="#111827">
+    <path d="M32 16l5 5-5 5-5-5 5-5z"/>
+    <path d="M22 26l5 5-5 5-5-5 5-5zm20 0l5 5-5 5-5-5 5-5z"/>
+    <path d="M32 26l6 6-6 6-6-6 6-6z"/>
+    <path d="M32 38l5 5-5 5-5-5 5-5z"/>
+  </g>
+</svg>

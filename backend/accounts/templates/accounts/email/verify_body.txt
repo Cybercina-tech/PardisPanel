@@ -1,0 +1,17 @@
+{% autoescape off %}Hi {{ user.get_full_name }},
+
+Your MrExchange panel is ready and your {{ trial_days }}-day free trial is already
+running — you do not need to confirm anything before you start.
+
+Open your panel: {{ panel_url }}
+
+When you have a moment, confirm this address so we can reach you about your
+trial and your account stays recoverable:
+
+{{ verification_url }}
+
+The link works for three days. If it expires, request a new one from the banner
+at the top of your panel.
+
+— MrExchange
+{% endautoescape %}
