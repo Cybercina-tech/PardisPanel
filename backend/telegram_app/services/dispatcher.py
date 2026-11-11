@@ -21,10 +21,10 @@ class DispatchResult:
 
 
 def _prepare_caption(settings: DefaultMessageSettings, template_name: str) -> str:
-    caption = (settings.default_caption or "").strip()
-    if caption:
-        return caption
-    return f"🔔 {template_name}"
+    from price_publisher.services.pardis_captions import with_price_notice
+
+    caption = (settings.default_caption or "").strip() or f"🔔 {template_name}"
+    return with_price_notice(caption)
 
 
 def broadcast_rendered_template(

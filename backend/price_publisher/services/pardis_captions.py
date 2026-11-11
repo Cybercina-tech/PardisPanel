@@ -39,3 +39,19 @@ GBP_CAPTION = (
     "💰 نقدی و حسابی\n\n"
     + _CONTACTS_AND_OFFICE
 )
+
+
+# Appended to every price publication sent to Telegram (see with_price_notice).
+PRICE_NOTICE = (
+    "🪪ارائه کارت شناسایی معتبر برای  واریز بانکی الزامی میباشد\n\n"
+    "📊مبالغ زیر ۱۰۰۰پوند ترانسفر بانکی شامل کارمزد میباشد\n\n"
+    "به سبب نوسانات قیمت ارز، برای اطلاع از قیمت های قطعی،  تماس حاصل فرمایید"
+)
+
+
+def with_price_notice(caption: str | None) -> str:
+    """Append PRICE_NOTICE to a caption once; idempotent so retries never duplicate it."""
+    text = (caption or "").strip()
+    if PRICE_NOTICE in text:
+        return text
+    return f"{text}\n\n{PRICE_NOTICE}" if text else PRICE_NOTICE

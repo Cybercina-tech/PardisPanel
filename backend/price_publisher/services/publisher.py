@@ -27,6 +27,7 @@ from price_publisher.services.image_renderer import (
     TemplateAssets,
 )
 from price_publisher.services.legacy_category_renderer import render_category_board, supports_category
+from price_publisher.services.pardis_captions import with_price_notice
 from price_publisher.services.tether_renderer import render_tether_board, supports_tether_category
 from price_publisher.services.special_offer_renderer import (
     render_double_price_board,
@@ -792,6 +793,7 @@ class PricePublisherService:
         publish_path: str = "unknown",
         render_fallback_reason: Optional[str] = None,
     ) -> PublicationResult:
+        caption = with_price_notice(caption)
         stream = self._prepare_stream(image.stream, fallback_name="prices.png")
 
         if channel is None:
