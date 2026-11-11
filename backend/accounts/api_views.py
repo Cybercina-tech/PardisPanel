@@ -41,6 +41,7 @@ from .permissions import (
     IsSuperAdmin,
     IsSuperAdminOrManagement,
     is_team_manager,
+    team_owner,
 )
 
 
@@ -443,7 +444,7 @@ def users_managed_by(user):
     """
     qs = CustomUser.objects.all()
     if is_team_manager(user):
-        return qs.filter(owner=user)
+        return qs.filter(owner=team_owner(user))
     return qs
 
 

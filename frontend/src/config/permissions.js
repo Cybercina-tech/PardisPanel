@@ -26,7 +26,8 @@ export const ROLES = {
 export const ALL_PANEL_ROLES = Object.values(ROLES)
 
 /** Backend: IsSuperAdminOrManagement — finalize, price writes, template editor. */
-const SUPER_ADMIN_OR_MANAGEMENT = [ROLES.SUPER_ADMIN, ROLES.MANAGEMENT]
+/** Employees have exactly management's access. */
+const SUPER_ADMIN_OR_MANAGEMENT = [ROLES.SUPER_ADMIN, ROLES.MANAGEMENT, ROLES.EMPLOYEE]
 
 /**
  * Which roles can access each feature. Mirrors backend/accounts/permissions.py.

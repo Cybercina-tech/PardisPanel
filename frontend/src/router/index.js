@@ -213,7 +213,7 @@ const routes = [
         meta: {
           titleKey: 'routes.userCenter',
           requiresAuth: true,
-          roles: ['super_admin', 'management'],
+          roles: ['super_admin', 'management', 'employee'],
         },
       },
       {

@@ -7,7 +7,7 @@ from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import CustomUser, UserActivityLog
-from .permissions import is_team_manager
+from .permissions import is_team_manager, team_owner
 from .plans import COLLABORATION_CHOICES, PLAN_GOLD, PLAN_CHOICES, normalize_plan
 from .tokens import issue_tokens_for_user
 from .trial import trial_expires_at
@@ -188,7 +188,7 @@ class TeamMemberFieldsMixin(serializers.Serializer):
             attrs.pop("role", None)
             if instance is None:
                 attrs["role"] = CustomUser.ROLE_EMPLOYEE
-                attrs["owner"] = actor
+                attrs["owner"] = team_owner(actor)
                 attrs.setdefault("sub_role", CustomUser.SUB_ROLE_OPERATOR)
             sub_role = attrs.get("sub_role", getattr(instance, "sub_role", None))
             if sub_role not in DELEGATED_SUB_ROLES:

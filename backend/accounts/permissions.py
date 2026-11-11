@@ -7,8 +7,9 @@ Roles (see accounts.models.CustomUser.ROLE_*):
   Channels, Price Hub (read/write), Finalize, Analysis, site settings, and the
   Admin section for its own desk — its operators, their activity, and its own
   panel logs. Never another desk's anything.
-- EMPLOYEE (employee): Read-only access to Price Hub and Dashboard (Finalize dashboard,
-  Analysis). No access to Telegram Setup or Finalizing prices.
+- EMPLOYEE (employee): identical access to MANAGEMENT. Every desk-level permission
+  below treats the two roles the same (DESK_ROLES); an employee still works inside the
+  desk it reports to, because data scoping follows the account, not the role.
 
 Permission mapping:
 - User Management (list/create/update users, force logout): CanManageTeam
@@ -31,6 +32,10 @@ from rest_framework import permissions
 from .trial import trial_is_expired
 
 logger = logging.getLogger(__name__)
+
+# Roles with desk-level access. Employees are held to exactly what management can do.
+DESK_ROLES = ("management", "employee")
+
 
 def _normalize_role(role):
     """Normalize legacy role variants (e.g. superadmin) to canonical names."""
@@ -97,7 +102,7 @@ class IsSuperAdminOrManagement(permissions.BasePermission):
         if getattr(request.user, "is_superuser", False):
             return True
         role = _normalize_role(getattr(request.user, "role", None))
-        allowed = role in ("super_admin", "management")
+        allowed = role == "super_admin" or role in DESK_ROLES
         logger.debug(
             "IsSuperAdminOrManagement: user=%s role=%r allowed=%s",
             request.user.username,
@@ -108,12 +113,19 @@ class IsSuperAdminOrManagement(permissions.BasePermission):
 
 
 def is_team_manager(user) -> bool:
-    """A management user: it manages the operators it owns, never other users."""
+    """A desk user (management or employee): manages its desk's operators, never other users."""
     if not user or not getattr(user, "is_authenticated", False):
         return False
     if getattr(user, "is_superuser", False):
         return False
-    return _normalize_role(getattr(user, "role", None)) == "management"
+    return _normalize_role(getattr(user, "role", None)) in DESK_ROLES
+
+
+def team_owner(user):
+    """The user that owns the desk's operators: a delegated employee's owner, else the user itself."""
+    if _normalize_role(getattr(user, "role", None)) == "employee":
+        return getattr(user, "owner", None) or user
+    return user
 
 
 class CanManageTeam(permissions.BasePermission):

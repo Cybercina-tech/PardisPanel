@@ -46,7 +46,7 @@ class ManagementAdminAccessTests(TestCase):
         seen = {row["user_display"] for row in rows}
         self.assertEqual(seen, {"mgr-a", "op-a"})
 
-    def test_employee_still_has_no_admin_access(self):
+    def test_employee_has_the_same_admin_access_as_management(self):
         self.client.force_authenticate(self.operator)
-        self.assertEqual(self.client.get("/api/auth/activity/").status_code, 403)
-        self.assertEqual(self.client.get("/api/settings/logs/").status_code, 403)
+        for url in ("/api/auth/users/", "/api/auth/activity/", "/api/settings/logs/"):
+            self.assertEqual(self.client.get(url).status_code, 200, url)

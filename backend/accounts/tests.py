@@ -41,10 +41,10 @@ class ProgrammerHubApiTests(APITestCase):
             role=CustomUser.ROLE_EMPLOYEE,
         )
 
-    def test_employee_cannot_list_users(self):
+    def test_employee_lists_users_like_management(self):
         self.client.force_authenticate(self.employee)
         r = self.client.get("/api/auth/users/")
-        self.assertEqual(r.status_code, 403)
+        self.assertEqual(r.status_code, 200)
 
     def test_programmer_lists_users(self):
         self.client.force_authenticate(self.programmer)
@@ -349,9 +349,14 @@ class AdminManagementTeamApiTests(APITestCase):
         r = self._create(telegram_username="RIVAL_TG")
         self.assertEqual(r.status_code, 400, r.content)
 
-    def test_employee_cannot_manage_users(self):
+    def test_employee_manages_users_like_management(self):
+        """An employee creates operators under its own desk owner, same as management."""
         self.client.force_authenticate(self.rival_op)
-        self.assertEqual(self._create().status_code, 403)
+        r = self._create()
+        self.assertEqual(r.status_code, 201, r.content)
+        created = CustomUser.objects.get(username="desk_op")
+        self.assertEqual(created.owner_id, (self.rival_op.owner or self.rival_op).pk)
+        self.assertEqual(created.role, CustomUser.ROLE_EMPLOYEE)
 
     def test_super_admin_operator_requires_owner(self):
         admin = CustomUser.objects.create_user(
@@ -547,18 +552,18 @@ class SettingsAccessTests(APITestCase):
         )
         self.assertEqual(r.status_code, 200, r.content)
 
-    def test_employee_still_cannot_save_site_settings(self):
+    def test_employee_can_save_site_settings_like_management(self):
         self.client.force_authenticate(self.employee)
         r = self.client.put(
-            "/api/settings/site/", {"site_name": "nope"}, format="json"
+            "/api/settings/site/", {"site_name": "Clerk Exchange"}, format="json"
         )
-        self.assertEqual(r.status_code, 403)
+        self.assertEqual(r.status_code, 200, r.content)
 
     def test_activity_log_is_open_to_the_owner_but_scoped_to_its_team(self):
-        """A desk owner audits its own operators; an employee audits nobody."""
+        """A desk owner and an employee both audit the desk's operators."""
         self.client.force_authenticate(self.owner)
         self.assertEqual(self.client.get("/api/auth/activity/").status_code, 200)
         self.client.force_authenticate(self.admin)
         self.assertEqual(self.client.get("/api/auth/activity/").status_code, 200)
         self.client.force_authenticate(self.employee)
-        self.assertEqual(self.client.get("/api/auth/activity/").status_code, 403)
+        self.assertEqual(self.client.get("/api/auth/activity/").status_code, 200)

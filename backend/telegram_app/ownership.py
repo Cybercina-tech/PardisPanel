@@ -18,7 +18,7 @@ def user_is_super_admin(user) -> bool:
 def user_is_management(user) -> bool:
     if not user or not getattr(user, "is_authenticated", False):
         return False
-    return _normalize_role(getattr(user, "role", None)) == "management"
+    return _normalize_role(getattr(user, "role", None)) in ("management", "employee")
 
 
 def owned_bots_qs(user):
