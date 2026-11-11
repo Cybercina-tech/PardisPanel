@@ -161,6 +161,12 @@ LEGACY_FINAL_MESSAGE = (
     "یکشنبه ها: تعطیل"
 )
 
+# Main channel and bot; @pardis_addon is a secondary channel, so posts point here.
+TELEGRAM_LINKS_ROW = [
+    {"text": "کانال تلگرام ما", "url": "https://t.me/sarafipardis"},
+    {"text": "بات تلگرامی ما", "url": "https://t.me/PardisSarafiBot"},
+]
+
 LEGACY_FINAL_BUTTONS = [
     [
         {
@@ -184,6 +190,7 @@ LEGACY_FINAL_BUTTONS = [
             "url": "https://www.instagram.com/sarafipardis",
         },
     ],
+    TELEGRAM_LINKS_ROW,
 ]
 
 
@@ -953,7 +960,10 @@ class PricePublisherService:
     def _build_special_price_caption(self, special_price_type, price_history, custom_offer: bool) -> str:
         """Build caption for special price offers, detecting if it's a special GBP template."""
         if getattr(special_price_type, "is_double_price", False):
-            return ""  # Pardis: no description on cash/account banners
+            # Same body as the single GBP offers; the title names both cash and account.
+            side = "فروش" if getattr(special_price_type, "trade_type", "") == "sell" else "خرید"
+            title = f"💷 <b>{side} ویژه نقدی و حسابی پوند</b>"
+            return f"{title}\n\n{self._build_common_description('')}"
         special_price_name = getattr(special_price_type, "name", "")
         normalized_name = normalize_identifier(special_price_name)
         

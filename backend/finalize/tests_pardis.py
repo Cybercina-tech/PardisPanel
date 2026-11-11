@@ -119,6 +119,33 @@ class LiraFinalizeTest(TestCase):
         self.assertEqual(rates, {"USDT_BUY": 126000.0})
 
 
+class OtherCurrenciesExcludesUsdtTomanTest(TestCase):
+    def setUp(self):
+        self.user = CustomUser.objects.create_user(
+            username="mgr", password="x", role=CustomUser.ROLE_MANAGEMENT
+        )
+        cat = Category.objects.create(name="سایر ارز ها")
+        usdt, irt, eur, gbp = _currency("USDT"), _currency("IRT"), _currency("EUR"), _currency("GBP")
+        for name, src, dst, trade in (
+            ("خرید تتر به تومان", usdt, irt, "buy"),
+            ("فروش تتر به تومان", irt, usdt, "sell"),
+            ("خرید تتر به پوند", usdt, gbp, "buy"),
+            ("فروش تتر به پوند", usdt, gbp, "sell"),
+            ("یورو", eur, irt, "sell"),
+        ):
+            pt = PriceType.objects.create(
+                category=cat, name=name, source_currency=src, target_currency=dst, trade_type=trade
+            )
+            PriceHistory.objects.create(price_type=pt, price=Decimal("1"))
+
+    def test_dashboard_omits_usdt_toman_rows(self):
+        client = APIClient()
+        client.force_authenticate(self.user)
+        data = client.get("/api/finalize/dashboard/").json()
+        names = [p["price_type_name"] for c in data["pending_by_category"] for p in c["pending_prices"]]
+        self.assertEqual(names, ["خرید تتر به پوند", "فروش تتر به پوند", "یورو"])
+
+
 class SpecialBannerDownloadTest(TestCase):
     def setUp(self):
         self.user = CustomUser.objects.create_user(
@@ -180,9 +207,12 @@ class TelegramContentCarriedOverTest(TestCase):
             caption = self.service._build_category_publish_caption(cat, [], None, None)
             self.assertIn(marker, caption, name)
             buttons = self.service._build_category_publish_buttons(cat, None)
-            self.assertEqual(len(buttons), 4)
+            self.assertEqual(len(buttons), 5)
             self.assertEqual(buttons[3][0]["url"], "https://sarafipardis.co.uk/")
             self.assertEqual(buttons[3][1]["url"], "https://www.instagram.com/sarafipardis")
+            self.assertEqual(
+                [b["url"] for b in buttons[4]], ["https://t.me/sarafipardis", "https://t.me/PardisSarafiBot"]
+            )
 
     def test_configured_category_buttons_win_over_default(self):
         cat = Category.objects.create(name="درهم", inline_buttons=[{"label": "Hi", "url": "https://x.test"}])
@@ -191,12 +221,16 @@ class TelegramContentCarriedOverTest(TestCase):
             [[{"text": "Hi", "url": "https://x.test"}]],
         )
 
-    def test_double_price_special_has_no_caption(self):
-        spt = SpecialPriceType.objects.create(
-            name="x", source_currency=_currency("GBP"), target_currency=_currency("IRT"),
-            trade_type="buy", is_double_price=True,
-        )
-        self.assertEqual(self.service._build_special_price_caption(spt, None, True), "")
+    def test_double_price_special_uses_pound_caption(self):
+        for trade, title in (("buy", "خرید ویژه نقدی و حسابی پوند"), ("sell", "فروش ویژه نقدی و حسابی پوند")):
+            spt = SpecialPriceType.objects.create(
+                name=f"x-{trade}", source_currency=_currency("GBP"), target_currency=_currency("IRT"),
+                trade_type=trade, is_double_price=True,
+            )
+            caption = self.service._build_special_price_caption(spt, None, True)
+            self.assertTrue(caption.startswith(f"💷 <b>{title}</b>\n\n"), caption)
+            self.assertIn("https://wa.me/447533544249", caption)
+            self.assertIn("https://maps.app.goo.gl/d3sorvbK9VRFvSBaA", caption)
 
 
 class FinalizeLeavesNothingPendingTest(TestCase):
@@ -272,10 +306,47 @@ class PardisTelegramContentSeedTest(TestCase):
             self.assertIn("{date_fa}", tether.telegram_message_description)
             self.assertEqual(edited.telegram_message_description, "mine")  # edit kept
             rows = _normalize_inline_keyboard(tether.inline_buttons)
-            self.assertEqual([len(r) for r in rows], [1, 1, 1, 2])  # website + Instagram side by side
+            self.assertEqual([len(r) for r in rows], [1, 1, 1, 2, 2])  # paired rows stay side by side
             self.assertEqual(apply_telegram_content(self.account), 0)  # idempotent
             caption = PricePublisherService()._build_category_publish_caption(tether, [], None, None)
             self.assertNotIn("{date_fa}", caption)  # variables are filled at publish time
+
+    def test_seed_upgrades_previous_default_buttons_only(self):
+        from accounts.management.commands.apply_pardis_branding import apply_telegram_content
+        from accounts.scoping import act_as_account
+        from price_publisher.services.publisher import LEGACY_FINAL_BUTTONS, TELEGRAM_LINKS_ROW
+
+        old = [
+            {"label": b["text"], "url": b["url"], "row": r}
+            for r, row in enumerate(LEGACY_FINAL_BUTTONS[:-1])
+            for b in row
+        ]
+        self.assertIs(LEGACY_FINAL_BUTTONS[-1], TELEGRAM_LINKS_ROW)
+        custom = [{"label": "Hi", "url": "https://x.test"}]
+        with act_as_account(self.account.pk):
+            stale = Category.objects.create(name="a", telegram_message_description="d", inline_buttons=old)
+            mine = Category.objects.create(name="b", telegram_message_description="d", inline_buttons=custom)
+            self.assertEqual(apply_telegram_content(self.account), 1)
+            stale.refresh_from_db()
+            mine.refresh_from_db()
+            self.assertEqual(stale.inline_buttons[-1]["url"], "https://t.me/PardisSarafiBot")
+            self.assertEqual(mine.inline_buttons, custom)
+
+    def test_main_channel_added_on_existing_bot_once(self):
+        from accounts.management.commands.apply_pardis_branding import ensure_main_channels
+        from accounts.scoping import act_as_account
+
+        self.assertIsNone(ensure_main_channels(self.account))  # no bot yet
+        with act_as_account(self.account.pk):
+            bot = TelegramBot.objects.create(name="b", token="t", account=self.account)
+            TelegramChannel.objects.create(bot=bot, name="Pardis addon", chat_id="@pardis_addon")
+        self.assertEqual(ensure_main_channels(self.account), ["@sarafipardis"])
+        self.assertEqual(ensure_main_channels(self.account), [])  # idempotent
+        with act_as_account(self.account.pk):
+            self.assertEqual(
+                sorted(TelegramChannel.objects.values_list("chat_id", flat=True)),
+                ["@pardis_addon", "@sarafipardis"],
+            )
 
 
 class DoublePriceSpecialTest(TestCase):

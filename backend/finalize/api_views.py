@@ -44,6 +44,34 @@ from .serializers import (
 
 logger = logging.getLogger(__name__)
 
+OTHER_CURRENCIES_MARK = "سایر"
+
+
+TOMAN_CODES = {"IRR", "IRT"}
+
+
+def _is_usdt_toman(price_type):
+    codes = {
+        getattr(price_type.source_currency, "code", "").upper(),
+        getattr(price_type.target_currency, "code", "").upper(),
+    }
+    return "USDT" in codes and bool(codes & TOMAN_CODES)
+
+
+def _finalize_price_types(category, price_types):
+    """Price types of ``category`` that take part in finalize and its banner, in board order.
+
+    The Other-currencies banner has no USDT/Toman rows, so those are left out of it.
+    """
+    name = category.name or ""
+    lower = name.lower()
+    if "پوند" in name or "pound" in lower or "gbp" in lower:
+        return sort_gbp_price_types(price_types)
+    if OTHER_CURRENCIES_MARK in name:
+        return [pt for pt in price_types if not _is_usdt_toman(pt)]
+    return price_types
+
+
 def _push_external_rates(price_items):
     """Send finalized GBP/USDT rates to the public rates API (Pardis contract).
 
@@ -163,9 +191,7 @@ def _build_finalize_dashboard_data():
         finalized_history_ids, finalized_price_map = _finalized_state(category)
 
         price_types = list(category.price_types.all())
-        category_name_lower = category.name.lower()
-        if "پوند" in category.name or "pound" in category_name_lower or "gbp" in category_name_lower:
-            price_types = sort_gbp_price_types(price_types)
+        price_types = _finalize_price_types(category, price_types)
 
         category_pending = []
         for price_type in price_types:
@@ -339,9 +365,7 @@ class FinalizeCategoryAPIView(APIView):
         price_types = PriceType.objects.filter(category=category).select_related(
             "source_currency", "target_currency"
         )
-        category_name_lower = category.name.lower()
-        if "پوند" in category.name or "pound" in category_name_lower or "gbp" in category_name_lower:
-            price_types = sort_gbp_price_types(price_types)
+        price_types = _finalize_price_types(category, price_types)
 
         price_items = []
         pending_prices = []
@@ -505,9 +529,7 @@ def _latest_category_price_items(category):
     price_types = PriceType.objects.filter(category=category).select_related(
         "source_currency", "target_currency"
     )
-    category_name_lower = category.name.lower()
-    if "پوند" in category.name or "pound" in category_name_lower or "gbp" in category_name_lower:
-        price_types = sort_gbp_price_types(price_types)
+    price_types = _finalize_price_types(category, price_types)
     items = []
     for price_type in price_types:
         latest = price_type.price_histories.first()
@@ -884,9 +906,7 @@ class FinalizeAllAPIView(APIView):
         price_types = PriceType.objects.filter(category=category).select_related(
             "source_currency", "target_currency"
         )
-        category_name_lower = category.name.lower()
-        if "پوند" in category.name or "pound" in category_name_lower or "gbp" in category_name_lower:
-            price_types = sort_gbp_price_types(price_types)
+        price_types = _finalize_price_types(category, price_types)
 
         price_items = []
         pending_prices = []
