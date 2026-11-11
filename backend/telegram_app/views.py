@@ -1,3 +1,4 @@
+from price_publisher.services.pardis_captions import with_price_notice
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import redirect, render
@@ -22,7 +23,9 @@ def send_message_view(request):
 
             try:
                 client = TelegramService(bot.get_plain_token())
-                success, response, _ = client.send_message(channel.chat_id, message)
+                success, response, _ = client.send_message(
+                    channel.chat_id, with_price_notice(message)
+                )
 
                 if success:
                     messages.success(request, response)

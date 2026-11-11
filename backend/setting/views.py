@@ -1,3 +1,4 @@
+from price_publisher.services.pardis_captions import with_price_notice
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
@@ -39,7 +40,9 @@ def settings_view(request):
 
                 try:
                     client = TelegramService(bot.get_plain_token())
-                    success, response, _ = client.send_message(channel.chat_id, message)
+                    success, response, _ = client.send_message(
+                        channel.chat_id, with_price_notice(message)
+                    )
 
                     if success:
                         # Log successful message send

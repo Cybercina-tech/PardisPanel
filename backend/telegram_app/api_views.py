@@ -3,6 +3,7 @@ DRF API views for Telegram app: channels, send message, default settings, bots,
 and auto-post configuration.
 """
 import json
+from price_publisher.services.pardis_captions import with_price_notice
 from django.db.models import Count
 from rest_framework import status, serializers as drf_serializers
 from rest_framework.response import Response
@@ -112,7 +113,9 @@ class SendMessageAPIView(APIView):
 
         try:
             client = TelegramService(bot.get_plain_token())
-            success, response, _ = client.send_message(channel.chat_id, message)
+            success, response, _ = client.send_message(
+                channel.chat_id, with_price_notice(message)
+            )
 
             if success:
                 log_telegram_event(
