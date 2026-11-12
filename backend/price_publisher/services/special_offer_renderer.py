@@ -34,8 +34,7 @@ SPECIAL_GBP_TEMPLATES = (
 
 # Double-price banners: one image for Buy, one for Sell (1760×716).
 # Files live under MEDIA_ROOT/templates/. Resolved by slug first (see DOUBLE_PRICE_BACKGROUND_BY_SLUG).
-# Top bar = Account (حسابی), bottom bar = Cash (نقدی). Font: Montserrat (montsrrat.otf) size 58.
-# Both banners use white price pills — black price text on both.
+# Top bar = Account (حسابی), bottom bar = Cash (نقدی). Font: Yekan Bakh Bold, like the other banners.
 # No date is drawn on these — only on the single special GBP banners.
 DOUBLE_BUY_BACKGROUND = "gbp_special_buy_banner.png"
 DOUBLE_SELL_BACKGROUND = "gbp_special_sell_banner.png"
@@ -46,11 +45,23 @@ DOUBLE_PRICE_BACKGROUND_BY_SLUG = {
 # Legacy filenames kept for reference / manual cleanup on servers.
 LEGACY_DOUBLE_BUY_BACKGROUND = "special_gbp_buy_double.png"
 LEGACY_DOUBLE_SELL_BACKGROUND = "special_gbp_sell_double.png"
-# Price anchor = center of the number slot inside each white pill (both banners 1760×716).
-DOUBLE_ACCOUNT_PRICE_CENTER = (462, 286)  # Top pill - Account (حسابی)
-DOUBLE_CASH_PRICE_CENTER = (462, 410)     # Bottom pill - Cash (نقدی)
-DOUBLE_PRICE_FONT = ("montsrrat.otf", 58)
-DOUBLE_PRICE_FILL = (0, 0, 0)            # Black on white price pills (both banners)
+# Both banners are 2560×1042 artwork with two pills on the left ("تومان" + flag at the
+# pill's left end, the rest of the pill is the number slot). Everything is a RATIO of
+# the artwork, so a re-exported banner at another size still lines up. Measured on the
+# artwork: pills span y 361-474 (top, Account/حسابی) and 540-653 (bottom, Cash/نقدی),
+# the free slot runs x 470-950 (clear of the flag and "تومان" label, inside the pill).
+DOUBLE_SLOT_X_RATIO = (470 / 2560, 950 / 2560)   # left / right edge of the number slot
+DOUBLE_ACCOUNT_Y_RATIO = 417.5 / 1042            # centre of the top pill (حسابی)
+DOUBLE_CASH_Y_RATIO = 596.5 / 1042               # centre of the bottom pill (نقدی)
+DOUBLE_PRICE_HEIGHT_RATIO = 80 / 1042            # font size, as a share of banner height
+DOUBLE_PRICE_MIN_SIZE = 24
+# Same typeface the Tether/other-currency banners use for their prices; Persian
+# messages ("تماس بگیرید", "توقف خرید") need the full Persian Yekan Bakh.
+DOUBLE_PRICE_FONT_FILE = "YekanBakhEN-Bold.ttf"
+DOUBLE_PRICE_PERSIAN_FONT_FILE = "YekanBakh.ttf"
+# Pill colour decides the text colour: white text on the blue pills, brand blue on the white ones.
+DOUBLE_PRICE_ON_DARK = (255, 255, 255)
+DOUBLE_PRICE_ON_LIGHT = (24, 0, 170)
 
 # --- Gregorian (میلادی) date, top-right — single special GBP banners only ----
 # Same typeface the other-currency banners use for their Gregorian date
@@ -93,8 +104,6 @@ FONT_DEFINITIONS = {
     "special_buy_account_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
     "special_sell_cash_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
     "special_sell_account_gbp_price": SPECIAL_GBP_TEMPLATE_FONT,
-    # Double-price banners (نقدی و حسابی): Montserrat 85 for prices
-    "double_price": DOUBLE_PRICE_FONT,
     # Gregorian date is loaded separately (size depends on banner width):
     # see _draw_gregorian_date / GREGORIAN_DATE_* constants.
 }
@@ -257,7 +266,7 @@ def render_double_price_board(
     """
     Render a double-price banner: Account price on top bar, Cash price on bottom bar.
     Uses gbp_special_buy_banner.png (Buy) and gbp_special_sell_banner.png (Sell).
-    Backgrounds must exist under MEDIA_ROOT/templates/. Font: English word font (montsrrat).
+    Backgrounds must exist under MEDIA_ROOT/templates/. Font: Yekan Bakh Bold.
     """
     trade_type = (getattr(special_price_type, "trade_type", "") or "").strip().lower()
     slug = (getattr(special_price_type, "slug", "") or "").strip()
@@ -269,8 +278,6 @@ def render_double_price_board(
             background_name = DOUBLE_SELL_BACKGROUND
         else:
             raise ValueError(f"Unknown trade_type for double-price: {trade_type}")
-    price_fill = DOUBLE_PRICE_FILL
-
     background_path = _resolve_double_price_background_path(background_name)
 
     image = _open_background(background_path).copy()
@@ -278,8 +285,6 @@ def render_double_price_board(
     fonts = _load_fonts()
 
     # No date on the double-price banners — the artwork carries its own.
-    price_font = fonts.get("double_price") or fonts.get("english_number") or fonts.get("price")
-
     # Build a minimal object so _format_price_value can read .price and .notes
     class _PriceHolder:
         pass
@@ -294,11 +299,9 @@ def render_double_price_board(
     account_holder.notes = getattr(price_history, "notes", None)
     account_text = _format_price_value(account_holder, special_price_type=special_price_type)
 
-    # Top pill = Account (حسابی), bottom pill = Cash (نقدی) — centered in white bars.
-    account_xy = _text_xy_for_center(draw_ctx, account_text, price_font, DOUBLE_ACCOUNT_PRICE_CENTER)
-    cash_xy = _text_xy_for_center(draw_ctx, cash_text, price_font, DOUBLE_CASH_PRICE_CENTER)
-    draw_ctx.text(account_xy, account_text, font=price_font, fill=price_fill)
-    draw_ctx.text(cash_xy, cash_text, font=price_font, fill=price_fill)
+    # Top pill = Account (حسابی), bottom pill = Cash (نقدی).
+    _draw_price_in_pill(image, draw_ctx, account_text, DOUBLE_ACCOUNT_Y_RATIO)
+    _draw_price_in_pill(image, draw_ctx, cash_text, DOUBLE_CASH_Y_RATIO)
 
     working_hours_text = "ساعات کاری:\nدوشنبه تا شنبه: ۹:۳۰ صبح تا ۵:۰۰ عصر\nیکشنبه: تعطیل"
     working_hours_lines = working_hours_text.split("\n")
@@ -436,6 +439,60 @@ def _text_xy_for_center(
     x = cx - tw / 2 - bbox[0]
     y = cy - th / 2 - bbox[1]
     return int(x), int(y)
+
+
+def _price_text_for_display(text: str) -> tuple[str, bool]:
+    """Prepare Persian messages ("تماس بگیرید"); numbers pass through untouched.
+
+    With libraqm Pillow shapes and orders RTL text itself, and reshaping on top would
+    reverse it twice; without it the string has to be pre-shaped into visual order.
+    """
+    if not any("\u0600" <= ch <= "\u06ff" for ch in text):
+        return text, False
+    from PIL import features
+
+    if features.check("raqm"):
+        return text, True
+    import arabic_reshaper
+    from bidi.algorithm import get_display
+
+    return get_display(arabic_reshaper.reshape(text)), True
+
+
+def _draw_price_in_pill(
+    image: Image.Image,
+    draw_ctx: ImageDraw.ImageDraw,
+    text: str,
+    y_ratio: float,
+) -> None:
+    """Draw ``text`` centred in the number slot of one pill, shrinking it to fit whole."""
+    width, height = image.size
+    left = round(DOUBLE_SLOT_X_RATIO[0] * width)
+    right = round(DOUBLE_SLOT_X_RATIO[1] * width)
+    cx, cy = (left + right) / 2, round(y_ratio * height)
+    shown, persian = _price_text_for_display(text)
+    font_file = DOUBLE_PRICE_PERSIAN_FONT_FILE if persian else DOUBLE_PRICE_FONT_FILE
+    font_path = FONT_ROOT / font_file
+    if not font_path.exists():
+        raise FileNotFoundError(f"Font file not found: {font_path}")
+
+    size = max(DOUBLE_PRICE_MIN_SIZE, round(height * DOUBLE_PRICE_HEIGHT_RATIO))
+    while True:
+        font = ImageFont.truetype(str(font_path), size)
+        bbox = draw_ctx.textbbox((0, 0), shown, font=font)
+        if bbox[2] - bbox[0] <= right - left or size <= DOUBLE_PRICE_MIN_SIZE:
+            break
+        size -= 2
+
+    # Centre digits on their own height: a comma's tail must not pull the line upward.
+    ref = draw_ctx.textbbox((0, 0), shown if persian else "0", font=font)
+    x = cx - (bbox[2] - bbox[0]) / 2 - bbox[0]
+    y = cy - (ref[1] + ref[3]) / 2
+
+    r, g, b = image.convert("RGB").getpixel((right - 20, cy))
+    on_dark = (0.299 * r + 0.587 * g + 0.114 * b) < 140
+    fill = DOUBLE_PRICE_ON_DARK if on_dark else DOUBLE_PRICE_ON_LIGHT
+    draw_ctx.text((round(x), round(y)), shown, font=font, fill=fill)
 
 
 _BACKGROUND_CACHE: dict[tuple[str, float], Image.Image] = {}
